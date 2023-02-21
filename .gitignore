@@ -4,6 +4,9 @@ temp/
 plots/
 srcmods*
 run_logs_archive/
+UQ_output/
+*_postprocessed.txt
+__pycache__/
 
 # files created by OLMT executions
 run.*

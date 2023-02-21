@@ -18,7 +18,7 @@ parser.add_option("--burnsteps", dest="burnsteps", default="10", \
 parser.add_option("--parm_list", dest="parm_list", default='parm_list', \
                   help = 'File containing list of parameters to vary')
 parser.add_option("--parm_default", dest="parm_default", default='' \
-                  ,help = 'File containing list of parameters to vary')
+                  ,help = 'File containing list of paramers to vary')
 (options, args) = parser.parse_args()
 
 UQ_output = 'UQ_output/'+options.casename
@@ -54,8 +54,8 @@ def posterior(parms):
 
 def MCMC(parms, nevals, type='uniform', nburn=1000, burnsteps=10, default_output=[]):
     #Metropolis-Hastings Markov Chain Monte Carlo with adaptive sampling
-    post_best = -99999
-    post_last = -99999
+    post_best = -99999999
+    post_last = -99999999
     accepted_step = 0
     accepted_tot  = 0
     nparms     = model.nparms
@@ -185,9 +185,11 @@ def MCMC(parms, nevals, type='uniform', nburn=1000, burnsteps=10, default_output
     parm_best=open(UQ_output+'/MCMC_output/parms_best.txt','w')
     p=0
     for s in parm_data:
-      row = s.split()
-      parm_best.write(row[0]+' '+row[1]+' '+str(parms_best[p])+'\n')
-      p=p+1
+      s = s.lstrip().rstrip()
+      if (len(s) > 0) and (s[0:1] != '#'):
+        row = s.split()
+        parm_best.write(row[0]+' '+row[1]+' '+str(parms_best[p])+'\n')
+        p=p+1
     parm_data.close()
     parm_best.close()
     np.savetxt(UQ_output+'/MCMC_output/correlation_matrix.txt',np.corrcoef(chain_afterburn))

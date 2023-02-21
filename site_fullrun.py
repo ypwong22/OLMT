@@ -8,7 +8,7 @@ import re
 
 
 ### Run options
-parser = OptionParser();
+parser = OptionParser()
 
 # general OLMT options
 parser.add_option("--no_submit", dest="no_submit", default=False, action="store_true", \
@@ -340,7 +340,6 @@ elif ('compy' in options.machine):
 #        options.compiler = 'intel'
 #    if (options.machine == 'cades'):
 #        options.compiler = 'gnu'
-    
 
 mycaseid   = options.mycaseid
 srcmods    = options.srcmods_loc
@@ -410,7 +409,8 @@ if (int(options.mc_ensemble) != -1):
         param_max=[]
         input = open(options.parm_list,'r')
         for s in input:
-            if (s):
+            s = s.lstrip().rstrip()
+            if (len(s) > 0) and (s[0:1] != '#'):
                 param_names.append(s.split()[0])
                 if (int(options.mc_ensemble) > 0):
                     if (len(s.split()) == 3):

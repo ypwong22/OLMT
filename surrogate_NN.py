@@ -19,9 +19,6 @@ UQ_output = 'UQ_output/'+options.casename
 datapath = UQ_output+'/data/'
 os.system('mkdir -p '+UQ_output+'/NN_surrogate')
 
-#comm=MPI.COMM_WORLD
-#rank=comm.Get_rank()
-#size=comm.Get_size()
 print(datapath+'/ptrain.dat')
 ptrain = np.loadtxt(datapath+'/ptrain.dat')
 ytrain = np.loadtxt(datapath+'/ytrain.dat')
@@ -54,7 +51,6 @@ ptrain_norm = ptrain.copy()
 pval_norm   = pval.copy()
 
 #Normalize parameters
-
 for i in range(0,nparms):
   ptrain_norm[:,i] = (ptrain[:,i] - min(ptrain[:,i]))/(max(ptrain[:,i])-min(ptrain[:,i]))
   pval_norm[:,i]   = (pval[:,i]  -  min(ptrain[:,i]))/(max(ptrain[:,i])-min(ptrain[:,i]))

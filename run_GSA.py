@@ -28,15 +28,18 @@ model.run(samples)
 np.savetxt(GSAdir+'/outputs.txt',model.output)
 
 #Run GSA for each QOI
-sens_main = np.zeros([model.nparms,model.nobs])
-sens_main_unc = np.zeros([model.nparms,model.nobs])
-sens_tot = np.zeros([model.nparms,model.nobs])
+sens_main = np.zeros([model.nparms,model.nobs]) # first order effect without interaction
+sens_main_unc = np.zeros([model.nparms,model.nobs]) # uncertainty of the sensitivity
+sens_tot = np.zeros([model.nparms,model.nobs]) # sum of first order effect and all interactions that involve this parameter
 sens_tot_unc = np.zeros([model.nparms,model.nobs])
 
 for n in range(0,model.nobs):
   print(n)
   os.system('python -m SALib.analyze.sobol --parallel -p '+GSAdir+'/param_range.txt -Y '+GSAdir+ \
             '/outputs.txt -c '+str(n)+' > '+GSAdir+'/analyses/analysis_ob'+str(n)+'.txt')
+
+for n in range(0,model.nobs):
+  print(n)
   myfile = open(GSAdir+'/analyses/analysis_ob'+str(n)+'.txt','r')
   lnum=0
   for s in myfile:
@@ -44,11 +47,15 @@ for n in range(0,model.nobs):
     if (lnum > 0 and lnum <= model.nparms):
       sens_tot[lnum-1,n] = float(s.split()[1])
       sens_tot_unc[lnum-1,n] = float(s.split()[2])
-    elif (lnum > model.nparms+1 and lnum <= model.nparms*2+1):
+    elif (lnum > (model.nparms+1) and lnum <= (model.nparms*2+1)):
       sens_main[lnum-2-model.nparms,n] = float(s.split()[1])
-      sens_main_unc[lnum-2-model.nparms,n] = float(s.split()[2])    
+      sens_main_unc[lnum-2-model.nparms,n] = float(s.split()[2])
     lnum=lnum+1
   myfile.close()
+
+#Save the matrices
+np.savetxt(GSAdir+'/sens_main.txt', sens_main)
+np.savetxt(GSAdir+'/sens_tot.txt', sens_tot)
 
 #Plot main sensitivity indices
 fig,ax = plt.subplots()
@@ -77,4 +84,3 @@ for p in range(1,model.nparms):
     bottom=bottom+sens_tot[p,:]
 plt.legend(model.parm_names)
 plt.savefig(GSAdir+'/sens_tot.pdf')
-

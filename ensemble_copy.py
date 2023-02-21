@@ -46,15 +46,17 @@ casename = options.casename
 # get parameter names and PFT information
 pnum=0
 for s in myinput:
-   pdata = s.split()
-   parm_names.append(pdata[0])
-   if (pdata[0] == 'co2'):
-     pnum_co2 = pnum
-   if (len(pdata) == 3):
-     parm_indices.append(-1)
-   else:
-     parm_indices.append(int(pdata[1]))
-   pnum=pnum+1
+   s = s.lstrip().rstrip()
+   if (len(s) > 0) and (s[0:1] != '#'):
+      pdata = s.split()
+      parm_names.append(pdata[0])
+      if (pdata[0] == 'co2'):
+         pnum_co2 = pnum
+      if (len(pdata) == 3):
+         parm_indices.append(-1)
+      else:
+         parm_indices.append(int(pdata[1]))
+      pnum=pnum+1
 myinput.close()
 
 
