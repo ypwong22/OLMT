@@ -103,6 +103,8 @@ parser.add_option("--ilambvars", dest="ilambvars", default=False, \
                  action="store_true", help="Write special outputs for diagnostics")
 parser.add_option("--dailyvars", dest="dailyvars", default=False, \
                  action="store_true", help="Write daily ouptut variables")
+parser.add_option("--hourlyvars", dest="hourlyvars", default=False, \
+                 action="store_true", help="Write hourly ouptut variables")
 
 parser.add_option("--res", dest="res", default="CLM_USRDAT", \
                       help='Resoultion for global simulation')
@@ -1171,7 +1173,7 @@ for i in range(1,int(options.ninst)+1):
     #outputs for SPRUCE MiP and Jiafu's diagnostics code:
     var_list_hourly = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILLIQ','SMP','QOVER','QDRAI','TG','TV','TSA','TSOI', \
                        'FSA','FSDS','FLDS','TBOT','RAIN','SNOW','WIND','PBOT','QBOT','QVEGT','QVEGE','QSOIL', \
-                       'QH2OSFC','H2OSOI','ZWT','SNOWDP','TLAI','RH2M','QRUNOFF']
+                       'QH2OSFC','H2OSOI','ZWT','SNOWDP','TLAI','RH2M','QRUNOFF','SOILLIQ', 'SNO_T']
     if ('RD' in compset or 'ECA' in compset):
       var_list_hourly.extend(['GPP', 'NEE', 'NEP', 'NPP', 'LEAFC_ALLOC', 'AGNPP', 'MR', \
             'CPOOL_TO_DEADSTEMC', 'LIVECROOTC_XFER_TO_LIVECROOTC', 'DEADCROOTC_XFER_TO_DEADCROOTC', \
@@ -1209,7 +1211,8 @@ for i in range(1,int(options.ninst)+1):
                            'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', \
                            'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER', 'LIVESTEMC_XFER', \
                            'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'CPOOL_TO_LIVESTEMC',
-                           'LEAFC_TO_LITTER', 'FROOTC_TO_LITTER', 'LITFALL', 
+                           'LEAFC_TO_LITTER', 'FROOTC_TO_LITTER', 'LITFALL', 'ONSET_FLAG_ROOT', 'ONSET_FLAG', 
+                           'DORMANT_FLAG_ROOT', 'ONSET_GDDFLAG_ROOT', 'ONSET_GDD_ROOT',
                            'DOWNREG', 'FROOTC_STORAGE_TO_XFER', 'ONSET_RATE_FROOT', 'COMPS_RATE_FROOT', 'ROOTFR', 'BGLFR_FROOT'])
     if options.var_list_pft != '':
         var_list_pft = options.var_list_pft.split(',')
@@ -1255,7 +1258,7 @@ for i in range(1,int(options.ninst)+1):
                 output.write(" hist_dov2xy = .true., .true., .false.\n")
                 output.write(" hist_mfilt = "+ str(options.hist_mfilt)+", " + str(options.hist_mfilt) + ",365\n")
             else:
-                output.write(" hist_mfilt = "+ str(options.hist_mfilt)+"\n")
+                output.write(" hist_mfilt = "+ str(options.hist_mfilt)+","+str(options.hist_mfilt)+"\n")
 
         else:
             if (options.dailyrunoff):
@@ -1265,15 +1268,32 @@ for i in range(1,int(options.ninst)+1):
                 #include daily column and PFT level output
                 output.write(" hist_dov2xy = .true., .true., .false.\n")
                 output.write(" hist_mfilt = "+ str(options.hist_mfilt)+",365,365\n")
+            elif (options.hourlyvars):
+                #include daily column and PFT level output
+                output.write(" hist_dov2xy = .true., .true., .false.\n")
+                output.write(" hist_mfilt = "+ str(options.hist_mfilt)+",8760,8760\n")
             else:
                 output.write(" hist_mfilt = "+ str(options.hist_mfilt)+"\n")
 
     if (options.hist_nhtfrq != -999 and not options.diags):
         if (options.ad_spinup):
             output.write(" hist_nhtfrq = "+ str(options.hist_nhtfrq)+", "+str(options.hist_nhtfrq)+"\n")
+
         else:
             if (options.dailyvars):
                 output.write(" hist_nhtfrq = "+ str(options.hist_nhtfrq)+",-24,-24\n")
+                h1varst = "hist_fincl2 = "
+                h2varst = "hist_fincl3 = "
+                for v in var_list_hourly:
+                    h1varst = h1varst+"'"+v+"',"
+                for v in var_list_daily:
+                    h1varst = h1varst+"'"+v+"',"
+                for v in var_list_pft:
+                    h2varst = h2varst+"'"+v+"',"
+                output.write(h1varst[:-1]+"\n")
+                output.write(h2varst[:-1]+"\n")
+            elif (options.hourlyvars):
+                output.write(" hist_nhtfrq = "+ str(options.hist_nhtfrq)+",-1,-1\n")
                 h1varst = "hist_fincl2 = "
                 h2varst = "hist_fincl3 = "
                 for v in var_list_hourly:

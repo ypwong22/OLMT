@@ -58,6 +58,7 @@ for i in range(0,nparms):
     pval_norm[j,i] = max(pval_norm[j,i], 0.0)
     pval_norm[j,i] = min(pval_norm[j,i], 1.0)
 
+
 #Normalize outputs
 ytrain_norm = ytrain.copy()
 yval_norm   = yval.copy()
@@ -92,6 +93,7 @@ for n in range(0,100):
     clf = MLPRegressor(solver='adam', early_stopping=True, tol=1e-7, hidden_layer_sizes=(nl,nl2,nl3,), max_iter=200, validation_fraction=0.2)
   else: 
     clf = MLPRegressor(solver='adam', early_stopping=True, tol=1e-7, hidden_layer_sizes=(nl,nl2,), max_iter=200, validation_fraction=0.2)
+
   clf.fit(ptrain_norm, ytrain_norm[:,qoi_good]) 
 
   ypredict_train_temp = clf.predict(ptrain_norm)

@@ -11,7 +11,7 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--case", dest="casename", default="", \
                   help="Name of case")
-parser.add_option("--nevals", dest="nevals", default="200000", \
+parser.add_option("--nevals", dest="nevals", default="500000", \
                   help="Number of model evaluations")
 parser.add_option("--burnsteps", dest="burnsteps", default="10", \
                   help="Number burn steps")
@@ -289,4 +289,3 @@ else:
                           nburn=int(options.nevals)/(2*int(options.burnsteps)))
 
 plt.show()
-

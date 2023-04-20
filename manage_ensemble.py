@@ -115,7 +115,7 @@ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
               npy = 365
             for p, pft in enumerate(grow_these_pfts):
               for d in range(npy):
-                max_tlai[y-2015, t, p] = max(max_tlai[y-2015, t, p], 0.36 * tlai[d][pft] + 0.64 * tlai[d][pft + hol_add])
+                max_tlai[y-2015, t, p] = max(max_tlai[y-2015, t, p], 0.64 * tlai[d][pft] + 0.36 * tlai[d][pft + hol_add])
         max_tlai = np.max(max_tlai, axis = 0).reshape(-1)
         if np.min(max_tlai) < 1e-4:
           # one of the pfts did not grow in any of 2015-2021
@@ -182,7 +182,7 @@ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
                       elif ('US-SPR' in case):
                         temp = 0.
                         for m, myindex in enumerate(myindex_list):
-                          temp = temp + (0.36 * mydata[d][myindex] + 0.64 * mydata[d][myindex+hol_add]) * factor_list[m]
+                          temp = temp + (0.64 * mydata[d][myindex] + 0.36 * mydata[d][myindex+hol_add]) * factor_list[m]
                         temp = temp + myoffset[index]
                         output.append(temp)
                       else:
