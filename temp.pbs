@@ -1,0 +1,20 @@
+#!/bin/csh -f
+#SBATCH --time=48:00:00
+#SBATCH -J temp
+#SBATCH --nodes=4
+#SBATCH -A ccsi
+#SBATCH -p batch
+#SBATCH --mem=64G
+#SBATCH --ntasks-per-node 32
+#SBATCH --export=ALL
+
+# Before running this script, in the external environment
+# module load PE-gnu
+# module load mpich
+# conda activate olmt
+
+cd ~/models/OLMT
+#python MCMC.py --case UQ_default_US-SPR_ICB20TRCNPRDCTCBC --parm_list ~/Git/phenology_elm/temp/
+#python surrogate_NN.py --case UQ_default2_US-SPR_ICB20TRCNPRDCTCBC
+#python run_GSA.py --case UQ_default2_US-SPR_ICB20TRCNPRDCTCBC
+python MCMC.py --case UQ_default2_US-SPR_ICB20TRCNPRDCTCBC --parm_list ~/Git/phenology_elm/temp/parm_list_SPRUCE_default

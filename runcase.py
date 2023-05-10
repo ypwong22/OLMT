@@ -1173,7 +1173,7 @@ for i in range(1,int(options.ninst)+1):
     #outputs for SPRUCE MiP and Jiafu's diagnostics code:
     var_list_hourly = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILLIQ','SMP','QOVER','QDRAI','TG','TV','TSA','TSOI', \
                        'FSA','FSDS','FLDS','TBOT','RAIN','SNOW','WIND','PBOT','QBOT','QVEGT','QVEGE','QSOIL', \
-                       'QH2OSFC','H2OSOI','ZWT','SNOWDP','TLAI','RH2M','QRUNOFF','SOILLIQ', 'SNO_T']
+                       'QH2OSFC','H2OSOI','ZWT','SNOWDP','TLAI','RH2M','QRUNOFF', 'SOILLIQ', 'SNO_T', 'NET_NMIN']
     if ('RD' in compset or 'ECA' in compset):
       var_list_hourly.extend(['GPP', 'NEE', 'NEP', 'NPP', 'LEAFC_ALLOC', 'AGNPP', 'MR', \
             'CPOOL_TO_DEADSTEMC', 'LIVECROOTC_XFER_TO_LIVECROOTC', 'DEADCROOTC_XFER_TO_DEADCROOTC', \

@@ -4,6 +4,7 @@ from optparse import OptionParser
 import model_surrogate as models
 import matplotlib
 import matplotlib.pyplot as plt
+from MLPChained import MLPChained
 matplotlib.use('Agg')
 
 parser = OptionParser()

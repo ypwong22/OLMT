@@ -7,6 +7,8 @@ matplotlib.use('Agg')
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 from optparse import OptionParser
+from MLPChained import MLPChained
+
 
 parser = OptionParser()
 parser.add_option("--case", dest="casename", default="", \
@@ -17,8 +19,8 @@ parser.add_option("--burnsteps", dest="burnsteps", default="10", \
                   help="Number burn steps")
 parser.add_option("--parm_list", dest="parm_list", default='parm_list', \
                   help = 'File containing list of parameters to vary')
-parser.add_option("--parm_default", dest="parm_default", default='' \
-                  ,help = 'File containing list of paramers to vary')
+parser.add_option("--parm_default", dest="parm_default", default='', \
+                  help = 'File containing list of paramers to vary')
 (options, args) = parser.parse_args()
 
 UQ_output = 'UQ_output/'+options.casename
@@ -122,8 +124,7 @@ def MCMC(parms, nevals, type='uniform', nburn=1000, burnsteps=10, default_output
                                                   accepted_step:accepted_tot])
             #print(np.corrcoef(chain[0:4,i-nburn:i]))
             accepted_step = 0
-    
-    
+
         if (i == burnsteps*nburn):
         #Parameter chain plots
             for p in range(0,nparms):

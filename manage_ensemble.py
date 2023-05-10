@@ -50,7 +50,7 @@ parser.add_option("--skip_transient", dest="skip_transient", default=False, \
                   action='store_true', help = 'Skip the transient run before the 11 SPRUCE treatment simulations')
 parser.add_option("--spruce_treatments", dest="spruce_treatments", default=False, \
                   action='store_true', help = 'Run 11 SPRUCE treatment simulations')
-parser.add_option('--run_uq', dest="run_uq", default=True, action="store_true", \
+parser.add_option('--run_uq', dest="run_uq", default=False, action="store_true", \
                   help = 'Run sensitivity analysis using UQTk')
 parser.add_option("--grow_these_pfts", dest="grow_these_pfts", default="", \
                   help="Provide a list of comma-separated PFTs. If the GPP was zero in all the years for the provided list of PFTs in a run, do not use this run in UQ.")
@@ -105,7 +105,7 @@ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
           rundir = baserundir
           if treatment != 'NA':
             rundir = rundir+treatment+'/'
-          for y in range(2015, 2022):
+          for ycount, y in enumerate(range(2015, 2022)):
             fname = rundir+case+'.'+options.model_name+'.h1.'+str(10000+y)[1:]+'-01-01-00000.nc'
             tlai = nffun.getvar(fname,'TLAI')
             hol_add = 17
@@ -115,9 +115,10 @@ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
               npy = 365
             for p, pft in enumerate(grow_these_pfts):
               for d in range(npy):
-                max_tlai[y-2015, t, p] = max(max_tlai[y-2015, t, p], 0.64 * tlai[d][pft] + 0.36 * tlai[d][pft + hol_add])
+                # minimum of hollow and hummock
+                max_tlai[ycount, t, p] = max(max_tlai[ycount, t, p], min(tlai[d][pft], tlai[d][pft + hol_add]))
         max_tlai = np.max(max_tlai, axis = 0).reshape(-1)
-        if np.min(max_tlai) < 1e-4:
+        if np.min(max_tlai) < 1e-10:
           # one of the pfts did not grow in any of 2015-2021
           skip = True
         else:
@@ -127,8 +128,7 @@ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
 
     if skip:
       ierr=0
-      data[:] = np.nan
-      parms[:] = np.nan
+      data[:] = 9999
     else:
       index=0
       ierr = 0
@@ -205,8 +205,8 @@ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
               thiscol=thiscol+1
           index=index+1
 
-      #get the parameters 
-      if (options.microbe):
+    #get the parameters 
+    if (options.microbe):
         pfname =baserundir+'microbepar_in'
         pnum=0
         for p in pnames:
@@ -216,7 +216,7 @@ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
               parms[pnum] = s.split()[1]
           myinput.close()
           pnum=pnum+1
-      else:
+    else:
         pfname = baserundir+'clm_params_'+str(100000+thisjob)[1:]+'.nc'
         #pfname_def = baserundir+'clm_params.nc'
         fpfname = baserundir+'fates_params_'+str(100000+thisjob)[1:]+'.nc'

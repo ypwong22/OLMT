@@ -1,0 +1,940 @@
+diff --git a/.gitignore b/.gitignore
+index cfdc5f9..68c95f8 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -4,9 +4,6 @@ temp/
+ plots/
+ srcmods*
+ run_logs_archive/
+-UQ_output/
+-*_postprocessed.txt
+-__pycache__/
+ 
+ # files created by OLMT executions
+ run.*
+diff --git a/MCMC.py b/MCMC.py
+index d1fbb44..c96e537 100644
+--- a/MCMC.py
++++ b/MCMC.py
+@@ -11,14 +11,14 @@ from optparse import OptionParser
+ parser = OptionParser()
+ parser.add_option("--case", dest="casename", default="", \
+                   help="Name of case")
+-parser.add_option("--nevals", dest="nevals", default="500000", \
++parser.add_option("--nevals", dest="nevals", default="200000", \
+                   help="Number of model evaluations")
+ parser.add_option("--burnsteps", dest="burnsteps", default="10", \
+                   help="Number burn steps")
+ parser.add_option("--parm_list", dest="parm_list", default='parm_list', \
+                   help = 'File containing list of parameters to vary')
+ parser.add_option("--parm_default", dest="parm_default", default='' \
+-                  ,help = 'File containing list of paramers to vary')
++                  ,help = 'File containing list of parameters to vary')
+ (options, args) = parser.parse_args()
+ 
+ UQ_output = 'UQ_output/'+options.casename
+@@ -54,8 +54,8 @@ def posterior(parms):
+ 
+ def MCMC(parms, nevals, type='uniform', nburn=1000, burnsteps=10, default_output=[]):
+     #Metropolis-Hastings Markov Chain Monte Carlo with adaptive sampling
+-    post_best = -99999999
+-    post_last = -99999999
++    post_best = -99999
++    post_last = -99999
+     accepted_step = 0
+     accepted_tot  = 0
+     nparms     = model.nparms
+@@ -185,11 +185,9 @@ def MCMC(parms, nevals, type='uniform', nburn=1000, burnsteps=10, default_output
+     parm_best=open(UQ_output+'/MCMC_output/parms_best.txt','w')
+     p=0
+     for s in parm_data:
+-      s = s.lstrip().rstrip()
+-      if (len(s) > 0) and (s[0:1] != '#'):
+-        row = s.split()
+-        parm_best.write(row[0]+' '+row[1]+' '+str(parms_best[p])+'\n')
+-        p=p+1
++      row = s.split()
++      parm_best.write(row[0]+' '+row[1]+' '+str(parms_best[p])+'\n')
++      p=p+1
+     parm_data.close()
+     parm_best.close()
+     np.savetxt(UQ_output+'/MCMC_output/correlation_matrix.txt',np.corrcoef(chain_afterburn))
+@@ -288,4 +286,5 @@ else:
+   parms = MCMC(model.pdef, int(options.nevals), burnsteps=int(options.burnsteps), \
+                           nburn=int(options.nevals)/(2*int(options.burnsteps)))
+ 
+-plt.show()
+\ No newline at end of file
++plt.show()
++
+diff --git a/a.out b/a.out
+deleted file mode 100755
+index 3d602c4..0000000
+Binary files a/a.out and /dev/null differ
+diff --git a/adjust_restart.py b/adjust_restart.py
+index 75aa129..5e74698 100755
+--- a/adjust_restart.py
++++ b/adjust_restart.py
+@@ -61,7 +61,7 @@ else:
+ if (options.harvest):
+   var_names_harvest = ['DEADSTEMC','DEADSTEMN','DEADSTEMP','LIVESTEMN','LIVESTEMC','LIVESTEMP', \
+                        'LEAFC', 'LEAFN', 'LEAFP', 'DEADSTEMC_STORAGE', 'DEADSTEMN_STORAGE', \
+-	                     'DEADSTEMP_STORAGE', 'LIVESTEMC_STORAGE', 'LIVESTEMN_STORAGE', \
++	               'DEADSTEMP_STORAGE', 'LIVESTEMC_STORAGE', 'LIVESTEMN_STORAGE', \
+                        'LIVESTEMP_STORAGE', 'LEAFC_STORAGE', 'LEAFN_STORAGE', 'LEAFP_STORAGE', \
+                        'FROOTC_STORAGE', 'FROOTC', 'FROOTN_STORAGE', 'FROOTN', 'FROOTP_STORAGE', \
+                        'FROOTP', 'LIVECROOTC', 'LIVECROOTC_STORAGE', 'LIVECROOTN', 'LIVECROOTN_STORAGE', \
+diff --git a/case.submit b/case.submit
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/ensemble_copy.py b/ensemble_copy.py
+index c6b9073..1ae3759 100755
+--- a/ensemble_copy.py
++++ b/ensemble_copy.py
+@@ -46,17 +46,15 @@ casename = options.casename
+ # get parameter names and PFT information
+ pnum=0
+ for s in myinput:
+-   s = s.lstrip().rstrip()
+-   if (len(s) > 0) and (s[0:1] != '#'):
+-      pdata = s.split()
+-      parm_names.append(pdata[0])
+-      if (pdata[0] == 'co2'):
+-         pnum_co2 = pnum
+-      if (len(pdata) == 3):
+-         parm_indices.append(-1)
+-      else:
+-         parm_indices.append(int(pdata[1]))
+-      pnum=pnum+1
++   pdata = s.split()
++   parm_names.append(pdata[0])
++   if (pdata[0] == 'co2'):
++     pnum_co2 = pnum
++   if (len(pdata) == 3):
++     parm_indices.append(-1)
++   else:
++     parm_indices.append(int(pdata[1]))
++   pnum=pnum+1
+ myinput.close()
+ 
+ 
+diff --git a/manage_ensemble.py b/manage_ensemble.py
+index 920aa28..5d1c34a 100755
+--- a/manage_ensemble.py
++++ b/manage_ensemble.py
+@@ -1,11 +1,3 @@
+-"""
+-20221212 wangy7@ornl.gov
+-Enabled parsing of PFT-specific inputs with weights
+-
+-20230117 wangy7@ornl.gov
+-Added the option to skip the non-treatment part of the transient run
+-"""
+-
+ #!/usr/bin/env python
+ import sys,os, time
+ import numpy as np
+@@ -46,14 +38,10 @@ parser.add_option("--cnp", dest="cnp", default = False, action="store_true", \
+                   help = 'CNP mode - initialize P pools')
+ parser.add_option("--site", dest="site", default='', \
+                   help = 'Site name')
+-parser.add_option("--skip_transient", dest="skip_transient", default=False, \
+-                  action='store_true', help = 'Skip the transient run before the 11 SPRUCE treatment simulations')
+ parser.add_option("--spruce_treatments", dest="spruce_treatments", default=False, \
+                   action='store_true', help = 'Run 11 SPRUCE treatment simulations')
+ parser.add_option('--run_uq', dest="run_uq", default=True, action="store_true", \
+                   help = 'Run sensitivity analysis using UQTk')
+-parser.add_option("--grow_these_pfts", dest="grow_these_pfts", default="", \
+-                  help="Provide a list of comma-separated PFTs. If the GPP was zero in all the years for the provided list of PFTs in a run, do not use this run in UQ.")
+ 
+ (options, args) = parser.parse_args()
+ 
+@@ -82,207 +70,157 @@ else:
+       print('Ensemble file not provided')
+       print('Getting parameter information from output files')
+ 
+-#Get the list of PFTs that must grow
+-options.grow_these_pfts = options.grow_these_pfts.split(",")
+-if (len(options.grow_these_pfts) == 1) and (len(options.grow_these_pfts[0]) == 0):
+-  options.grow_these_pfts = []
+-else:
+-  options.grow_these_pfts = [int(p) for p in options.grow_these_pfts]
+-
+ #Define function to perform ensemble member post-processing
+ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
+-             myfactor, myoffset, mypft, mytreatment, thisjob, runroot, case, grow_these_pfts, \
+-             pnames, ppfts, data, parms):
+-    baserundir = runroot+'/UQ/'+case+'/g'+str(100000+thisjob)[1:]+'/'
++             myfactor, myoffset, mypft, mytreatment, thisjob, runroot, case, pnames, ppfts, data, parms):
++    baserundir = options.runroot+'/UQ/'+case+'/g'+str(100000+thisjob)[1:]+'/'
++    index=0
++    ierr = 0
++    thiscol = 0
+     print(thisjob)
+-
+-    # check if all the required PFTs grew. If not, return invalid runs.
+-    if len(grow_these_pfts) > 0:
+-        unique_treatments = np.unique(mytreatment)
+-
+-        max_tlai = np.zeros((7, len(unique_treatments), len(grow_these_pfts)), dtype = float)
+-        for t, treatment in enumerate(unique_treatments):
+-          rundir = baserundir
+-          if treatment != 'NA':
+-            rundir = rundir+treatment+'/'
+-          for y in range(2015, 2022):
+-            fname = rundir+case+'.'+options.model_name+'.h1.'+str(10000+y)[1:]+'-01-01-00000.nc'
+-            tlai = nffun.getvar(fname,'TLAI')
+-            hol_add = 17
+-            if len(tlai) < 10:
+-              npy = 1
++    for v in myvars:
++        rundir=baserundir
++        if (mytreatment[index] != 'NA'):
++          rundir = rundir+mytreatment[index]+'/'
++        ndays_total = 0
++        output = []
++        n_years = myyear_end[index]-myyear_start[index]+1
++        npy=1
++        for y in range(myyear_start[index],myyear_end[index]+1):
++            if (mypft[index] <= 0 or 'PFT' in v):
++              fname = rundir+case+'.'+options.model_name+'.h0.'+str(10000+y)[1:]+'-01-01-00000.nc'
++              myindex = max(0,mypft[index])
++              hol_add = 1
+             else:
+-              npy = 365
+-            for p, pft in enumerate(grow_these_pfts):
+-              for d in range(npy):
+-                max_tlai[y-2015, t, p] = max(max_tlai[y-2015, t, p], 0.64 * tlai[d][pft] + 0.36 * tlai[d][pft + hol_add])
+-        max_tlai = np.max(max_tlai, axis = 0).reshape(-1)
+-        if np.min(max_tlai) < 1e-4:
+-          # one of the pfts did not grow in any of 2015-2021
+-          skip = True
+-        else:
+-          skip = False
+-    else:
+-      skip = False
+-
+-    if skip:
+-      ierr=0
+-      data[:] = np.nan
+-      parms[:] = np.nan
+-    else:
+-      index=0
+-      ierr = 0
+-      thiscol = 0
+-      for v in myvars:
+-          rundir=baserundir
+-          if (mytreatment[index] != 'NA'):
+-            rundir = rundir+mytreatment[index]+'/'
+-
+-          if 'US-SPR' in case:
+-            # split the pft and multiplication factors
+-            pft_list = [int(t) for t in mypft[index].split(',')]
+-            factor_list = [float(f) for f in myfactor[index].split(',')]
+-
+-          ndays_total = 0
+-          output = []
+-          n_years = myyear_end[index]-myyear_start[index]+1
+-          npy = 1
+-          for y in range(myyear_start[index],myyear_end[index]+1):
+-              if (pft_list[0] <= 0 or 'PFT' in v):
+-                fname = rundir+case+'.'+options.model_name+'.h0.'+str(10000+y)[1:]+'-01-01-00000.nc'
+-                myindex_list = [max(0, pft_list[0])]
+-                hol_add = 1
+-              else:
+-                fname = rundir+case+'.'+options.model_name+'.h1.'+str(10000+y)[1:]+'-01-01-00000.nc'
+-                myindex_list = pft_list
+-                hol_add = 17
+-              if (os.path.exists(fname)):
+-                mydata = nffun.getvar(fname,v) 
+-                if ('ZWT' in v):
+-                  mydata2 = nffun.getvar(fname,'H2OSFC')
+-                if (len(mydata) < 10):
+-                  npy = 1 
+-                elif (len(mydata) >= 365):    #does not currently allow hourly
+-                  npy = 365
+-              else:
+-                #print(fname)
+-                mydata = np.zeros([npy,34], float)+np.NaN
+-              #get output and average over days/years
+-              n_days = myday_end[index]-myday_start[index]+1
+-              ndays_total = ndays_total + n_days
+-              #get number of timesteps per output file
+-              #print(v, n_days, ndays_total)
+-
+-              if (npy == 365):
+-                  for d in range(myday_start[index]-1,myday_end[index]):
+-                      if ('US-SPR' in case and 'ZWT' in v):
+-                        #Use hollows for water table height
+-                        output.append(mydata[d][myindex_list[0]+hol_add]*factor_list[0] \
+-                              +myoffset[index]+mydata2[d][myindex_list[0]+hol_add]/1000.)
+-                      elif ('US-SPR' in case):
+-                        temp = 0.
+-                        for m, myindex in enumerate(myindex_list):
+-                          temp = temp + (0.64 * mydata[d][myindex] + 0.36 * mydata[d][myindex+hol_add]) * factor_list[m]
+-                        temp = temp + myoffset[index]
+-                        output.append(temp)
+-                      else:
+-                        output.append(mydata[d][myindex]*myfactor[index] + myoffset[index])
+-              elif (npy == 1):                    #Assume annual output (ignore days)
+-                for d in range(myday_start[index]-1,myday_end[index]):    #28-38 was myindex
+-                  if ('SCPF' in v):
+-                    output.append(sum(mydata[0,28:38])/10.0*myfactor[index]+myoffset[index])
+-                  elif ('NPLANT_SCLS' in v):
+-                    output.append(sum(mydata[0,1:])*myfactor[index]+myoffset[index])
+-                  elif ('SCLS' in v):
+-                      output.append(sum(mydata[0,:])*myfactor[index]+myoffset[index])
+-                  else:
+-                    try:
+-                      output.append(mydata[0,myindex]*myfactor[index]+myoffset[index])
+-                    except:
+-                      output.append(np.NaN)
+-          for i in range(0,int(ndays_total/myavg[index])):
+-              data[thiscol] = sum(output[(i*myavg[index]):((i+1)*myavg[index])])/myavg[index]
+-              thiscol=thiscol+1
+-          index=index+1
+-
+-      #get the parameters 
+-      if (options.microbe):
+-        pfname =baserundir+'microbepar_in'
+-        pnum=0
+-        for p in pnames:
+-          myinput = open(pfname, 'r')
+-          for s in myinput:
+-            if (p == s.split()[0]):
+-              parms[pnum] = s.split()[1]
+-          myinput.close()
+-          pnum=pnum+1
+-      else:
+-        pfname = baserundir+'clm_params_'+str(100000+thisjob)[1:]+'.nc'
+-        #pfname_def = baserundir+'clm_params.nc'
+-        fpfname = baserundir+'fates_params_'+str(100000+thisjob)[1:]+'.nc'
+-        sfname = baserundir+'surfdata_'+str(100000+thisjob)[1:]+'.nc'
+-        pnum=0
+-        for p in pnames:
+-          if (p == 'lai'):     #Surface data file
+-            mydata = nffun.getvar(sfname,'MONTHLY_LAI')
+-            parms[pnum] = mydata[0,0,0,0]
+-          elif (p == 'co2'):   #CO2 value from namelist
+-            lnd_infile = open(baserundir+'lnd_in','r')
+-            for s in lnd_infile:
+-              if ('co2_ppm' in s):
+-                ppmv = float(s.split()[2])
+-            parms[pnum] = ppmv
+-            lnd_infile.close()
+-          elif ('fates' in p):   #fates parameter file
+-            mydata = nffun.getvar(fpfname,p) 
+-            if (int(ppfts[pnum]) >= 0):
+-              if ('fates_prt_nitr_stoich_p1' in p):
+-                #this is a 2D parameter.
+-                parms[pnum] = mydata[int(ppfts[pnum])/ 12 , int(ppfts[pnum]) % 12] 
+-              elif ('fates_hydr_p50_node' in p or 'fates_hydr_avuln_node' in p or \
+-                    'fates_hydr_kmax_node' in p or 'fates_hydr_pitlp_node' in p or \
+-                    'fates_hydr_thetas_node' in p):
+-                parms[pnum] = mydata[int(ppfts[pnum]) / 12 , int(ppfts[pnum]) % 12]
+-              elif ('fates_leaf_long' in p or 'fates_leaf_vcmax25top' in p):
+-                parms[pnum] = mydata[0,int(ppfts[pnum])] 
+-              elif (p == 'fates_seed_alloc'):
+-              #  if (not fates_seed_zeroed[0]):
+-              #    param[:]=0.
+-              #    fates_seed_zeroed[0]=True
+-                parms[pnum] = mydata[int(ppfts[pnum])] 
+-              elif (p == 'fates_seed_alloc_mature'):
+-              #  if (not fates_seed_zeroed[1]):
+-              #    param[:]=0.
+-              #    fates_seed_zeroed[1]=True
+-                parms[pnum] = mydata[int(ppfts[pnum])] 
+-              elif (int(ppfts[pnum]) > 0):
+-                parms[pnum] = mydata[int(ppfts[pnum])]
+-              elif (int(ppfts[pnum]) == 0):
+-                try:
+-                  parms[pnum] = mydata[int(ppfts[pnum])] 
+-                except:
+-                  parms[pnum] = mydata
++              fname = rundir+case+'.'+options.model_name+'.h1.'+str(10000+y)[1:]+'-01-01-00000.nc'
++              myindex = mypft[index]
++              hol_add = 17
++            if (os.path.exists(fname)):
++              mydata = nffun.getvar(fname,v) 
++              if ('ZWT' in v):
++                mydata2 = nffun.getvar(fname,'H2OSFC')
++              if (len(mydata) < 10):
++                npy = 1 
++              elif (len(mydata) >= 365):    #does not currently allow hourly
++                npy = 365
+             else:
+-              try:
+-                parms[pnum] = mydata[0]
+-              except:
+-                parms[pnum] = mydata
+-          else:                #Regular parameter file
+-            mydata = nffun.getvar(pfname,p) 
+-            if (int(ppfts[pnum]) > 0):
+-              if (p == 'psi50'):
+-                parms[pnum] = mydata[0,int(ppfts[pnum])]
+-              else:
+-                parms[pnum] = mydata[int(ppfts[pnum])]
+-            elif(int(ppfts[pnum]) <= 0):
+-              try:
+-                parms[pnum] = mydata[0]
+-              except:
+-                parms[pnum] = mydata
+-          pnum=pnum+1
++              #print(fname)
++              mydata = np.zeros([npy,34], float)+np.NaN
++            #get output and average over days/years
++            n_days = myday_end[index]-myday_start[index]+1
++            ndays_total = ndays_total + n_days
++            #get number of timesteps per output file
++            #print(v, n_days, ndays_total)
++        
++            if (npy == 365):
++                for d in range(myday_start[index]-1,myday_end[index]):
++                    if ('US-SPR' in case and 'ZWT' in v):
++                      #Use hollows for water table height
++                      output.append(mydata[d][myindex+hol_add]*myfactor[index] \
++                             +myoffset[index]+mydata2[d][myindex+hol_add]/1000.)
++                    elif ('US-SPR' in case):
++                      output.append(0.25*(mydata[d][myindex+hol_add]*myfactor[index] \
++                             +myoffset[index]) + 0.75*(mydata[d][myindex]*myfactor[index] \
++                             +myoffset[index]))
++                    else:
++                      output.append(mydata[d][myindex]*myfactor[index] \
++                             +myoffset[index])
++            elif (npy == 1):                    #Assume annual output (ignore days)
++               for d in range(myday_start[index]-1,myday_end[index]):    #28-38 was myindex
++                 if ('SCPF' in v):
++                   output.append(sum(mydata[0,28:38])/10.0*myfactor[index]+myoffset[index])
++                 elif ('NPLANT_SCLS' in v):
++                   output.append(sum(mydata[0,1:])*myfactor[index]+myoffset[index])
++                 elif ('SCLS' in v):
++                    output.append(sum(mydata[0,:])*myfactor[index]+myoffset[index])
++                 else:
++                   try:
++                     output.append(mydata[0,myindex]*myfactor[index]+myoffset[index])
++                   except:
++                     output.append(np.NaN)
++        for i in range(0,int(ndays_total/myavg[index])):
++            data[thiscol] = sum(output[(i*myavg[index]):((i+1)*myavg[index])])/myavg[index]
++            thiscol=thiscol+1
++        index=index+1
++
++    #get the parameters
++    if (options.microbe):
++      pfname =baserundir+'microbepar_in'
++      pnum=0
++      for p in pnames:
++        myinput = open(pfname, 'r')
++        for s in myinput:
++          if (p == s.split()[0]):
++            parms[pnum] = s.split()[1]
++        myinput.close()
++        pnum=pnum+1
++    else:
++      pfname = baserundir+'clm_params_'+str(100000+thisjob)[1:]+'.nc'
++      #pfname_def = baserundir+'clm_params.nc'
++      fpfname = baserundir+'fates_params_'+str(100000+thisjob)[1:]+'.nc'
++      sfname = baserundir+'surfdata_'+str(100000+thisjob)[1:]+'.nc'
++      pnum=0
++      for p in pnames:
++         if (p == 'lai'):     #Surface data file
++           mydata = nffun.getvar(sfname,'MONTHLY_LAI')
++           parms[pnum] = mydata[0,0,0,0]
++         elif (p == 'co2'):   #CO2 value from namelist
++           lnd_infile = open(baserundir+'lnd_in','r')
++           for s in lnd_infile:
++             if ('co2_ppm' in s):
++               ppmv = float(s.split()[2])
++           parms[pnum] = ppmv
++           lnd_infile.close()
++         elif ('fates' in p):   #fates parameter file
++           mydata = nffun.getvar(fpfname,p) 
++           if (int(ppfts[pnum]) >= 0):
++             if ('fates_prt_nitr_stoich_p1' in p):
++               #this is a 2D parameter.
++               parms[pnum] = mydata[int(ppfts[pnum])/ 12 , int(ppfts[pnum]) % 12] 
++             elif ('fates_hydr_p50_node' in p or 'fates_hydr_avuln_node' in p or \
++                   'fates_hydr_kmax_node' in p or 'fates_hydr_pitlp_node' in p or \
++                   'fates_hydr_thetas_node' in p):
++               parms[pnum] = mydata[int(ppfts[pnum]) / 12 , int(ppfts[pnum]) % 12]
++             elif ('fates_leaf_long' in p or 'fates_leaf_vcmax25top' in p):
++               parms[pnum] = mydata[0,int(ppfts[pnum])] 
++             elif (p == 'fates_seed_alloc'):
++             #  if (not fates_seed_zeroed[0]):
++             #    param[:]=0.
++             #    fates_seed_zeroed[0]=True
++               parms[pnum] = mydata[int(ppfts[pnum])] 
++             elif (p == 'fates_seed_alloc_mature'):
++             #  if (not fates_seed_zeroed[1]):
++             #    param[:]=0.
++             #    fates_seed_zeroed[1]=True
++               parms[pnum] = mydata[int(ppfts[pnum])] 
++             elif (int(ppfts[pnum]) > 0):
++               parms[pnum] = mydata[int(ppfts[pnum])]
++             elif (int(ppfts[pnum]) == 0):
++               try:
++                 parms[pnum] = mydata[int(ppfts[pnum])] 
++               except:
++                 parms[pnum] = mydata
++           else:
++             try:
++               parms[pnum] = mydata[0]
++             except:
++               parms[pnum] = mydata
++         else:                #Regular parameter file
++           mydata = nffun.getvar(pfname,p) 
++           if (int(ppfts[pnum]) > 0):
++             if (p == 'psi50'):
++               parms[pnum] = mydata[0,int(ppfts[pnum])]
++             else:
++               parms[pnum] = mydata[int(ppfts[pnum])]
++           elif(int(ppfts[pnum]) <= 0):
++             try:
++               parms[pnum] = mydata[0]
++             except:
++               parms[pnum] = mydata
++         pnum=pnum+1
+ 
+     return ierr
+-
++            
+ 
+ comm=MPI.COMM_WORLD
+ rank=comm.Get_rank()
+@@ -317,10 +255,10 @@ if (os.path.isfile(options.postproc_file)):
+             myday_start.append(int(s.split()[3]))
+             myday_end.append(int(s.split()[4]))
+             myavg_pd.append(int(s.split()[5]))
+-            myfactor.append(s.split()[6])
++            myfactor.append(float(s.split()[6]))
+             myoffset.append(float(s.split()[7]))
+             if (len(s.split()) >= 9):
+-              mypft.append(s.split()[8])
++              mypft.append(int(s.split()[8]))
+             else:
+               mypft.append(-1)
+             if (len(s.split()) >= 11):
+@@ -329,7 +267,7 @@ if (os.path.isfile(options.postproc_file)):
+             else: 
+               myobs.append(-9999)
+               myobs_err.append(-9999)
+-            if (len(s.split()) == 12):
++            if (len(s.split()) == 12):        
+               mytreatment.append(s.split()[11])     
+             else:
+               mytreatment.append('NA')
+@@ -350,13 +288,11 @@ pmax=[]
+ pfile = open(options.parm_list,'r')
+ nparms = 0
+ for s in pfile:
+-  s = s.lstrip().rstrip()
+-  if (len(s) > 0) and (s[0:1] != '#'):
+-    pnames.append(s.split()[0])
+-    ppfts.append(s.split()[1])
+-    pmin.append(s.split()[2])
+-    pmax.append(s.split()[3])
+-    nparms = nparms+1
++  pnames.append(s.split()[0])
++  ppfts.append(s.split()[1])
++  pmin.append(s.split()[2])
++  pmax.append(s.split()[3])
++  nparms = nparms+1
+ pfile.close()
+ parm_row = np.zeros([nparms], float)-999
+ if (rank == 0):
+@@ -370,7 +306,7 @@ if (rank == 0):
+     #--------------------------Perform the model simulations---------------------
+     for thisiter in range(0,niter):
+       n_done = 0
+-
++  
+       #send first np-1 jobs where np is number of processes
+       for n_job in range(1,size):
+           comm.send(n_job, dest=n_job, tag=1)
+@@ -510,15 +446,12 @@ else:
+                   os.chdir(rundir)
+                   #Run the executable
+                   exedir = options.exeroot
+-
+-                  if not options.skip_transient:
+-                    if os.path.isfile(exedir+'/acme.exe'):
+-                      os.system(exedir+'/acme.exe > acme_log.txt')
+-                    elif os.path.isfile(exedir+'/e3sm.exe'):
+-                      os.system(exedir+'/e3sm.exe > e3sm_log.txt')
+-                    elif os.path.isfile(exedir+'/cesm.exe'):
+-                      os.system(exedir+'/cesm.exe > cesm_log.txt')
+-
++                  if os.path.isfile(exedir+'/acme.exe'):
++                     os.system(exedir+'/acme.exe > acme_log.txt')
++                  elif os.path.isfile(exedir+'/e3sm.exe'):
++                     os.system(exedir+'/e3sm.exe > e3sm_log.txt')
++                  elif os.path.isfile(exedir+'/cesm.exe'):
++                     os.system(exedir+'/cesm.exe > cesm_log.txt')
+                   if (options.spruce_treatments):
+                     #Transient/SP case should be set up produce 2015 restart file
+                     #Then we will loop over 11 cases and put results into subdirectories.
+@@ -534,48 +467,6 @@ else:
+                       for s in lnd_in_old:
+                         if ('finidat =' in s):
+                           lnd_in_new.write(" finidat = './"+c+"."+options.model_name+".r.2015-01-01-00000.nc'\n")
+-                        elif ('hist_mfilt =' in s):
+-                          lnd_in_new.write(" hist_dov2xy = .true.,.false.")
+-
+-                          column_var_list = ['FPSN', 'FSH', 'EFLX_LH_TOT', 'Rnet', 'FCTR', 'FGEV', 'FCEV',
+-                                             'SOILLIQ', 'SMP', 'QOVER', 'QDRAI', 'TG', 'TV', 'TSA',
+-                                             'TSOI', 'FSA', 'FSDS', 'FLDS', 'TBOT', 'RAIN', 'SNOW',
+-                                             'WIND', 'PBOT', 'QBOT', 'QVEGT', 'QVEGE', 'QSOIL', 'QH2OSFC',
+-                                             'H2OSOI', 'ZWT', 'SNOWDP', 'TLAI', 'RH2M', 'QRUNOFF', 'GPP',
+-                                             'NEE', 'NEP', 'NPP', 'LEAFC_ALLOC', 'AGNPP', 'MR', 'CPOOL_TO_DEADSTEMC',
+-                                             'LIVECROOTC_XFER_TO_LIVECROOTC', 'DEADCROOTC_XFER_TO_DEADCROOTC', 'CPOOL_TO_LIVECROOTC', 'CPOOL_TO_DEADCROOTC', 'FROOTC_ALLOC', 'AR', 'LEAF_MR',
+-                                             'CPOOL_LEAF_GR', 'TRANSFER_LEAF_GR', 'CPOOL_LEAF_STORAGE_GR', 'LIVESTEM_MR', 'CPOOL_LIVESTEM_GR', 'TRANSFER_LIVESTEM_GR', 'CPOOL_LIVESTEM_STORAGE_GR',
+-                                             'CPOOL_DEADSTEM_GR', 'TRANSFER_DEADSTEM_GR', 'CPOOL_DEADSTEM_STORAGE_GR', 'LIVECROOT_MR', 'CPOOL_LIVECROOT_GR', 'TRANSFER_LIVECROOT_GR', 'CPOOL_LIVECROOT_STORAGE_GR',
+-                                             'CPOOL_DEADCROOT_GR', 'TRANSFER_DEADCROOT_GR', 'CPOOL_DEADCROOT_STORAGE_GR', 'FROOT_MR', 'CPOOL_FROOT_GR', 'TRANSFER_FROOT_GR', 'CPOOL_FROOT_STORAGE_GR',
+-                                             'TOTVEGC', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'FROOTC', 'LIVECROOTC', 'DEADCROOTC',
+-                                             'DEADSTEMC_STORAGE', 'LIVESTEMC_STORAGE', 'DEADCROOTC_STORAGE', 'LIVECROOTC_STORAGE', 'CPOOL_TO_DEADSTEMC_STORAGE', 'CPOOL_TO_LIVESTEMC_STORAGE', 'CPOOL_TO_DEADCROOTC_STORAGE',
+-                                             'CPOOL_TO_LIVECROOTC_STORAGE', 'ER', 'HR', 'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER',
+-                                             'LIVESTEMC_XFER', 'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'SR', 'HR_vr', 'FIRA',
+-                                             'CPOOL_TO_LIVESTEMC', 'TOTLITC', 'TOTSOMC', 'TLAI', 'SNOWDP', 'H2OSFC', 'ZWT',
+-                                             'TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 'LITR3C_vr', 'SOIL1C_vr',
+-                                             'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL', 'NPOOL', 'PPOOL', 'FPI', 'FPI_P',
+-                                             'FPG', 'FPG_P', 'FPI_vr', 'FPI_P_vr', 'SOIL4C_vr']
+-
+-                          pft_var_list = ['FPSN', 'TLAI', 'QVEGE', 'QVEGT', 'GPP', 'NPP',
+-                                          'LEAF_MR', 'LEAFC_ALLOC', 'AGNPP', 'BGNPP', 'CPOOL_TO_DEADSTEMC', 'LIVECROOTC_XFER_TO_LIVECROOTC',
+-                                          'DEADCROOTC_XFER_TO_DEADCROOTC', 'CPOOL_TO_LIVECROOTC', 'CPOOL_TO_DEADCROOTC', 'FROOTC_ALLOC', 'AR', 'MR',
+-                                          'CPOOL_LEAF_GR', 'TRANSFER_LEAF_GR', 'CPOOL_LEAF_STORAGE_GR', 'LIVESTEM_MR', 'CPOOL_LIVESTEM_GR', 'TRANSFER_LIVESTEM_GR',
+-                                          'CPOOL_LIVESTEM_STORAGE_GR', 'CPOOL_DEADSTEM_GR', 'TRANSFER_DEADSTEM_GR', 'CPOOL_DEADSTEM_STORAGE_GR', 'LIVECROOT_MR', 'CPOOL_LIVECROOT_GR',
+-                                          'TRANSFER_LIVECROOT_GR', 'CPOOL_LIVECROOT_STORAGE_GR', 'CPOOL_DEADCROOT_GR', 'TRANSFER_DEADCROOT_GR', 'CPOOL_DEADCROOT_STORAGE_GR', 'FROOT_MR',
+-                                          'CPOOL_FROOT_GR', 'TRANSFER_FROOT_GR', 'CPOOL_FROOT_STORAGE_GR', 'FCTR', 'FCEV', 'TOTVEGC',
+-                                          'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'FROOTC', 'LIVECROOTC', 'DEADCROOTC',
+-                                          'DEADSTEMC_STORAGE', 'LIVESTEMC_STORAGE', 'DEADCROOTC_STORAGE', 'LIVECROOTC_STORAGE', 'CPOOL_TO_DEADSTEMC_STORAGE', 'CPOOL_TO_LIVESTEMC_STORAGE',
+-                                          'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', 'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER',
+-                                          'LIVESTEMC_XFER', 'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'CPOOL_TO_LIVESTEMC', 'LEAFC_TO_LITTER',
+-                                          'FROOTC_TO_LITTER', 'LITFALL', 'DOWNREG', 'FROOTC_STORAGE_TO_XFER', 'ROOTFR', 'BGLFR_FROOT']
+-                                          # 'ONSET_RATE_FROOT', 'COMPS_RATE_FROOT' # These only exist for modified root runs
+-
+-                          lnd_in_new.write(" hist_fincl1 = '" + "','".join(column_var_list) + "'")
+-                          lnd_in_new.write(" hist_fincl2 = '" + "','".join(pft_var_list) + "'")
+-
+-                          lnd_in_new.write(" hist_mfilt = 365,365")
+-                        elif ('hist_nhtfrq =' in s):
+-                          lnd_in_new.write(" hist_nhtfrq = -24,-24")
+                         elif ('metdata_bypass' in s):
+                           lnd_in_new.write(s[:-2]+'/plot'+pst+"'\n")
+                           if ('CO2' in treatments[t]):
+@@ -602,13 +493,11 @@ else:
+                       drv_in_old.close()
+                       os.system('mkdir '+rundir+'/'+treatments[t])
+                       os.system(exedir+'/e3sm.exe > e3sm_log_'+treatments[t]+'.txt')
+-                      os.system('cp *.'+options.model_name+'.h?.201[5-9]*.nc '+treatments[t])
+-                      os.system('cp *.'+options.model_name+'.h?.202*.nc '+treatments[t])
++                      os.system('cp *.'+options.model_name+'.h?.20[1-2]*.nc '+treatments[t])
+             if (do_postproc):
+                 ierr = postproc(myvars, myyear_start, myyear_end, myday_start, \
+                          myday_end, myavg_pd, myfactor, myoffset, mypft, mytreatment, myjob, \
+-                         options.runroot, options.casename, options.grow_these_pfts, pnames, \
+-                         ppfts, data_row, parm_row)
++                         options.runroot, options.casename, pnames, ppfts, data_row, parm_row)
+                 comm.send(rank, dest=0, tag=3)
+                 comm.send(myjob, dest=0, tag=4)
+                 comm.send(data_row, dest=0, tag=5)
+diff --git a/run_GSA.py b/run_GSA.py
+index 208bc11..4f6c07e 100644
+--- a/run_GSA.py
++++ b/run_GSA.py
+@@ -28,18 +28,15 @@ model.run(samples)
+ np.savetxt(GSAdir+'/outputs.txt',model.output)
+ 
+ #Run GSA for each QOI
+-sens_main = np.zeros([model.nparms,model.nobs]) # first order effect without interaction
+-sens_main_unc = np.zeros([model.nparms,model.nobs]) # uncertainty of the sensitivity
+-sens_tot = np.zeros([model.nparms,model.nobs]) # sum of first order effect and all interactions that involve this parameter
++sens_main = np.zeros([model.nparms,model.nobs])
++sens_main_unc = np.zeros([model.nparms,model.nobs])
++sens_tot = np.zeros([model.nparms,model.nobs])
+ sens_tot_unc = np.zeros([model.nparms,model.nobs])
+ 
+ for n in range(0,model.nobs):
+   print(n)
+   os.system('python -m SALib.analyze.sobol --parallel -p '+GSAdir+'/param_range.txt -Y '+GSAdir+ \
+             '/outputs.txt -c '+str(n)+' > '+GSAdir+'/analyses/analysis_ob'+str(n)+'.txt')
+-
+-for n in range(0,model.nobs):
+-  print(n)
+   myfile = open(GSAdir+'/analyses/analysis_ob'+str(n)+'.txt','r')
+   lnum=0
+   for s in myfile:
+@@ -47,16 +44,12 @@ for n in range(0,model.nobs):
+     if (lnum > 0 and lnum <= model.nparms):
+       sens_tot[lnum-1,n] = float(s.split()[1])
+       sens_tot_unc[lnum-1,n] = float(s.split()[2])
+-    elif (lnum > (model.nparms+1) and lnum <= (model.nparms*2+1)):
++    elif (lnum > model.nparms+1 and lnum <= model.nparms*2+1):
+       sens_main[lnum-2-model.nparms,n] = float(s.split()[1])
+-      sens_main_unc[lnum-2-model.nparms,n] = float(s.split()[2])
++      sens_main_unc[lnum-2-model.nparms,n] = float(s.split()[2])    
+     lnum=lnum+1
+   myfile.close()
+ 
+-#Save the matrices
+-np.savetxt(GSAdir+'/sens_main.txt', sens_main)
+-np.savetxt(GSAdir+'/sens_tot.txt', sens_tot)
+-
+ #Plot main sensitivity indices
+ fig,ax = plt.subplots()
+ x_pos = np.cumsum(np.ones(model.nobs))
+@@ -84,3 +77,4 @@ for p in range(1,model.nparms):
+     bottom=bottom+sens_tot[p,:]
+ plt.legend(model.parm_names)
+ plt.savefig(GSAdir+'/sens_tot.pdf')
++
+diff --git a/runcase.py b/runcase.py
+index 4338280..60b0843 100755
+--- a/runcase.py
++++ b/runcase.py
+@@ -1,4 +1,5 @@
+ #!/usr/bin/env python
++
+ import netcdf4_functions as nffun
+ import socket, os, sys, csv, time, math, numpy
+ import re, subprocess
+@@ -103,8 +104,6 @@ parser.add_option("--ilambvars", dest="ilambvars", default=False, \
+                  action="store_true", help="Write special outputs for diagnostics")
+ parser.add_option("--dailyvars", dest="dailyvars", default=False, \
+                  action="store_true", help="Write daily ouptut variables")
+-parser.add_option("--hourlyvars", dest="hourlyvars", default=False, \
+-                 action="store_true", help="Write hourly ouptut variables")
+ 
+ parser.add_option("--res", dest="res", default="CLM_USRDAT", \
+                       help='Resoultion for global simulation')
+@@ -1171,11 +1170,11 @@ for i in range(1,int(options.ninst)+1):
+ 
+     #history file options
+     #outputs for SPRUCE MiP and Jiafu's diagnostics code:
+-    var_list_hourly = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILLIQ','SMP','QOVER','QDRAI','TG','TV','TSA','TSOI', \
+-                       'FSA','FSDS','FLDS','TBOT','RAIN','SNOW','WIND','PBOT','QBOT','QVEGT','QVEGE','QSOIL', \
+-                       'QH2OSFC','H2OSOI','ZWT','SNOWDP','TLAI','RH2M','QRUNOFF','SOILLIQ', 'SNO_T']
++    var_list_hourly = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILLIQ','QOVER','QDRAI','TG','TV','TSA','TSOI', \
++                      'FSA','FSDS','FLDS','TBOT','RAIN','SNOW','WIND','PBOT','QBOT','QVEGT','QVEGE','QSOIL', \
++                      'QH2OSFC','H2OSOI','ZWT','SNOWDP','TLAI','RH2M','QRUNOFF']
+     if ('RD' in compset or 'ECA' in compset):
+-      var_list_hourly.extend(['GPP', 'NEE', 'NEP', 'NPP', 'LEAFC_ALLOC', 'AGNPP', 'MR', \
++      var_list_hourly.append(['GPP', 'NEE', 'NEP', 'NPP', 'LEAFC_ALLOC', 'AGNPP', 'MR', \
+             'CPOOL_TO_DEADSTEMC', 'LIVECROOTC_XFER_TO_LIVECROOTC', 'DEADCROOTC_XFER_TO_DEADCROOTC', \
+             'CPOOL_TO_LIVECROOTC', 'CPOOL_TO_DEADCROOTC', 'FROOTC_ALLOC', 'AR', 'LEAF_MR', 'CPOOL_LEAF_GR',
+             'TRANSFER_LEAF_GR', 'CPOOL_LEAF_STORAGE_GR', 'LIVESTEM_MR', 'CPOOL_LIVESTEM_GR', \
+@@ -1191,29 +1190,26 @@ for i in range(1,int(options.ninst)+1):
+     #var_list_hourly_bgc 
+     var_list_daily = ['TLAI','SNOWDP','H2OSFC','ZWT']
+     if ('RD' in compset or 'ECA' in compset):
+-      var_list_daily.extend(['TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 'LITR3C_vr', 'SOIL1C_vr', \
+-                             'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL','NPOOL','PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr'])
++      var_list_daily.append(['TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 'LITR3C_vr', 'SOIL1C_vr', \
++                      'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL','NPOOL','PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr'])
+     var_list_pft = ['FPSN','TLAI','QVEGE','QVEGT']
+     if ('RD' in compset or 'ECA' in compset):
+-      var_list_pft.extend(['GPP', 'NPP', 'LEAF_MR', 'LEAFC_ALLOC', 'AGNPP', 'BGNPP', 'CPOOL_TO_DEADSTEMC', \
+-                           'LIVECROOTC_XFER_TO_LIVECROOTC', 'DEADCROOTC_XFER_TO_DEADCROOTC', \
+-                           'CPOOL_TO_LIVECROOTC', 'CPOOL_TO_DEADCROOTC', 'FROOTC_ALLOC', 'AR', 'MR', \
+-                           'CPOOL_LEAF_GR', 'TRANSFER_LEAF_GR', 'CPOOL_LEAF_STORAGE_GR', \
+-                           'LIVESTEM_MR', 'CPOOL_LIVESTEM_GR', 'TRANSFER_LIVESTEM_GR', \
+-                           'CPOOL_LIVESTEM_STORAGE_GR', 'CPOOL_DEADSTEM_GR', 'TRANSFER_DEADSTEM_GR', \
+-                           'CPOOL_DEADSTEM_STORAGE_GR', 'LIVECROOT_MR', 'CPOOL_LIVECROOT_GR', \
+-                           'TRANSFER_LIVECROOT_GR', 'CPOOL_LIVECROOT_STORAGE_GR', 'CPOOL_DEADCROOT_GR', \
+-                           'TRANSFER_DEADCROOT_GR', 'CPOOL_DEADCROOT_STORAGE_GR', 'FROOT_MR', \
+-                           'CPOOL_FROOT_GR', 'TRANSFER_FROOT_GR', 'CPOOL_FROOT_STORAGE_GR', 'FCTR', 'FCEV', \
+-                           'TOTVEGC', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'FROOTC', 'LIVECROOTC', \
+-                           'DEADCROOTC', 'DEADSTEMC_STORAGE', 'LIVESTEMC_STORAGE', 'DEADCROOTC_STORAGE', \
+-                           'LIVECROOTC_STORAGE', 'CPOOL_TO_DEADSTEMC_STORAGE', 'CPOOL_TO_LIVESTEMC_STORAGE', \
+-                           'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', \
+-                           'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER', 'LIVESTEMC_XFER', \
+-                           'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'CPOOL_TO_LIVESTEMC',
+-                           'LEAFC_TO_LITTER', 'FROOTC_TO_LITTER', 'LITFALL', 'ONSET_FLAG_ROOT', 'ONSET_FLAG', 
+-                           'DORMANT_FLAG_ROOT', 'ONSET_GDDFLAG_ROOT', 'ONSET_GDD_ROOT',
+-                           'DOWNREG', 'FROOTC_STORAGE_TO_XFER', 'ONSET_RATE_FROOT', 'COMPS_RATE_FROOT', 'ROOTFR', 'BGLFR_FROOT'])
++      var_list_pft.append(['GPP', 'NPP', 'LEAF_MR', 'LEAFC_ALLOC', 'AGNPP', 'CPOOL_TO_DEADSTEMC', \
++                    'LIVECROOTC_XFER_TO_LIVECROOTC', 'DEADCROOTC_XFER_TO_DEADCROOTC', \
++                    'CPOOL_TO_LIVECROOTC', 'CPOOL_TO_DEADCROOTC', 'FROOTC_ALLOC', 'AR', 'MR', \
++                    'CPOOL_LEAF_GR', 'TRANSFER_LEAF_GR', 'CPOOL_LEAF_STORAGE_GR', \
++                    'LIVESTEM_MR', 'CPOOL_LIVESTEM_GR', 'TRANSFER_LIVESTEM_GR', \
++                    'CPOOL_LIVESTEM_STORAGE_GR', 'CPOOL_DEADSTEM_GR', 'TRANSFER_DEADSTEM_GR', \
++                    'CPOOL_DEADSTEM_STORAGE_GR', 'LIVECROOT_MR', 'CPOOL_LIVECROOT_GR', \
++                    'TRANSFER_LIVECROOT_GR', 'CPOOL_LIVECROOT_STORAGE_GR', 'CPOOL_DEADCROOT_GR', \
++                    'TRANSFER_DEADCROOT_GR', 'CPOOL_DEADCROOT_STORAGE_GR', 'FROOT_MR', \
++                    'CPOOL_FROOT_GR', 'TRANSFER_FROOT_GR', 'CPOOL_FROOT_STORAGE_GR', 'FCTR', 'FCEV', \
++                    'TOTVEGC', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'FROOTC', 'LIVECROOTC', \
++                    'DEADCROOTC', 'DEADSTEMC_STORAGE', 'LIVESTEMC_STORAGE', 'DEADCROOTC_STORAGE', \
++                    'LIVECROOTC_STORAGE', 'CPOOL_TO_DEADSTEMC_STORAGE', 'CPOOL_TO_LIVESTEMC_STORAGE', \
++                    'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', \
++                    'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER', 'LIVESTEMC_XFER', \
++                    'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'CPOOL_TO_LIVESTEMC'])
+     if options.var_list_pft != '':
+         var_list_pft = options.var_list_pft.split(',')
+     var_list_spinup = ['PPOOL', 'EFLX_LH_TOT', 'RETRANSN', 'PCO2', 'PBOT', 'NDEP_TO_SMINN', 'OCDEP', \
+@@ -1253,13 +1249,7 @@ for i in range(1,int(options.ninst)+1):
+ 
+     if (options.hist_mfilt != -1 and not options.diags):
+         if (options.ad_spinup):
+-            if (options.dailyvars):
+-                #include daily column and PFT level output
+-                output.write(" hist_dov2xy = .true., .true., .false.\n")
+-                output.write(" hist_mfilt = "+ str(options.hist_mfilt)+", " + str(options.hist_mfilt) + ",365\n")
+-            else:
+-                output.write(" hist_mfilt = "+ str(options.hist_mfilt)+","+str(options.hist_mfilt)+"\n")
+-
++            output.write(" hist_mfilt = "+str(options.hist_mfilt)+", "+str(options.hist_mfilt)+"\n")
+         else:
+             if (options.dailyrunoff):
+                 #include daily variables related to runoff only
+@@ -1268,17 +1258,12 @@ for i in range(1,int(options.ninst)+1):
+                 #include daily column and PFT level output
+                 output.write(" hist_dov2xy = .true., .true., .false.\n")
+                 output.write(" hist_mfilt = "+ str(options.hist_mfilt)+",365,365\n")
+-            elif (options.hourlyvars):
+-                #include daily column and PFT level output
+-                output.write(" hist_dov2xy = .true., .true., .false.\n")
+-                output.write(" hist_mfilt = "+ str(options.hist_mfilt)+",8760,8760\n")
+             else:
+                 output.write(" hist_mfilt = "+ str(options.hist_mfilt)+"\n")
+ 
+     if (options.hist_nhtfrq != -999 and not options.diags):
+         if (options.ad_spinup):
+             output.write(" hist_nhtfrq = "+ str(options.hist_nhtfrq)+", "+str(options.hist_nhtfrq)+"\n")
+-
+         else:
+             if (options.dailyvars):
+                 output.write(" hist_nhtfrq = "+ str(options.hist_nhtfrq)+",-24,-24\n")
+@@ -1292,18 +1277,6 @@ for i in range(1,int(options.ninst)+1):
+                     h2varst = h2varst+"'"+v+"',"
+                 output.write(h1varst[:-1]+"\n")
+                 output.write(h2varst[:-1]+"\n")
+-            elif (options.hourlyvars):
+-                output.write(" hist_nhtfrq = "+ str(options.hist_nhtfrq)+",-1,-1\n")
+-                h1varst = "hist_fincl2 = "
+-                h2varst = "hist_fincl3 = "
+-                for v in var_list_hourly:
+-                    h1varst = h1varst+"'"+v+"',"
+-                for v in var_list_daily:
+-                    h1varst = h1varst+"'"+v+"',"
+-                for v in var_list_pft:
+-                    h2varst = h2varst+"'"+v+"',"
+-                output.write(h1varst[:-1]+"\n")
+-                output.write(h2varst[:-1]+"\n")
+             elif (options.dailyrunoff):
+                 output.write(" hist_nhtfrq = "+ str(options.hist_nhtfrq)+",-24\n")
+                 output.write(" hist_fincl2 = 'TBOT','QBOT','RAIN','SNOW','QBOT','PBOT','WIND','FPSN','QVEGT'," \
+@@ -1845,8 +1818,7 @@ if ((options.ensemble_file != '' or int(options.mc_ensemble) != -1) and (options
+         param_max=[]
+         input = open(options.parm_list,'r')
+         for s in input:
+-            s = s.lstrip().rstrip()
+-            if (len(s) > 0) and (s[0:1] != '#'):
++            if (s):
+                 param_names.append(s.split()[0])
+                 if (int(options.mc_ensemble) > 0):
+                     if (len(s.split()) == 3):
+@@ -1885,12 +1857,12 @@ if ((options.ensemble_file != '' or int(options.mc_ensemble) != -1) and (options
+     print('Parameter ensembles selected:') 
+     print(str(n_parameters)+' parameters are being modified') 
+     print(str(nsamples)+' parameter samples provided')
+-
++  
+     #total number of processors required in each pbs script
+     np_total = int(options.np)*int(options.ng)
+     #number of scripts required
+     n_scripts = int(math.ceil(nsamples/float(options.ninst*options.ng)))
+-
++ 
+     num=0
+     #Launch ensemble if requested 
+     mysubmit_type = 'qsub'
+@@ -1939,7 +1911,6 @@ if ((options.ensemble_file != '' or int(options.mc_ensemble) != -1) and (options
+               output_run.write('#SBATCH -p batch\n')
+               output_run.write('#SBATCH --mem=64G\n')
+               output_run.write('#SBATCH --ntasks-per-node 32\n')
+-              output_run.write('#SBATCH --export=ALL')
+             if ('anvil' in options.machine):
+               output_run.write('#SBATCH -A condo\n')
+               output_run.write('#SBATCH -p acme-small\n')
+@@ -1986,7 +1957,7 @@ if ((options.ensemble_file != '' or int(options.mc_ensemble) != -1) and (options
+         if ('oic' in options.machine or 'cades' in options.machine or 'ubuntu' in options.machine):
+             mpicmd = 'mpirun'
+             if ('cades' in options.machine):
+-                mpicmd = '/software/dev_tools/swtree/cs400_centos7.2_pe2016-08/openmpi/3.0.0/centos7.2_gnu5.3.0/bin/mpirun'
++                mpicmd = '/software/dev_tools/swtree/cs400_centos7.2_pe2016-08/openmpi/1.10.3/centos7.2_gnu5.3.0/bin/mpirun'
+             cmd = mpicmd+' -np '+str(np_total)+' python manage_ensemble.py ' \
+                +'--case '+casename+' --runroot '+runroot+' --n_ensemble '+str(nsamples)+' --ens_file '+ \
+                options.ensemble_file+' --exeroot '+exeroot+' --parm_list '+options.parm_list+' --cnp '+cnp + \
+diff --git a/site_fullrun.py b/site_fullrun.py
+index 4271d3b..bda35ba 100755
+--- a/site_fullrun.py
++++ b/site_fullrun.py
+@@ -8,7 +8,7 @@ import re
+ 
+ 
+ ### Run options
+-parser = OptionParser()
++parser = OptionParser();
+ 
+ # general OLMT options
+ parser.add_option("--no_submit", dest="no_submit", default=False, action="store_true", \
+@@ -340,6 +340,7 @@ elif ('compy' in options.machine):
+ #        options.compiler = 'intel'
+ #    if (options.machine == 'cades'):
+ #        options.compiler = 'gnu'
++    
+ 
+ mycaseid   = options.mycaseid
+ srcmods    = options.srcmods_loc
+@@ -409,8 +410,7 @@ if (int(options.mc_ensemble) != -1):
+         param_max=[]
+         input = open(options.parm_list,'r')
+         for s in input:
+-            s = s.lstrip().rstrip()
+-            if (len(s) > 0) and (s[0:1] != '#'):
++            if (s):
+                 param_names.append(s.split()[0])
+                 if (int(options.mc_ensemble) > 0):
+                     if (len(s.split()) == 3):
+diff --git a/surfdata.pftdyn.nc b/surfdata.pftdyn.nc
+deleted file mode 100644
+index 9ed6874..0000000
+Binary files a/surfdata.pftdyn.nc and /dev/null differ
+diff --git a/surrogate_NN.py b/surrogate_NN.py
+index 3eeca93..c4accc0 100644
+--- a/surrogate_NN.py
++++ b/surrogate_NN.py
+@@ -19,6 +19,9 @@ UQ_output = 'UQ_output/'+options.casename
+ datapath = UQ_output+'/data/'
+ os.system('mkdir -p '+UQ_output+'/NN_surrogate')
+ 
++#comm=MPI.COMM_WORLD
++#rank=comm.Get_rank()
++#size=comm.Get_size()
+ print(datapath+'/ptrain.dat')
+ ptrain = np.loadtxt(datapath+'/ptrain.dat')
+ ytrain = np.loadtxt(datapath+'/ytrain.dat')
+@@ -51,6 +54,7 @@ ptrain_norm = ptrain.copy()
+ pval_norm   = pval.copy()
+ 
+ #Normalize parameters
++
+ for i in range(0,nparms):
+   ptrain_norm[:,i] = (ptrain[:,i] - min(ptrain[:,i]))/(max(ptrain[:,i])-min(ptrain[:,i]))
+   pval_norm[:,i]   = (pval[:,i]  -  min(ptrain[:,i]))/(max(ptrain[:,i])-min(ptrain[:,i]))
+@@ -58,7 +62,6 @@ for i in range(0,nparms):
+     pval_norm[j,i] = max(pval_norm[j,i], 0.0)
+     pval_norm[j,i] = min(pval_norm[j,i], 1.0)
+ 
+-
+ #Normalize outputs
+ ytrain_norm = ytrain.copy()
+ yval_norm   = yval.copy()
+@@ -93,7 +96,6 @@ for n in range(0,100):
+     clf = MLPRegressor(solver='adam', early_stopping=True, tol=1e-7, hidden_layer_sizes=(nl,nl2,nl3,), max_iter=200, validation_fraction=0.2)
+   else: 
+     clf = MLPRegressor(solver='adam', early_stopping=True, tol=1e-7, hidden_layer_sizes=(nl,nl2,), max_iter=200, validation_fraction=0.2)
+-
+   clf.fit(ptrain_norm, ytrain_norm[:,qoi_good]) 
+ 
+   ypredict_train_temp = clf.predict(ptrain_norm)
