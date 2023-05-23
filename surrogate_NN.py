@@ -169,15 +169,17 @@ for n in range(0,100):
   ypredict_val[:,qoi_good] = ypredict_val_temp  
 
   # Try censoring the values
-  for qoi in qoi_need_lab:
+  ypredict_train_label = np.empty((ntrain, len(qoi_need_lab)), int)
+  ypredict_val_label = np.empty((nval, len(qoi_need_lab)), int)
+  for q,qoi in enumerate(qoi_need_lab):
     pkl_filename = UQ_output+'/NN_surrogate/classify_'+str(qoi)+'.pkl'
     if os.path.exists(pkl_filename):
       with open(pkl_filename, 'rb') as file:
         clc = pickle.load(file)
-      ypredict_train_label = clc.predict(ptrain_norm)
-      ypredict_val_label = clc.predict(pval_norm)
-      ypredict_train[ypredict_train_label,qoi] = 0.
-      ypredict_val[ypredict_val_label,qoi] = 0.
+      ypredict_train_label[:, q] = clc.predict(ptrain_norm)
+      ypredict_val_label[:, q] = clc.predict(pval_norm)
+      ypredict_train[ypredict_train_label[:, q],qoi] = 0.
+      ypredict_val[ypredict_val_label[:, q],qoi] = 0.
 
   corr_train=[]
   rmse_train = []
@@ -214,6 +216,9 @@ for n in range(0,100):
     for q in qoi_good:
       plt.clf()
       plt.scatter(yval[:,q], ypredict_val_best[:,q]*(yrange[1,q]-yrange[0,q])+yrange[0,q])
+      if q in qoi_need_lab:
+        ind = np.where(np.array(qoi_need_lab) == q)[0][0]
+        plt.scatter(yval[ypredict_val_label[:,ind],q], ypredict_val_best[ypredict_val_label[:,ind],q]*(yrange[1,q]-yrange[0,q])+yrange[0,q], color = 'r')
       plt.xlabel('Model '+outnames[q])
       plt.ylabel('Surrogate '+outnames[q])
       plt.savefig(UQ_output+'/NN_surrogate/nnfit_qoi'+str(q)+'.pdf')

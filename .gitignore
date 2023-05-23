@@ -16,3 +16,5 @@ slurm-*.out
 mcsamples*.txt
 
 # user defined files
+temp*
+test*

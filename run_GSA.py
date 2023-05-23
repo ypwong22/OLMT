@@ -4,7 +4,6 @@ from optparse import OptionParser
 import model_surrogate as models
 import matplotlib
 import matplotlib.pyplot as plt
-from MLPChained import MLPChained
 matplotlib.use('Agg')
 
 parser = OptionParser()
@@ -66,7 +65,7 @@ for i in range(1,len(x_labels)):
     if (model.obs_name[i] == model.obs_name[i-1]):
         x_labels[i]=' '
 ax.bar(x_pos, sens_main[0,:], align='center', alpha=0.5)
-ax.set_xticks(x_pos)
+ax.set_xticks(x_pos) 
 ax.set_xticklabels(x_labels, rotation=45)
 bottom=sens_main[0,:]
 for p in range(1,model.nparms):

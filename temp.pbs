@@ -13,8 +13,10 @@
 # module load mpich
 # conda activate olmt
 
+echo `which python`
+
 cd ~/models/OLMT
 #python MCMC.py --case UQ_default_US-SPR_ICB20TRCNPRDCTCBC --parm_list ~/Git/phenology_elm/temp/
 #python surrogate_NN.py --case UQ_default2_US-SPR_ICB20TRCNPRDCTCBC
 #python run_GSA.py --case UQ_default2_US-SPR_ICB20TRCNPRDCTCBC
-python MCMC.py --case UQ_default2_US-SPR_ICB20TRCNPRDCTCBC --parm_list ~/Git/phenology_elm/temp/parm_list_SPRUCE_default
+/software/dev_tools/swtree/cs400_centos7.2_pe2016-08/openmpi/3.0.0/centos7.2_gnu5.3.0/bin/mpirun -np 128 python MCMC.py --case UQ_default2_US-SPR_ICB20TRCNPRDCTCBC --parm_list ${HOME}/Git/phenology_elm/temp/parm_list_SPRUCE_default_no_sphagnum_4

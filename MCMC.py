@@ -7,7 +7,6 @@ matplotlib.use('Agg')
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 from optparse import OptionParser
-from MLPChained import MLPChained
 
 
 parser = OptionParser()
@@ -41,6 +40,16 @@ def posterior(parms):
         myoutput = model.output.flatten()
         myobs    = model.obs.flatten()
         myerr    = model.obs_err.flatten()
+
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # manually better weight placed on Lala, only works for 20230518 case
+        #myerr[12:14] = myerr[12:14] / 5
+        #print('------------------')
+        #print(myoutput[12:14])
+        #print('------------------')
+        # manually better weight for Pima, only works for 20230519 case
+        #myerr[10:12] = myerr[10:12] / 3
+
         for v in range(0,len(myoutput)):
             if (abs(myobs[v]) < 1e5 and myerr[v] > 0):
                 resid = (myoutput[v] - myobs[v])
@@ -49,15 +58,15 @@ def posterior(parms):
                      np.log(myerr[v]) - ri/2.0
                 post = post + li
     else:
-        post = -9999999
+        post = -1e20
     return(post)
 
 #-------------------------------- MCMC ------------------------------------------------------
 
 def MCMC(parms, nevals, type='uniform', nburn=1000, burnsteps=10, default_output=[]):
     #Metropolis-Hastings Markov Chain Monte Carlo with adaptive sampling
-    post_best = -99999999
-    post_last = -99999999
+    post_best = -1e20
+    post_last = -1e20
     accepted_step = 0
     accepted_tot  = 0
     nparms     = model.nparms
@@ -143,7 +152,7 @@ def MCMC(parms, nevals, type='uniform', nburn=1000, burnsteps=10, default_output
    
         #------- run the model and calculate log likelihood -------------------
         post = posterior(parms)
-        
+
         #determine whether proposal step is accepted
         if ( (post - post_last < np.log(random.uniform(0,1)))):
             #if not accepted, go back to previous step
@@ -161,7 +170,6 @@ def MCMC(parms, nevals, type='uniform', nburn=1000, burnsteps=10, default_output
             if (post > post_best):
                 post_best = post
                 parms_best = parms
-                print(post_best)
                 output_best = model.output.flatten()
 
         #populate the chain matrix

@@ -14,7 +14,7 @@ class MyModel(object):
         self.nparms = self.ptrain.shape[1]
         self.nobs   = self.ytrain.shape[1]
         self.ntrain=self.ptrain.shape[0]
-        self.yrange = np.loadtxt(UQdir+'/NN_surrogate/yrange.txt').astype(int)
+        self.yrange = np.loadtxt(UQdir+'/NN_surrogate/yrange.txt')
 
         self.pmin = np.zeros([self.nparms], float)
         self.pmax= np.zeros([self.nparms], float)
@@ -75,10 +75,10 @@ class MyModel(object):
         qgood=0
         for q in range(0,self.nobs):
           if (q in self.qoi_good):
+            if (q in self.qoi_need_lab):
+              output_iszero = self.classify_model[q].predict(parms_nn).astype(bool)
+              output_val_temp[output_iszero, qgood] = 0. # put an invalid value to make sure the PFT grows
             self.output[:,q] = output_val_temp[:,qgood]*(self.yrange[1,q]-self.yrange[0,q])+self.yrange[0,q]
             qgood=qgood+1
-            if (q in self.qoi_need_lab):
-              output_iszero = self.classify_model[q].predict(parms_nn)
-              output_val_temp[output_iszero, q] = -9999 # put an invalid value to make sure the PFT grows
           else:
             self.output[:,q] = self.yrange[1,q]

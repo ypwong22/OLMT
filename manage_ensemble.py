@@ -429,10 +429,10 @@ if (rank == 0):
           obs_out.close()       
         myoutput = open(UQ_output+'/data/pnames.txt', 'w')
         eden_header=''
-        pnum=0      
+        pnum=0
         for p in pnames:
           if ((pnum == 0 and pnames[pnum+1] == p) or p == pnames[pnum-1]):
-            myoutput.write(p+'_'+str(mypft[pnum])+'\n')
+            myoutput.write(p+'_'+str(ppfts[pnum])+'\n')
           else:
             myoutput.write(p+'\n')
           pnum=pnum+1
@@ -440,7 +440,7 @@ if (rank == 0):
         myoutput.close()
         myoutput = open(UQ_output+'/data/outnames.txt', 'w')
         vlast=''
-        for v in myvars:
+        for v, pft in zip(myvars, mypft):
           #if v != vlast:
           #  vcount=0
           #  vlast=v
@@ -448,7 +448,7 @@ if (rank == 0):
           #  myoutput.write(v+'_'+str(vcount)+'\n')
           #  vcount=vcount+1
           #else:
-          myoutput.write(v+'\n')
+          myoutput.write(v+'_'+str(pft)+'\n')
           eden_header=eden_header+v+','
         myoutput.close()
 
