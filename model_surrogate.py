@@ -1,9 +1,7 @@
 import numpy as np
-from xgboost import XGBClassifier # MLPClassifier, RandomForestClassifier do not work well on shrubs
 from sklearn.neural_network import MLPRegressor
-import os
 import pickle
-
+ 
 class MyModel(object):
 
     def __init__(self,case=''):
@@ -14,7 +12,10 @@ class MyModel(object):
         self.nparms = self.ptrain.shape[1]
         self.nobs   = self.ytrain.shape[1]
         self.ntrain=self.ptrain.shape[0]
-        self.yrange = np.loadtxt(UQdir+'/NN_surrogate/yrange.txt')
+        self.yrange = np.zeros([2,self.nobs],float)
+        for i in range(0,self.nobs):
+          self.yrange[0,i] = min(self.ytrain[:,i])
+          self.yrange[1,i] = max(self.ytrain[:,i])
 
         self.pmin = np.zeros([self.nparms], float)
         self.pmax= np.zeros([self.nparms], float)
@@ -50,13 +51,6 @@ class MyModel(object):
           self.nnmodel = pickle.load(file)
         self.qoi_good = np.loadtxt(UQdir+'/NN_surrogate/qoi_good.txt').astype(int)
 
-        self.qoi_need_lab = np.loadtxt(UQdir+'/NN_surrogate/qoi_need_lab.txt').astype(int)
-        self.classify_model = {}
-        for qoi in self.qoi_need_lab:
-          pkl_filename = UQdir+'/NN_surrogate/classify_'+str(qoi)+'.pkl'
-          with open(pkl_filename, 'rb') as file:
-            self.classify_model[qoi] = pickle.load(file)
-
     def run(self,parms):
         if ((parms).ndim == 1):
             nsamples=1
@@ -70,15 +64,12 @@ class MyModel(object):
           for p in range(0,self.nparms):
             parms_nn[n,p] = (theseparms[p]-self.pmin[p])/(self.pmax[p]-self.pmin[p])
         self.output = np.zeros([nsamples,self.nobs])
-        output_val_temp = self.nnmodel.predict(parms_nn)
+        output_temp = self.nnmodel.predict(parms_nn)
 
         qgood=0
         for q in range(0,self.nobs):
           if (q in self.qoi_good):
-            if (q in self.qoi_need_lab):
-              output_iszero = self.classify_model[q].predict(parms_nn).astype(bool)
-              output_val_temp[output_iszero, qgood] = 0. # put an invalid value to make sure the PFT grows
-            self.output[:,q] = output_val_temp[:,qgood]*(self.yrange[1,q]-self.yrange[0,q])+self.yrange[0,q]
+            self.output[:,q] = output_temp[:,qgood]*(self.yrange[1,q]-self.yrange[0,q])+self.yrange[0,q]
             qgood=qgood+1
           else:
             self.output[:,q] = self.yrange[1,q]
