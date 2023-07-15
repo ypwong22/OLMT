@@ -1,9 +1,9 @@
 Offline Land Model Testbed (OLMT)
 Contact:  Dan Ricciuto (ricciutodm@ornl.gov)
 
-This branch edited by: Yaoping Wang (wangy7@ornl.gov)
+This fork edited by: Yaoping Wang (wangy7@ornl.gov)
 
-This branch contains some edits in run options and uses a chained classifier and perceptron for the surrogate model instead of perceptron only. 
+This fork contains some edits in run options and uses a chained classifier and perceptron for the surrogate model instead of perceptron only. 
 
 OLMT is a set of python scripts designed to automate offline land model (ELM and CLM/CTSM) simulations at single sites, groups of sites, user-defined regions or global scales.
 It will automatically create, build and submit the 3 cases needed for a full land model BGC simulation:
