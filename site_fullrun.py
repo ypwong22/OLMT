@@ -1098,7 +1098,7 @@ for row in AFdatareader:
         else:
             # ECA or RD
             if options.eca:
-                mycompset = nutrients + "ECA" + decomp_model
+                mycompset = nutrients + "ECA" + decomp_model + "BC"
             else:
                 mycompset = nutrients + "RD" + decomp_model + "BC"
 
@@ -1650,6 +1650,8 @@ for row in AFdatareader:
                 mysubmit_type = ""
             if "mac" in options.machine:
                 mysubmit_type = ""
+            if "docker" in options.machine:
+                mysubmit_type = ""
             if (sitenum % npernode) == 0:
                 if os.path.isfile(caseroot + "/" + ad_case_firstsite + "/case.run"):
                     input = open(caseroot + "/" + ad_case_firstsite + "/case.run")
@@ -1675,7 +1677,7 @@ for row in AFdatareader:
                 )
                 for s in input:
                     if "perl" in s or "python" in s:
-                        if "cades" in options.machine:
+                        if "cades" in options.machine or "docker" in options.machine:
                             output.write("#!/bin/bash -f\n")
                         else:
                             output.write("#!/bin/csh -f\n")
