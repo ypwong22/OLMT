@@ -934,9 +934,9 @@ for row in AFdatareader:
         if srcmods != "":
             srcmods = os.path.abspath(srcmods)
             basecmd = basecmd + " --srcmods_loc " + srcmods
-        elif options.ad_Pinit:
-            srcmods = os.path.abspath("srcmods_Pinit")
-            basecmd = basecmd + " --srcmods_loc " + srcmods
+        #elif options.ad_Pinit:
+        #    srcmods = os.path.abspath("srcmods_Pinit")
+        #    basecmd = basecmd + " --srcmods_loc " + srcmods
         if mycaseid != "":
             basecmd = basecmd + " --caseidprefix " + mycaseid
         if options.parm_file != "":

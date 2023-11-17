@@ -53,13 +53,13 @@ parser.add_option("--parm_file_P", dest="parm_file_P", default='',
 parser.add_option("--machine", dest="machine", default = '', \
                   help = "machine to\n")
 parser.add_option("--compiler", dest="compiler", default='', \
-	          help = "compiler to use (pgi, gnu)")
+	              help = "compiler to use (pgi, gnu)")
 parser.add_option("--mpilib", dest="mpilib", default="mpi-serial", \
-                      help = "mpi library (openmpi, mpich, ibm, mpi-serial)")
+                  help = "mpi library (openmpi, mpich, ibm, mpi-serial)")
 parser.add_option("--diags", dest="diags", default=False, \
-                 action="store_true", help="Write special outputs for diagnostics")
+                  action="store_true", help="Write special outputs for diagnostics")
 parser.add_option("--debugq", dest="debug", default=False, \
-                 action="store_true", help='Use debug queue')
+                  action="store_true", help='Use debug queue')
 parser.add_option("--srcmods_loc", dest="srcmods_loc", default='', \
                   help = 'Copy sourcemods from this location')
 parser.add_option("--pio_version", dest="pio_version", default='2', \
@@ -72,10 +72,6 @@ parser.add_option("--coldstart", dest="coldstart", default=False, \
 parser.add_option("--compset", dest="compset", default='I1850CNPRDCTCBC', \
                   help = "component set to use (required)\n"
                          "Currently supports ONLY *CLM45(CN) compsets")
-
-
-
-
 
 parser.add_option("--istrans", dest="istrans", default=False, action="store_true",\
                  help="Force compset to act like transient")
