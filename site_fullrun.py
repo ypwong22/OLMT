@@ -1653,28 +1653,19 @@ for row in AFdatareader:
             if "docker" in options.machine:
                 mysubmit_type = ""
             if (sitenum % npernode) == 0:
-                if os.path.isfile(caseroot + "/" + ad_case_firstsite + "/case.run"):
-                    input = open(caseroot + "/" + ad_case_firstsite + "/case.run")
-                elif os.path.isfile(caseroot + "/" + ad_case_firstsite + "/.case.run"):
-                    input = open(caseroot + "/" + ad_case_firstsite + "/.case.run")
+                mycase_firstsite = ad_case_firstsite
+                if (options.noad):
+                    mycase_firstsite = fin_case_firstsite
+                    if (options.nofnsp):
+                        mycase_firstsite = tr_case_firstsite
+                if (os.path.isfile(caseroot+'/'+mycase_firstsite+'/case.run')):
+                    input = open(caseroot+'/'+mycase_firstsite+'/case.run')
+                elif (os.path.isfile(caseroot+'/'+mycase_firstsite+'/.case.run')):
+                    input = open(caseroot+'/'+mycase_firstsite+'/.case.run')
                 else:
-                    print(
-                        caseroot
-                        + "/"
-                        + ad_case_firstsite
-                        + "/case.run file not found.  Aborting"
-                    )
+                    print(caseroot+'/'+mycase_firstsite+'/case.run file not found.  Aborting')
                     sys.exit(1)
-                output = open(
-                    "./scripts/"
-                    + myscriptsdir
-                    + "/"
-                    + c
-                    + "_group"
-                    + str(groupnum)
-                    + ".pbs",
-                    "w",
-                )
+                output = open('./scripts/'+myscriptsdir+'/'+c+'_group'+str(groupnum)+'.pbs','w')
                 for s in input:
                     if "perl" in s or "python" in s:
                         if "cades" in options.machine or "docker" in options.machine:
