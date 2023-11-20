@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import socket, getpass, os, sys, csv, math
 from optparse import OptionParser
 import subprocess

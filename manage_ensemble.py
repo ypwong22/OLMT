@@ -178,7 +178,7 @@ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
                       if ('US-SPR' in case and 'ZWT' in v):
                         #Use hollows for water table height
                         output.append(mydata[d][myindex_list[0]+hol_add]*factor_list[0] \
-                              +myoffset[index]+mydata2[d][myindex_list[0]+hol_add]/1000.)
+                                      +myoffset[index]+mydata2[d][myindex_list[0]+hol_add]/1000.)
                       elif ('US-SPR' in case):
                         temp = 0.
                         for m, myindex in enumerate(myindex_list):
@@ -187,7 +187,7 @@ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
                         output.append(temp)
                       else:
                         output.append(mydata[d][myindex]*myfactor[index] + myoffset[index])
-              elif (npy == 1):                    #Assume annual output (ignore days)
+              elif (npy == 1): #Assume annual output (ignore days)
                 for d in range(myday_start[index]-1,myday_end[index]):    #28-38 was myindex
                   if ('SCPF' in v):
                     output.append(sum(mydata[0,28:38])/10.0*myfactor[index]+myoffset[index])
@@ -244,22 +244,22 @@ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
                     'fates_hydr_thetas_node' in p):
                 parms[pnum] = mydata[int(ppfts[pnum]) / 12 , int(ppfts[pnum]) % 12]
               elif ('fates_leaf_long' in p or 'fates_leaf_vcmax25top' in p):
-                parms[pnum] = mydata[0,int(ppfts[pnum])] 
+                parms[pnum] = mydata[0,int(ppfts[pnum])]
               elif (p == 'fates_seed_alloc'):
               #  if (not fates_seed_zeroed[0]):
               #    param[:]=0.
               #    fates_seed_zeroed[0]=True
-                parms[pnum] = mydata[int(ppfts[pnum])] 
+                parms[pnum] = mydata[int(ppfts[pnum])]
               elif (p == 'fates_seed_alloc_mature'):
               #  if (not fates_seed_zeroed[1]):
               #    param[:]=0.
               #    fates_seed_zeroed[1]=True
-                parms[pnum] = mydata[int(ppfts[pnum])] 
+                parms[pnum] = mydata[int(ppfts[pnum])]
               elif (int(ppfts[pnum]) > 0):
                 parms[pnum] = mydata[int(ppfts[pnum])]
               elif (int(ppfts[pnum]) == 0):
                 try:
-                  parms[pnum] = mydata[int(ppfts[pnum])] 
+                  parms[pnum] = mydata[int(ppfts[pnum])]
                 except:
                   parms[pnum] = mydata
             else:
@@ -268,7 +268,7 @@ def postproc(myvars, myyear_start, myyear_end, myday_start, myday_end, myavg, \
               except:
                 parms[pnum] = mydata
           else:                #Regular parameter file
-            mydata = nffun.getvar(pfname,p) 
+            mydata = nffun.getvar(pfname,p)
             if (int(ppfts[pnum]) > 0):
               if (p == 'psi50'):
                 parms[pnum] = mydata[0,int(ppfts[pnum])]

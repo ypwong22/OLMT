@@ -234,12 +234,12 @@ parser.add_option("--makepointdata_only", action="store_true", \
 #                   "Removes temporary and log files that are created",\
 #                   default=False,action="store_true")
 parser.add_option("--nofire", action="store_true", dest="nofire", default=False, \
-                    help="To turn off wildfires")
+                  help="To turn off wildfires")
 parser.add_option("--nopftdyn", action="store_true", dest="nopftdyn", \
-                      default = False, help='Do not use dynamic PFT file')
+                  default = False, help='Do not use dynamic PFT file')
 parser.add_option("--harvmod", action="store_true", dest="harvmod", \
-                      default=False, help = "Turn on harvest modificaton" \
-                      "All harvest is performed in first timestep")
+                  default=False, help = "Turn on harvest modificaton" \
+                  "All harvest is performed in first timestep")
 parser.add_option("--no_dynroot", dest="no_dynroot", default=False, \
                   help = 'Turn off dynamic root distribution', action="store_true")
 parser.add_option("--vertsoilc", dest="vsoilc", default=False, \
@@ -263,9 +263,9 @@ parser.add_option("--C13", dest="C13", default=False, \
 parser.add_option("--C14", dest="C14", default=False, \
                   help = 'Use C14 as C13 (no decay)', action="store_true")
 parser.add_option("--branch", dest="branch", default=False, \
-		  help = 'Switch for branch run', action="store_true")
+                  help = 'Switch for branch run', action="store_true")
 parser.add_option("--makemetdata", dest="makemet", default=False, \
-		  help = 'Generate meteorology', action="store_true")
+                  help = 'Generate meteorology', action="store_true")
 parser.add_option("--surfdata_grid", dest="surfdata_grid", default=False, \
                   help = 'Use gridded surface data instead of site data', action="store_true")
 parser.add_option("--include_nonveg", dest="include_nonveg", default=False, \
@@ -278,7 +278,7 @@ parser.add_option("--spinup_vars", dest="spinup_vars", default=False, \
                   help = 'Limit output vars in spinup runs', action="store_true")
 parser.add_option("--trans_varlist", dest = "trans_varlist", default='', help = "Transient outputs")
 parser.add_option("--c_only", dest="c_only", default=False, \
-                 help="Carbon only (supplemental P and N)", action="store_true")
+                  help="Carbon only (supplemental P and N)", action="store_true")
 parser.add_option("--cn_only", dest="cn_only", default=False, \
                   help = 'Carbon/Nitrogen only (supplemental P)', action="store_true")
 parser.add_option("--cp_only", dest="cp_only", default=False, \
@@ -345,7 +345,7 @@ if (options.makepointdata_only):
 elif(options.domainfile!="" and options.surffile!="" and \
     (options.nopftdyn or options.pftdynfile!="")):
     options.nopointdata = True
-    
+
 
 #Set default model root
 if (options.csmdir == ''):
