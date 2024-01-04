@@ -26,6 +26,8 @@ cwd=$(pwd)
 
 if mpiexec -np 32 python ./makepointdata.py \
   --ccsm_input /lustre/or-scratch/cades-ccsi/proj-shared/project_acme/e3sm_inputdata \
+  --usersurfnc=/nfs/data/ccsi/f9y/GSWP3_daymet/high_res_data/surfdata_urb_lake_glacier_avedtb_natpft_0.05x0.05_nwh.c20220725.nc \
+  --usersurfvar='PCT_URBAN,PCT_LAKE,aveDTB,PCT_PFT' \
   --keep_duplicates \
   --lat_bounds -999,-999 --lon_bounds -999,-999 \
   --mysimyr 1850 \
