@@ -297,6 +297,8 @@ parser.add_option("--fates_hydro", dest="fates_hydro", default=False, action="st
                   help = 'Set fates hydro to true')
 parser.add_option("--fates_nutrient", dest="fates_nutrient", default="", \
                   help = 'Which version of fates_nutrient to use (RD or ECA)')
+parser.add_option("--fates_logging", dest="fates_logging", default=False, action="store_true", \
+                  help = 'Set fates logging to true')
 parser.add_option("--fates_paramfile", dest="fates_paramfile", default="", \
                   help = 'Fates parameter file to use')
 parser.add_option("--var_soilthickness", dest="var_soilthickness", default=False, \
@@ -394,6 +396,10 @@ elif ('compy' in options.machine):
     ppn=40
 elif ('chrysalis' in options.machine):
     ppn=64
+elif ('pm-cpu' in options.machine):
+    ppn=128
+elif ('docker' in options.machine):
+    ppn=4
 if (options.ensemble_file == ''):
   ppn=min(ppn, int(options.np))
 
@@ -406,7 +412,7 @@ PTCLMdir = os.getcwd()
 if (options.mymodel == ''):
   if ('clm5' in options.csmdir): 
       options.mymodel = 'CLM5'
-  elif ('E3SM' in options.csmdir or 'e3sm' in options.csmdir or 'ACME' in options.csmdir):
+  elif ('E3SM' in options.csmdir or 'ELM' in options.csmdir or 'e3sm' in options.csmdir or 'ACME' in options.csmdir):
       options.mymodel = 'ELM'
   else:
       print('Error:  Model not specified')
@@ -681,10 +687,10 @@ if (options.nopointdata == False):
     else:
         ptcmd = ptcmd + ' --site '+options.site+' --sitegroup '+options.sitegroup
 
-    if(options.domainfile != ''):
-        ptcmd = ptcmd + ' --nodomain '
-    if(options.surffile !=''):
-        ptcmd = ptcmd + ' --nosurfdata '
+    #if(options.domainfile != ''):
+    #    ptcmd = ptcmd + ' --nodomain '
+    #if(options.surffile !=''):
+    #    ptcmd = ptcmd + ' --nosurfdata '
     if(options.marsh):
         ptcmd = ptcmd + ' --marsh'
     if(options.humhol):
@@ -812,6 +818,10 @@ else:
   myscriptsdir = options.mycaseid
 
 os.system('mkdir -p '+tmpdir)
+
+print(options.mod_parm_file)
+print(tmpdir)
+
 if (options.mod_parm_file != ''):
     print('nccopy -3 '+options.mod_parm_file+' '+tmpdir+'/clm_params.nc')
     os.system('nccopy -3 '+options.mod_parm_file+' '+tmpdir+'/clm_params.nc')
@@ -846,14 +856,14 @@ else:
       else:
         print('qflx_h2osfc_surfrate = 1.0e-7')
         os.system(myncap+' -O -s "qflx_h2osfc_surfrate = br_mr*0+1.0e-7" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
-      os.system(myncap+' -O -s "moss_swc_adjust = br_mr*0" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
+      os.system(myncap+' -O -s "moss_swc_adjust=scalar(0)" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
       os.system(myncap+' -O -s "rsub_top_globalmax = br_mr*0+1.2e-5" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
       os.system(myncap+' -O -s "h2osoi_offset = br_mr*0" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
       flnr = nffun.getvar(tmpdir+'/clm_params.nc','flnr')
       os.system(myncap+' -O -s "br_mr = flnr" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
       ierr = nffun.putvar(tmpdir+'/clm_params.nc','br_mr', flnr*0.0+2.52e-6)
-    os.system(myncap+' -O -s "vcmaxse = flnr" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
-    ierr = nffun.putvar(tmpdir+'/clm_params.nc','vcmaxse', flnr*0.0+670)
+    #os.system(myncap+' -O -s "vcmaxse = flnr" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
+    #ierr = nffun.putvar(tmpdir+'/clm_params.nc','vcmaxse', flnr*0.0+670)
 
     if (options.marsh and options.tide_components_file != ''):
         print('Adding tidal cycle components from file %s'%options.tide_components_file)
@@ -868,13 +878,13 @@ else:
             os.system(myncap+' -O -s "tide_baseline = humhol_ht*0+800.0" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
     elif options.marsh:
         print('Tidal cycle coefficients not specified. Model will use GCREW defaults. Can also edit in parm file.')
-    os.system(myncap+' -O -s "crit_gdd1 = flnr" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
-    os.system(myncap+' -O -s "crit_gdd2 = flnr" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
-    os.system(myncap+' -O -s "crit_onset_gdd = ndays_on" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
-    ierr = nffun.putvar(tmpdir+'/clm_params.nc','crit_gdd1', flnr*0.0+4.8)
-    ierr = nffun.putvar(tmpdir+'/clm_params.nc','crit_gdd2', flnr*0.0+0.13)
-    ndays_on = nffun.getvar(tmpdir+'/clm_params.nc','ndays_on')
-    ierr = nffun.putvar(tmpdir+'/clm_params.nc','crit_onset_gdd', ndays_on*0.0+200.0)
+    #os.system(myncap+' -O -s "crit_gdd1 = flnr" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
+    #os.system(myncap+' -O -s "crit_gdd2 = flnr" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
+    #os.system(myncap+' -O -s "crit_onset_gdd = ndays_on" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
+    #ierr = nffun.putvar(tmpdir+'/clm_params.nc','crit_gdd1', flnr*0.0+4.8)
+    #ierr = nffun.putvar(tmpdir+'/clm_params.nc','crit_gdd2', flnr*0.0+0.13)
+    #ndays_on = nffun.getvar(tmpdir+'/clm_params.nc','ndays_on')
+    #ierr = nffun.putvar(tmpdir+'/clm_params.nc','crit_onset_gdd', ndays_on*0.0+200.0)
 
     # BSulman: These Nfix constants can break the model if they don't have the right length.
     #os.system(myncap+' -O -s "Nfix_NPP_c1 = br_mr*+1.8" '+tmpdir+'/clm_params.nc '+tmpdir+'/clm_params.nc')
@@ -971,10 +981,12 @@ elif (options.exit_spinup):
     options.run_n = 1
 
 #create new case
+timestr=str(int(float(options.walltime)))+':'+str(int((float(options.walltime)- \
+                                     int(float(options.walltime)))*60))+':00'
 cmd = './create_newcase --case '+casedir+' --mach '+options.machine+' --compset '+ \
 	   options.compset+' --res '+options.res+' --mpilib '+ \
-           options.mpilib+' --walltime '+str(options.walltime)+ \
-          ':00:00 '+'--handle-preexisting-dirs u'
+           options.mpilib+' --walltime '+timestr+' --handle-preexisting-dirs u'
+
 if (options.mymodel == 'CLM5'):
    cmd = cmd+' --run-unsupported'
 if (options.project != ''):
@@ -1005,8 +1017,8 @@ result = os.system('./xmlchange PIO_VERSION=%s'%options.pio_version)
 if (options.mymodel == 'ELM'):
     result = os.system('./xmlchange MOSART_MODE=NULL')
 
-#if (options.debug):
-#    result = os.system('./xmlchange DEBUG=TRUE')
+if (options.debug):
+    result = os.system('./xmlchange DEBUG=TRUE')
 
 #clm 4_5 cn config options
 #clmcn_opts = "'-phys clm4_5 -cppdefs -DMODAL_AER'"

@@ -787,7 +787,6 @@ elif options.caseroot == "" or (os.path.exists(options.caseroot) == False):
 else:
     caseroot = os.path.abspath(options.caseroot)
 
-
 sitenum = 0
 # create ensemble file if requested (so that all cases use the same)
 if int(options.mc_ensemble) != -1:
