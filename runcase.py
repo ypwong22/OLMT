@@ -646,9 +646,9 @@ if (options.rmold):
 
 #------Make domain, surface data and pftdyn files ------------------
 mysimyr=1850
-if (('1850' not in compset and '20TR' not in compset) or 'ED' in compset or 'FATES' in compset):
-    #note - spinup with 2000 conditions for FATES
-    mysimyr=2000
+#if (('1850' not in compset and '20TR' not in compset) or 'ED' in compset or 'FATES' in compset):
+#    #note - spinup with 2000 conditions for FATES
+#    mysimyr=2000
 
 if (options.nopointdata == False):
     ptcmd = 'python makepointdata.py --ccsm_input '+options.ccsm_input+ \
@@ -1103,10 +1103,10 @@ if ('20TR' in compset or options.istrans):
         os.system('./xmlchange RUN_STARTDATE=1850-01-01')
     
 #No pnetcdf for small cases on compy
-if ('compy' in options.machine and int(options.np) < 80):
+if (('docker' in options.machine or 'compy' in options.machine) and int(options.np) < 80):
   os.system('./xmlchange PIO_TYPENAME=netcdf')
 
-comps = ['ATM','LND','ICE','OCN','CPL','GLC','ROF','WAV']
+comps = ['ATM','LND','ICE','OCN','CPL','GLC','ROF','WAV','ESP','IAC']
 for c in comps:
     print('Setting NTASKS_'+c+' to '+str(options.np))
     os.system('./xmlchange NTASKS_'+c+'='+str(options.np))
@@ -1272,7 +1272,7 @@ for i in range(1,int(options.ninst)+1):
             if (options.dailyrunoff):
                 #include daily variables related to runoff only
                 output.write(" hist_mfilt = "+ str(options.hist_mfilt)+",365\n")
-            if (options.dailyvars):
+            elif (options.dailyvars):
                 #include daily column and PFT level output
                 output.write(" hist_dov2xy = .true., .true., .false.\n")
                 output.write(" hist_mfilt = "+ str(options.hist_mfilt)+",365,365\n")
@@ -1293,11 +1293,11 @@ for i in range(1,int(options.ninst)+1):
                 h1varst = "hist_fincl2 = "
                 h2varst = "hist_fincl3 = "
                 for v in var_list_hourly:
-                    h1varst = h1varst+"'"+v+"',"
+                    h1varst = h1varst+"'"+str(v)+"',"
                 for v in var_list_daily:
-                    h1varst = h1varst+"'"+v+"',"
+                    h1varst = h1varst+"'"+str(v)+"',"
                 for v in var_list_pft:
-                    h2varst = h2varst+"'"+v+"',"
+                    h2varst = h2varst+"'"+str(v)+"',"
                 output.write(h1varst[:-1]+"\n")
                 output.write(h2varst[:-1]+"\n")
             elif (options.hourlyvars):
@@ -1344,7 +1344,7 @@ for i in range(1,int(options.ninst)+1):
         output.write(" hist_empty_htapes = .true.\n")
         h0varst = " hist_fincl1 = "
         for v in var_list_spinup:
-            h0varst = h0varst+"'"+v+"',"
+            h0varst = h0varst+"'"+str(v)+"',"
         h0varst = h0varst[:-1]+"\n"
         output.write(h0varst)
 
@@ -1357,14 +1357,14 @@ for i in range(1,int(options.ninst)+1):
         h3varst = " hist_fincl4 = "
         h4varst = " hist_fincl5 = "
         for v in var_list_hourly:
-            h1varst = h1varst+"'"+v+"',"
-            h2varst = h2varst+"'"+v+"',"
-            h4varst = h4varst+"'"+v+"',"
+            h1varst = h1varst+"'"+str(v)+"',"
+            h2varst = h2varst+"'"+str(v)+"',"
+            h4varst = h4varst+"'"+str(v)+"',"
         for v in var_list_daily:
-            h2varst = h2varst+"'"+v+"',"
-            h4varst = h4varst+"'"+v+"',"
+            h2varst = h2varst+"'"+str(v)+"',"
+            h4varst = h4varst+"'"+str(v)+"',"
         for v in var_list_pft:
-            h3varst = h3varst+"'"+v+"',"
+            h3varst = h3varst+"'"+str(v)+"',"
         h1varst = h1varst[:-1]+"\n"
         h2varst = h2varst[:-1]+"\n"
         h3varst = h3varst[:-1]+"\n"
@@ -1380,7 +1380,7 @@ for i in range(1,int(options.ninst)+1):
         output.write(" hist_empty_htapes = .true.\n")
         h0varst = " hist_fincl1 = "
         for v in trans_varlist:
-            h0varst = h0varst+"'"+v+"',"
+            h0varst = h0varst+"'"+str(v)+"',"
         h0varst = h0varst[:-1]+"\n"
         output.write(h0varst)
 
@@ -1438,6 +1438,8 @@ for i in range(1,int(options.ninst)+1):
       output.write(" fates_paramfile = '"+options.fates_paramfile+"'\n")
     if (('ED' in compset or 'FATES' in compset) and options.fates_hydro):
       output.write(" use_fates_planthydro = .true.\n")
+    if (('ED' in compset or 'FATES' in compset) and options.fates_logging):
+      output.write(" use_fates_logging = .true.\n")
 
     if ('CROP' in compset or 'RD' in compset or 'ECA' in compset or options.fates_nutrient != ''):
         #soil order parameter file
@@ -1619,7 +1621,7 @@ for i in range(1,int(options.ninst)+1):
 
 #configure case
 #if (isglobal):
-os.system("./xmlchange -id BATCH_SYSTEM --val none")
+os.system("./xmlchange --id BATCH_SYSTEM --val none")
 if (options.no_config == False):
     print('Running case.setup')
     result = os.system('./case.setup > case_setup.log')
@@ -1633,14 +1635,14 @@ else:
 #Land CPPDEF modifications
 if (options.humhol):
     print("Turning on HUM_HOL modification\n")
-    os.system("./xmlchange -id "+mylsm+"_CONFIG_OPTS --append --val '-cppdefs -DHUM_HOL'")
+    os.system("./xmlchange --id "+mylsm+"_CONFIG_OPTS --append --val '-cppdefs -DHUM_HOL'")
 
 if (options.marsh):
     print("Turning on MARSH modification\n")
-    os.system("./xmlchange -id "+mylsm+"_CONFIG_OPTS --append --val '-cppdefs -DMARSH'")
+    os.system("./xmlchange --id "+mylsm+"_CONFIG_OPTS --append --val '-cppdefs -DMARSH'")
 if (options.harvmod):
     print('Turning on HARVMOD modification\n')
-    os.system("./xmlchange -id "+mylsm+"_CONFIG_OPTS --append --val '-cppdefs -DHARVMOD'")
+    os.system("./xmlchange --id "+mylsm+"_CONFIG_OPTS --append --val '-cppdefs -DHARVMOD'")
 
 #Global CPPDEF modifications
 if (cpl_bypass):
@@ -1652,8 +1654,10 @@ if (cpl_bypass):
       if ('CPPDEFS' in s and cpl_bypass):
          stemp = s[:-1]+' -DCPL_BYPASS\n'
          outfile.write(stemp)
+      elif ('llapack' in s):
+         outfile.write(s.replace('llapack','llapack -lgfortran'))
       else:
-         outfile.write(s)
+         outfile.write(s.replace('mcmodel=medium','mcmodel=small'))
     infile.close()
     outfile.close()
     os.system('mv Macros.make.tmp Macros.make')
@@ -1666,8 +1670,10 @@ if (cpl_bypass):
       if ('CPPDEFS' in s and cpl_bypass):
        stemp = s[:-3]+' -DCPL_BYPASS")\n'
        outfile.write(stemp)
+      elif ('llapack' in s):
+        outfile.write(s.replace('llapack','llapack -lgfortran'))
       else:
-       outfile.write(s)
+        outfile.write(s.replace('mcmodel=medium','mcmodel=small'))
     infile.close()
     outfile.close()
     os.system('mv Macros.cmake.tmp Macros.cmake')
@@ -1796,6 +1802,7 @@ if (not cpl_bypass and not isglobal):
                 temp  =s.replace('TEMPSTRING', str(numxpts)+'x'+str(numypts)+'pt'+'_'+options.site)
                 myoutput.write(temp)
             elif (('ED' in compset or 'FATES' in compset) and 'FLDS' in s):
+#            if (('ED' in compset or 'FATES' in compset) and 'FLDS' in s):
                 print('Not including FLDS in atm stream file')
             else:
                 myoutput.write(s)
@@ -1991,7 +1998,7 @@ if ((options.ensemble_file != '' or int(options.mc_ensemble) != -1) and (options
         cnp = 'True'
         if (options.cn_only or options.c_only):
             cnp= 'False'
-        if ('oic' in options.machine or 'cades' in options.machine or 'ubuntu' in options.machine):
+        if ('docker' in options.machine or 'oic' in options.machine or 'cades' in options.machine or 'ubuntu' in options.machine):
             mpicmd = 'mpirun'
             if ('cades' in options.machine):
                 mpicmd = '/software/dev_tools/swtree/cs400_centos7.2_pe2016-08/openmpi/3.0.0/centos7.2_gnu5.3.0/bin/mpirun'
