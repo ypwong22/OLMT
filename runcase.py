@@ -199,6 +199,8 @@ parser.add_option("--hist_nhtfrq", dest="hist_nhtfrq", default=-999, \
                   help = 'output file timestep')
 parser.add_option("--hist_vars", dest="hist_vars", default='', \
                   help = 'Output only selected variables in h0 file (comma delimited)')
+parser.add_options("--rootphenology", dest="rootphenology", default=False, \
+                   action="store_true", help="Write pft level output for phenology variables")
 
 #parser.add_option("--queue", dest="queue", default='essg08q', \
 #                  help = 'PBS submission queue')
@@ -404,7 +406,7 @@ PTCLMdir = os.getcwd()
 if (options.mymodel == ''):
   if ('clm5' in options.csmdir): 
       options.mymodel = 'CLM5'
-  elif ('E3SM' in options.csmdir or 'e3sm' in options.csmdir or 'ACME' in options.csmdir):
+  elif ('E3SM' in options.csmdir or 'ELM' in options.csmdir or 'e3sm' in options.csmdir or 'ACME' in options.csmdir):
       options.mymodel = 'ELM'
   else:
       print('Error:  Model not specified')
@@ -1168,6 +1170,14 @@ for i in range(1,int(options.ninst)+1):
                     'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', \
                     'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER', 'LIVESTEMC_XFER', \
                     'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'CPOOL_TO_LIVESTEMC'])
+    if options.rootphenology:
+        var_list_pft.extend([
+            'ONSET_FLAG', 'ONSET_COUNTER', 'ONSET_GDDFLAG', 'ONSET_CHIL', 'ONSET_FDD', 'ONSET_GDD', 
+            'ONSET_SWI', 'OFFSET_FLAG', 'OFFSET_COUNTER', 'OFFSET_FDD', 'OFFSET_SWI', 'LGSF', 
+            'BGLFR_LEAF', 'BGLFR_FROOT', 'BGTR', 'ONSET_FLAG_ROOT', 'ONSET_GDDFLAG_ROOT', 
+            'ONSET_COUNTER_ROOT', 'OFFSET_FLAG_ROOT', 'OFFSET_COUNTER_ROOT', 'DORMANT_FLAG_ROOT', 
+            'FCUR_DYN', 'ONSET_FROOT_FNMIN', 'ONSET_FROOT_FW', 'LFR_FROOT_TD', 'LFR_FROOT_WD'
+        ])
     if options.var_list_pft != '':
         var_list_pft = options.var_list_pft.split(',')
     var_list_spinup = ['PPOOL', 'EFLX_LH_TOT', 'RETRANSN', 'PCO2', 'PBOT', 'NDEP_TO_SMINN', 'OCDEP', \

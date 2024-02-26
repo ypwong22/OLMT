@@ -231,6 +231,8 @@ parser.add_option("--hist_mfilt_spinup", dest="hist_mfilt_spinup", default="-999
                   help = 'number of output timesteps per file (spinup only)')
 parser.add_option("--hist_nhtfrq_spinup", dest="hist_nhtfrq_spinup", default="-999", \
                   help = 'output file timestep (spinup only)')
+parser.add_options("--rootphenology", dest="rootphenology", default=False, \
+                   action="store_true", help="Write pft level output for phenology variables")
 
 #datasets for user-defined PFTs (by F-M Yuan, NGEE-Arctic)
 parser.add_option("--maxpatch_pft", dest="maxpatch_pft", default=17, \
@@ -634,6 +636,8 @@ for row in AFdatareader:
             basecmd = basecmd + ' --var_soilthickness'
         if (options.var_list_pft != ''):
             basecmd = basecmd + ' --var_list_pft '+options.var_list_pft
+        if (options.rootphenology):
+            basecmd = basecmd + ' --rootphenology'
         if (options.no_budgets):
             basecmd = basecmd+' --no_budgets'
         if (options.use_hydrstress):
@@ -829,8 +833,6 @@ for row in AFdatareader:
         if (options.ensemble_file != '' and options.notrans and options.constraints == ''):	
                 cmd_fnsp = cmd_fnsp + ' --postproc_file '+options.postproc_file
 
-
-        #transient
         if (options.noad and options.nofnsp and options.finidat != ''):
             cmd_trns = basecmd+' --finidat '+options.finidat+ \
                 ' --run_units nyears --run_n '+str(translen)+ \
