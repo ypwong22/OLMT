@@ -199,8 +199,8 @@ parser.add_option("--hist_nhtfrq", dest="hist_nhtfrq", default=-999, \
                   help = 'output file timestep')
 parser.add_option("--hist_vars", dest="hist_vars", default='', \
                   help = 'Output only selected variables in h0 file (comma delimited)')
-parser.add_options("--rootphenology", dest="rootphenology", default=False, \
-                   action="store_true", help="Write pft level output for phenology variables")
+parser.add_option("--rootphenology", dest="rootphenology", default=False, \
+                  action="store_true", help="Write pft level output for phenology variables")
 
 #parser.add_option("--queue", dest="queue", default='essg08q', \
 #                  help = 'PBS submission queue')
@@ -1154,7 +1154,7 @@ for i in range(1,int(options.ninst)+1):
                       'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL','NPOOL','PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr'])
     var_list_pft = ['FPSN','TLAI','QVEGE','QVEGT']
     if ('RD' in compset or 'ECA' in compset):
-      var_list_pft.extend(['GPP', 'NPP', 'LEAF_MR', 'LEAFC_ALLOC', 'AGNPP', 'CPOOL_TO_DEADSTEMC', \
+      var_list_pft.extend(['GPP', 'NPP', 'LEAF_MR', 'LEAFC_ALLOC', 'AGNPP', 'BGNPP', 'CPOOL_TO_DEADSTEMC', \
                     'LIVECROOTC_XFER_TO_LIVECROOTC', 'DEADCROOTC_XFER_TO_DEADCROOTC', \
                     'CPOOL_TO_LIVECROOTC', 'CPOOL_TO_DEADCROOTC', 'FROOTC_ALLOC', 'AR', 'MR', \
                     'CPOOL_LEAF_GR', 'TRANSFER_LEAF_GR', 'CPOOL_LEAF_STORAGE_GR', \

@@ -231,8 +231,8 @@ parser.add_option("--hist_mfilt_spinup", dest="hist_mfilt_spinup", default="-999
                   help = 'number of output timesteps per file (spinup only)')
 parser.add_option("--hist_nhtfrq_spinup", dest="hist_nhtfrq_spinup", default="-999", \
                   help = 'output file timestep (spinup only)')
-parser.add_options("--rootphenology", dest="rootphenology", default=False, \
-                   action="store_true", help="Write pft level output for phenology variables")
+parser.add_option("--rootphenology", dest="rootphenology", default=False, \
+                  action="store_true", help="Write pft level output for phenology variables")
 
 #datasets for user-defined PFTs (by F-M Yuan, NGEE-Arctic)
 parser.add_option("--maxpatch_pft", dest="maxpatch_pft", default=17, \
