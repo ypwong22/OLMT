@@ -1151,7 +1151,7 @@ for i in range(1,int(options.ninst)+1):
     var_list_daily = ['TLAI','SNOWDP','H2OSFC','ZWT']
     if ('RD' in compset or 'ECA' in compset):
       var_list_daily.extend(['TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 'LITR3C_vr', 'SOIL1C_vr', \
-                      'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL','NPOOL','PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr'])
+                      'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL','NPOOL','PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr', 'SMINN', 'SMIN_NO3', 'SMIN_NH4', 'SMINP', 'SOLUTIONP'])
     var_list_pft = ['FPSN','TLAI','QVEGE','QVEGT']
     if ('RD' in compset or 'ECA' in compset):
       var_list_pft.extend(['GPP', 'NPP', 'LEAF_MR', 'LEAFC_ALLOC', 'AGNPP', 'BGNPP', 'CPOOL_TO_DEADSTEMC', \
