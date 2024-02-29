@@ -1174,7 +1174,8 @@ for i in range(1,int(options.ninst)+1):
         var_list_pft.extend([
             'ONSET_FLAG', 'ONSET_COUNTER', 'ONSET_GDDFLAG', 'ONSET_CHIL', 'ONSET_FDD', 'ONSET_GDD', 
             'ONSET_SWI', 'OFFSET_FLAG', 'OFFSET_COUNTER', 'OFFSET_FDD', 'OFFSET_SWI', 'LGSF', 
-            'BGLFR_LEAF', 'BGLFR_FROOT', 'BGTR', 'ONSET_FLAG_ROOT', 'ONSET_GDDFLAG_ROOT', 
+            'BGLFR_LEAF', 'BGLFR_FROOT', 'BGTR', 'BGTR_ROOT', 
+            'ONSET_FLAG_ROOT', 'ONSET_GDDFLAG_ROOT', 
             'ONSET_COUNTER_ROOT', 'OFFSET_FLAG_ROOT', 'OFFSET_COUNTER_ROOT', 'DORMANT_FLAG_ROOT', 
             'FCUR_DYN', 'ONSET_FROOT_FNMIN', 'ONSET_FROOT_FW', 'LFR_FROOT_TD', 'LFR_FROOT_WD'
         ])
