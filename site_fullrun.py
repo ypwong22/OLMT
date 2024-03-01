@@ -666,11 +666,6 @@ for row in AFdatareader:
         else:
             decomp_model = 'CTC'
 
-        # ECA or RD 
-        if (options.eca):
-            mycompset = nutrients+'ECA'+decomp_model
-        else:
-            mycompset = nutrients+'RD'+decomp_model+'BC'
         #note - RD / ECA in FATES handled with namelist options, not compsets
         if (options.fates):
             if (model_name == 'elm'):
@@ -678,7 +673,11 @@ for row in AFdatareader:
             else:
               mycompset = 'CLM45ED'
         else:
-            mycompset = nutrients+'RD'+decomp_model+'BC'
+            # ECA or RD 
+            if (options.eca):
+                mycompset = nutrients+'ECA'+decomp_model+'BC'
+            else:
+                mycompset = nutrients+'RD'+decomp_model+'BC'
 
         # add P during initial spinup
         if (not options.ad_Pinit):
