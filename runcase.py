@@ -1543,12 +1543,14 @@ for i in range(1,int(options.ninst)+1):
       output.write(" startdate_add_co2 = '"+str(options.sd_addco2)+"'\n")
 
     if (options.use_ew):
-      output.write(" use_ew = .true.\n")
-      output.write(" stream_year_first_ew = 1998\n")
-      output.write(" stream_year_last_ew = 2024\n")
-      output.write(" model_year_align_ew = 1998\n")
-      output.write(" doy_application_ew = 1998\n")
-      output.write("  stream_fldFilename_ew = '/inputdata/lnd/clm2/ewdata/ew_clm_hist_simyr1999_0.25x0.25_c150929.nc'\n")
+      # only need to add into transient runs
+      if (options.istrans or '20TR' in compset):
+        output.write(" use_ew = .true.\n")
+        output.write(" stream_year_first_ew = 1998\n")
+        output.write(" stream_year_last_ew = 2024\n")
+        output.write(" model_year_align_ew = 1998\n")
+        output.write(" doy_application_ew = 1998\n")
+        output.write("  stream_fldFilename_ew = '/inputdata/lnd/clm2/ewdata/ew_clm_hist_simyr1999_0.25x0.25_c150929.nc'\n")
 
     output.close()
 
