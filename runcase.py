@@ -286,6 +286,8 @@ parser.add_option("--cn_only", dest="cn_only", default=False, \
                   help = 'Carbon/Nitrogen only (supplemental P)', action="store_true")
 parser.add_option("--cp_only", dest="cp_only", default=False, \
                   help = 'Carbon/Phosphorus only (supplemental N)', action = "store_true")
+parser.add_option("--use_ew", dest="use_ew", default=False, \
+                  help = 'Carbon/Nitrogen only (supplemental P)', action="store_true")
 parser.add_option("--ensemble_file", dest="ensemble_file", default='', \
                   help = 'Parameter sample file to generate ensemble')
 parser.add_option("--mc_ensemble", dest="mc_ensemble", default=-1, \
@@ -663,7 +665,7 @@ if (options.nopointdata == False):
         ptcmd = ptcmd + ' --crop'
     if (isglobal):
         ptcmd = ptcmd + ' --res '+options.res
-        
+
         # if using global dataset to extract for running at a list of grid-points
         if (options.point_list != ''):
             ptcmd = ptcmd+' --point_list '+options.point_list
@@ -1539,6 +1541,15 @@ for i in range(1,int(options.ninst)+1):
     if (options.addco2 != 0):
       output.write(" add_co2 = "+str(options.addco2)+"\n")
       output.write(" startdate_add_co2 = '"+str(options.sd_addco2)+"'\n")
+
+    if (options.use_ew):
+      output.write(" use_ew = .true.\n")
+      output.write(" stream_year_first_ew = 1998\n")
+      output.write(" stream_year_last_ew = 2024\n")
+      output.write(" model_year_align_ew = 1998\n")
+      output.write(" doy_application_ew = 1998\n")
+      output.write("  stream_fldFilename_ew = '/inputdata/lnd/clm2/ewdata/ew_clm_hist_simyr1999_0.25x0.25_c150929.nc'\n")
+
     output.close()
 
 

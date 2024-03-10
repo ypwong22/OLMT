@@ -196,7 +196,9 @@ parser.add_option("--ECA", dest="eca", default=False, action="store_true", \
 parser.add_option("--c_only", dest="c_only", default=False, action ="store_true",  \
                   help='Carbon only (saturated N&P)')
 parser.add_option("--cn_only", dest="cn_only", default=False, action ="store_true", \
-                  help='Carbon/Nitrogen only (saturated P)') 
+                  help='Carbon/Nitrogen only (saturated P)')
+parser.add_option("--use_ew", dest="use_ew", default=False, action ="store_true", \
+                  help='Run enhanced weathering code') 
 parser.add_option("--srcmods_loc", dest="srcmods_loc", default='', \
                   help = 'Copy sourcemods from this location')
 parser.add_option("--daymet", dest="daymet", default=False, \
@@ -563,6 +565,8 @@ for row in AFdatareader:
             basecmd = basecmd+' --c_only'
         if (options.cn_only):
             basecmd = basecmd+' --cn_only'
+        if (options.use_ew):
+            basecmd = basecmd+' --use_ew'
         if (options.CH4):
             basecmd = basecmd+' --CH4'
         if (options.cruncep):
