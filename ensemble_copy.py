@@ -46,6 +46,14 @@ casename = options.casename
 # get parameter names and PFT information
 pnum=0
 for s in myinput:
+   # remove line ending
+   s = s.replace('\n','')
+   # remove comments
+   hash_index = s.find('#')
+   if not (hash_index == -1):
+      s = s[:hash_index]
+   if len(s) == 0:
+      continue
    pdata = s.split()
    parm_names.append(pdata[0])
    if (pdata[0] == 'co2'):

@@ -288,6 +288,14 @@ pmax=[]
 pfile = open(options.parm_list,'r')
 nparms = 0
 for s in pfile:
+  # remove line ending
+  s = s.replace('\n','')
+  # remove comments
+  hash_index = s.find('#')
+  if not (hash_index == -1):
+      s = s[:hash_index]
+  if len(s) == 0:
+      continue
   pnames.append(s.split()[0])
   ppfts.append(s.split()[1])
   pmin.append(s.split()[2])

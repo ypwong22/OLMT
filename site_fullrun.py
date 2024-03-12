@@ -406,15 +406,22 @@ if (int(options.mc_ensemble) != -1):
         param_max=[]
         input = open(options.parm_list,'r')
         for s in input:
-            if (s):
-                param_names.append(s.split()[0])
-                if (int(options.mc_ensemble) > 0):
-                    if (len(s.split()) == 3):
-                        param_min.append(float(s.split()[1]))
-                        param_max.append(float(s.split()[2]))
-                    else:
-                        param_min.append(float(s.split()[2]))
-                        param_max.append(float(s.split()[3]))
+            # remove line ending
+            s = s.replace('\n','')
+            # remove comments
+            hash_index = s.find('#')
+            if not (hash_index == -1):
+                s = s[:hash_index]
+            if len(s) == 0:
+                continue
+            param_names.append(s.split()[0])
+            if (int(options.mc_ensemble) > 0):
+                if (len(s.split()) == 3):
+                    param_min.append(float(s.split()[1]))
+                    param_max.append(float(s.split()[2]))
+                else:
+                    param_min.append(float(s.split()[2]))
+                    param_max.append(float(s.split()[3]))
         input.close() 
         n_parameters = len(param_names)
     nsamples = int(options.mc_ensemble)

@@ -201,6 +201,8 @@ parser.add_option("--hist_vars", dest="hist_vars", default='', \
                   help = 'Output only selected variables in h0 file (comma delimited)')
 parser.add_option("--rootphenology", dest="rootphenology", default=False, \
                   action="store_true", help="Write pft level output for phenology variables")
+parser.add_option("--rootuptake", dest="rootuptake", default=False, \
+                  action="store_true", help="Write nutrient limitation at patch level")
 
 #parser.add_option("--queue", dest="queue", default='essg08q', \
 #                  help = 'PBS submission queue')
@@ -1177,8 +1179,11 @@ for i in range(1,int(options.ninst)+1):
             'BGLFR_LEAF', 'BGLFR_FROOT', 'BGTR', 'BGTR_ROOT', 
             'ONSET_FLAG_ROOT', 'ONSET_GDDFLAG_ROOT', 
             'ONSET_COUNTER_ROOT', 'OFFSET_FLAG_ROOT', 'OFFSET_COUNTER_ROOT', 'DORMANT_FLAG_ROOT', 
-            'FCUR_DYN', 'ONSET_FROOT_FNMIN', 'ONSET_FROOT_FW', 'LFR_FROOT_TD', 'LFR_FROOT_WD'
+            'FCUR_DYN', 'ONSET_FROOT_FNMIN', 'ONSET_FROOT_FW', 'LFR_FROOT_TD', 'LFR_FROOT_WD',
+            'LEAFC_TO_LITTER', 'FROOTC_TO_LITTER', 'DOWNREG'
         ])
+    if options.rootuptake:
+        var_list_pft.extend(['FPG_PATCH', 'FPG_P_PATCH'])
     if options.var_list_pft != '':
         var_list_pft = options.var_list_pft.split(',')
     var_list_spinup = ['PPOOL', 'EFLX_LH_TOT', 'RETRANSN', 'PCO2', 'PBOT', 'NDEP_TO_SMINN', 'OCDEP', \
@@ -1794,15 +1799,22 @@ if ((options.ensemble_file != '' or int(options.mc_ensemble) != -1) and (options
         param_max=[]
         input = open(options.parm_list,'r')
         for s in input:
-            if (s):
-                param_names.append(s.split()[0])
-                if (int(options.mc_ensemble) > 0):
-                    if (len(s.split()) == 3):
-                        param_min.append(float(s.split()[1]))
-                        param_max.append(float(s.split()[2]))
-                    else:
-                        param_min.append(float(s.split()[2]))
-                        param_max.append(float(s.split()[3]))
+            # remove line ending
+            s = s.replace('\n','')
+            # remove comments
+            hash_index = s.find('#')
+            if not (hash_index == -1):
+                s = s[:hash_index]
+            if len(s) == 0:
+                continue
+            param_names.append(s.split()[0])
+            if (int(options.mc_ensemble) > 0):
+                if (len(s.split()) == 3):
+                    param_min.append(float(s.split()[1]))
+                    param_max.append(float(s.split()[2]))
+                else:
+                    param_min.append(float(s.split()[2]))
+                    param_max.append(float(s.split()[3]))
         input.close() 
         n_parameters = len(param_names)
     if (options.ensemble_file != ''):    
@@ -1810,7 +1822,7 @@ if ((options.ensemble_file != '' or int(options.mc_ensemble) != -1) and (options
             print('Error:  ensemble file does not exist')
             sys.exit(1)
 
-        samples=numpy.zeros((n_parameters,100000), dtype=float) 
+        samples=numpy.zeros((n_parameters,100000), dtype=float)
         #get parameter samples and information
         myinput=open(options.ensemble_file)
         nsamples = 0
