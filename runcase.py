@@ -1147,6 +1147,22 @@ for i in range(1,int(options.ninst)+1):
             'CPOOL_TO_LIVESTEMC_STORAGE', 'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', \
             'ER', 'HR', 'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER', 'LIVESTEMC_XFER', \
             'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'SR', 'HR_vr', 'FIRA', 'CPOOL_TO_LIVESTEMC', 'TOTLITC', 'TOTSOMC'])
+    if options.use_ew:
+        var_list_hourly.extend(['FORC_APP', 'FORC_MIN', 'FORC_PHO', 'FORC_GRA', 'FORC_SPH',
+            'PRIMARY_MINERAL_vr_1', 'CATION_vr_1', 'CATION_vr_2', 'BICARBONATE_vr', 'SILICATE_vr',
+            'SECONDARY_MINERAL_vr_1', 'ARMOR_THICKNESS_vr', 'SSA', 
+            'PRIMARY_MINERAL', 'CATION', 'BICARBONATE', 'SILICATE', 'SECONDARY_MINERAL', 
+            'PRIMARY_ADDED_vr_1', 'PRIMARY_DISSOLVE_vr_1', 'PRIMARY_CO2_FLUX_vr',
+            'PRIMARY_H2O_FLUX_vr', 'PRIMARY_CATION_FLUX_vr_1', 'PRIMARY_BICARBONATE_FLUX_vr',
+            'R_DISSOLVE_vr_1', 'SECONDARY_CATION_FLUX_vr_1', 'SECONDARY_BICARBONATE_FLUX_vr', 
+            'SECONDARY_PRECIP_vr_1', 'SECONDARY_CO2_FLUX_vr', 'R_PRECIP_vr_1',
+            'MINERAL_PRELEASE_vr', 'CATION_LEACHED_vr_1', 'BICARBONATE_LEACHED_vr', 
+            'CATION_RUNOFF_vr_1', 'BICARBONATE_RUNOFF_vr', 'PRIMARY_ADDED', 'PRIMARY_DISSOLVE',
+            'PRIMARY_CO2_FLUX', 'PRIMARY_H2O_FLUX', 'PRIMARY_CATION_FLUX',
+            'PRIMARY_BICARBONATE_FLUX', 'PRIMARY_SILICATE_FLUX', 'SECONDARY_CATION_FLUX', 
+            'SECONDARY_BICARBONATE_FLUX', 'SECONDARY_PRECIP', 'SECONDARY_CO2_FLUX',
+            'SECONDARY_H2O_FLUX', 'CATION_LEACHED', 'BICARBONATE_LEACHED', 'CATION_RUNOFF',
+            'BICARBONATE_RUNOFF'])
     #var_list_hourly_bgc 
     var_list_daily = ['TLAI','SNOWDP','H2OSFC','ZWT']
     if ('RD' in compset or 'ECA' in compset):
@@ -1549,8 +1565,8 @@ for i in range(1,int(options.ninst)+1):
         output.write(" stream_year_first_ew = 1998\n")
         output.write(" stream_year_last_ew = 2024\n")
         output.write(" model_year_align_ew = 1998\n")
-        output.write(" doy_application_ew = 1998\n")
-        output.write("  stream_fldFilename_ew = '/inputdata/lnd/clm2/ewdata/ew_clm_hist_simyr1999_0.25x0.25_c150929.nc'\n")
+        output.write(" doy_application_ew = 292\n")
+        output.write(" stream_fldFilename_ew = '"+options.ccsm_input+"/lnd/clm2/ewdata/ew_clm_hist_simyr1999_0.25x0.25_c150929.nc'\n")
 
     output.close()
 
@@ -1844,7 +1860,8 @@ if ((options.ensemble_file != '' or int(options.mc_ensemble) != -1) and (options
     num=0
     #Launch ensemble if requested 
     mysubmit_type = 'qsub'
-    if ('cades' in options.machine or 'compy' in options.machine or 'ubuntu' in options.machine or 'cori' in options.machine or \
+    if ('cades' in options.machine or 'compy' in options.machine or \
+        'ubuntu' in options.machine or 'cori' in options.machine or \
         options.machine == 'anvil' or options.machine == 'chrysalis'):
         mysubmit_type = 'sbatch'
     if (options.ensemble_file != ''):

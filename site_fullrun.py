@@ -1101,7 +1101,7 @@ for row in AFdatareader:
                             timestr = '00:30:00'
                             if ('compy' in options.machine):
                               timestr='02:00:00'
-                            output.write('#SBATCH -p short\n')
+                              output.write('#SBATCH -p short\n')
                         if (mysubmit_type == 'qsub'):
                             output.write('#PBS -l walltime='+timestr+'\n')
                         else:
