@@ -38,6 +38,8 @@ parser.add_option("--cnp", dest="cnp", default = False, action="store_true", \
                   help = 'CNP mode - initialize P pools')
 parser.add_option("--site", dest="site", default='', \
                   help = 'Site name')
+parser.add_option("--skip_transient", dest="skip_transient", default=False, \
+                  action='store_true', help = 'Skip the transient run before 11 SPRUCE treatment simulations')
 parser.add_option("--spruce_treatments", dest="spruce_treatments", default=False, \
                   action='store_true', help = 'Run 11 SPRUCE treatment simulations')
 parser.add_option('--run_uq', dest="run_uq", default=True, action="store_true", \
@@ -310,7 +312,6 @@ if (rank == 0):
 niter = 1
 
 if (rank == 0):
-
     #--------------------------Perform the model simulations---------------------
     for thisiter in range(0,niter):
       n_done = 0
@@ -444,23 +445,32 @@ else:
                 mycases.append(options.casename)
                 for c in mycases:
                   os.chdir(workdir)
+
                   #Python script to set up the ensemble run directory and manipulate parameters
-                  os.system('python ensemble_copy.py --case '+c+' --runroot '+ \
-                        options.runroot +' --ens_num '+str(myjob)+' --ens_file '+options.ens_file+ \
-                        ' --parm_list '+options.parm_list+' --cnp '+cnp+' --site '+options.site+' --model_name '+ \
-                        options.model_name)
                   jobst = str(100000+int(myjob))
+                  if (not options.skip_transient):
+                    os.system('python ensemble_copy.py --case '+c+' --runroot '+ \
+                        options.runroot +' --ens_num '+str(myjob)+' --ens_file '+options.ens_file+ \
+                        ' --parm_list '+options.parm_list+' --cnp '+cnp+' --site '+options.site+ \
+                        ' --model_name '+ options.model_name)
+                  else:
+                    # only copy the updated lnd_in file
+                    os.system("cp "+options.runroot+"/"+c+"/run/lnd_in "+options.runroot+"/UQ/"+ c \
+                              +"/g"+jobst[1:]+"/lnd_in")
                   rundir = options.runroot+'/UQ/'+c+'/g'+jobst[1:]+'/'
                   os.chdir(rundir)
+
                   #Run the executable
                   exedir = options.exeroot
-                  if os.path.isfile(exedir+'/acme.exe'):
-                     os.system(exedir+'/acme.exe > acme_log.txt')
-                  elif os.path.isfile(exedir+'/e3sm.exe'):
-                     os.system(exedir+'/e3sm.exe > e3sm_log.txt')
-                  elif os.path.isfile(exedir+'/cesm.exe'):
-                     os.system(exedir+'/cesm.exe > cesm_log.txt')
-                  if (options.spruce_treatments):
+                  if (not options.skip_transient):
+                    if os.path.isfile(exedir+'/acme.exe'):
+                      os.system(exedir+'/acme.exe > acme_log.txt')
+                    elif os.path.isfile(exedir+'/e3sm.exe'):
+                      os.system(exedir+'/e3sm.exe > e3sm_log.txt')
+                    elif os.path.isfile(exedir+'/cesm.exe'):
+                      os.system(exedir+'/cesm.exe > cesm_log.txt')
+
+                  if (options.spruce_treatments and not '1850' in c):
                     #Transient/SP case should be set up produce 2015 restart file
                     #Then we will loop over 11 cases and put results into subdirectories.
                     treatments=['TAMB','T0.00','T2.25','T4.50','T6.75','T9.00', \
