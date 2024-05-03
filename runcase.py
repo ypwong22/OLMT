@@ -1143,7 +1143,7 @@ for i in range(1,int(options.ninst)+1):
             'TRANSFER_LIVESTEM_GR', 'CPOOL_LIVESTEM_STORAGE_GR', 'CPOOL_DEADSTEM_GR', \
             'TRANSFER_DEADSTEM_GR', 'CPOOL_DEADSTEM_STORAGE_GR', 'LIVECROOT_MR', 'CPOOL_LIVECROOT_GR', \
             'TRANSFER_LIVECROOT_GR', 'CPOOL_LIVECROOT_STORAGE_GR', 'CPOOL_DEADCROOT_GR', 'TRANSFER_DEADCROOT_GR', 'CPOOL_DEADCROOT_STORAGE_GR', \
-            'FROOT_MR', 'CPOOL_FROOT_GR', 'TRANSFER_FROOT_GR', 'CPOOL_FROOT_STORAGE_GR', 'TOTVEGC', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', \
+            'FROOT_MR', 'CPOOL_FROOT_GR', 'TRANSFER_FROOT_GR', 'CPOOL_FROOT_STORAGE_GR', 'TOTVEGC', 'TOTVEGC_ABG', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', \
             'FROOTC', 'LIVECROOTC', 'DEADCROOTC', 'DEADSTEMC_STORAGE', \
             'LIVESTEMC_STORAGE', 'DEADCROOTC_STORAGE', 'LIVECROOTC_STORAGE', 'CPOOL_TO_DEADSTEMC_STORAGE', \
             'CPOOL_TO_LIVESTEMC_STORAGE', 'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', \
@@ -1152,40 +1152,48 @@ for i in range(1,int(options.ninst)+1):
     #var_list_hourly_bgc 
     var_list_daily = ['TLAI','SNOWDP','H2OSFC','ZWT']
     if ('RD' in compset or 'ECA' in compset):
-      var_list_daily.extend(['TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 'LITR3C_vr', 'SOIL1C_vr', \
-                      'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL','NPOOL','PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr', 'SMINN', 'SMIN_NO3', 'SMIN_NH4', 'SMINN_vr', 'SMINP', 'SOLUTIONP', 'SMINP_vr'])
+      var_list_daily.extend(['TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 
+                             'LITR3C_vr', 'SOIL1C_vr', 'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL',
+                             'NPOOL','PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr',
+                             'SMINN', 'SMIN_NO3', 'SMIN_NH4', 'SMINN_vr', 'SMINP', 
+                             'SOLUTIONP_vr', 'ACTUAL_IMMOB', 'ACTUAL_IMMOB_P'])
+
+    # various PFT variables 
     var_list_pft = ['FPSN','TLAI','QVEGE','QVEGT']
     if ('RD' in compset or 'ECA' in compset):
-      var_list_pft.extend(['GPP', 'NPP', 'LEAF_MR', 'LEAFC_ALLOC', 'AGNPP', 'BGNPP', 'CPOOL_TO_DEADSTEMC', 'CPOOL_TO_FROOTC', 'CPOOL_TO_FROOTC_STORAGE', 'CPOOL_TO_LEAFC', 'CPOOL_TO_LEAFC_STORAGE', \
-                    'LIVECROOTC_XFER_TO_LIVECROOTC', 'DEADCROOTC_XFER_TO_DEADCROOTC', \
-                    'CPOOL_TO_LIVECROOTC', 'CPOOL_TO_DEADCROOTC', 'FROOTC_ALLOC', 'AR', 'MR', \
-                    'CPOOL_LEAF_GR', 'TRANSFER_LEAF_GR', 'CPOOL_LEAF_STORAGE_GR', \
-                    'LIVESTEM_MR', 'CPOOL_LIVESTEM_GR', 'TRANSFER_LIVESTEM_GR', \
-                    'CPOOL_LIVESTEM_STORAGE_GR', 'CPOOL_DEADSTEM_GR', 'TRANSFER_DEADSTEM_GR', \
-                    'CPOOL_DEADSTEM_STORAGE_GR', 'LIVECROOT_MR', 'CPOOL_LIVECROOT_GR', \
-                    'TRANSFER_LIVECROOT_GR', 'CPOOL_LIVECROOT_STORAGE_GR', 'CPOOL_DEADCROOT_GR', \
-                    'TRANSFER_DEADCROOT_GR', 'CPOOL_DEADCROOT_STORAGE_GR', 'FROOT_MR', \
-                    'CPOOL_FROOT_GR', 'TRANSFER_FROOT_GR', 'CPOOL_FROOT_STORAGE_GR', 'FCTR', 'FCEV', \
-                    'TOTVEGC', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'FROOTC', 'LIVECROOTC', \
-                    'DEADCROOTC', 'DEADSTEMC_STORAGE', 'LIVESTEMC_STORAGE', 'DEADCROOTC_STORAGE', \
-                    'LIVECROOTC_STORAGE', 'CPOOL_TO_DEADSTEMC_STORAGE', 'CPOOL_TO_LIVESTEMC_STORAGE', \
-                    'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', \
-                    'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER', 'LIVESTEMC_XFER', \
-                    'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'CPOOL_TO_LIVESTEMC'])
-    if options.rootphenology:
+      # (1) turnover diagnostics
+      var_list_pft.extend(['GPP', 'NPP', 'AGNPP', 'BGNPP', 'AR', 'MR', 'GR', 'XR', 
+                           'LITFALL', 'TOTVEGC', 'TOTVEGC_ABG'])
+      # (2) individual pools
+      for organ in ['LEAF', 'FROOT', 'LIVESTEM', 'DEADSTEM', 'LIVECROOT', 'DEADCROOT']:
+          var_list_pft.extend([f'{organ}C', f'{organ}C_STORAGE', f'{organ}C_XFER',
+                               f'CPOOL_TO_{organ}C', f'CPOOL_{organ}_GR', 
+                               f'CPOOL_TO_{organ}C_STORAGE', f'{organ}C_XFER_TO_{organ}C', 
+                               f'CPOOL_{organ}_STORAGE_GR', f'TRANSFER_{organ}_GR'])
+          if not 'DEAD' in organ:
+              var_list_pft.extend([f'{organ}_MR'])
+      for organ in ['LEAF', 'FROOT']:
+          var_list_pft.extend([f'{organ}C_ALLOC', f'{organ}C_TO_LITTER'])
+      # (3) nutrient diagnostics
+      var_list_pft.extend(['CPOOL'])
+      var_list_pft.extend(['NPOOL', 'PPOOL', 'SMINN_TO_NPOOL', 'SMINP_TO_PPOOL'])
+      if options.rootuptake:
+        var_list_pft.extend(['FPG_PATCH', 'FPG_P_PATCH','PLANT_NFUNGI_PATCH','PLANT_PFUNGI_PATCH',
+                             'PLANT_NDEMAND','PLANT_PDEMAND','PLANT_NABSORB','PLANT_PABSORB',
+                             'ZWT_ROOT_PATCH'])
+      # (4) root phenology diagnostics
+      if options.rootphenology:
         var_list_pft.extend([
             'ONSET_FLAG', 'ONSET_COUNTER', 'ONSET_GDDFLAG', 'ONSET_CHIL', 'ONSET_FDD', 'ONSET_GDD', 
             'ONSET_SWI', 'OFFSET_FLAG', 'OFFSET_COUNTER', 'OFFSET_FDD', 'OFFSET_SWI', 'LGSF', 
-            'BGLFR_LEAF', 'BGLFR_FROOT', 'BGTR', 'BGTR_ROOT', 
-            'ONSET_FLAG_ROOT', 'ONSET_GDDFLAG_ROOT', 
-            'ONSET_COUNTER_ROOT', 'OFFSET_FLAG_ROOT', 'OFFSET_COUNTER_ROOT', 'DORMANT_FLAG_ROOT', 
-            'FCUR_DYN', 'ONSET_FROOT_FNMIN', 'ONSET_FROOT_FW', 'LFR_FROOT_TD', 'LFR_FROOT_WD',
-            'LEAFC_TO_LITTER', 'FROOTC_TO_LITTER', 'DOWNREG'
-        ])
-    if options.rootuptake:
-        var_list_pft.extend(['FPG_PATCH', 'FPG_P_PATCH'])
+            'BGLFR_LEAF', 'BGLFR_FROOT', 'BGTR', 'BGTR_ROOT', 'DORMANT_FLAG',
+            'ONSET_FLAG_ROOT', 'ONSET_GDDFLAG_ROOT', 'ONSET_COUNTER_ROOT', 'OFFSET_FLAG_ROOT',
+            'OFFSET_COUNTER_ROOT', 'DORMANT_FLAG_ROOT', 'FCUR_DYN', 'ONSET_FROOT_FNMIN',
+            'ONSET_FROOT_FW', 'LFR_FROOT_TD', 'LFR_FROOT_WD'])
     if options.var_list_pft != '':
         var_list_pft = options.var_list_pft.split(',')
+
+    # spinup variables
     var_list_spinup = ['PPOOL', 'EFLX_LH_TOT', 'RETRANSN', 'PCO2', 'PBOT', 'NDEP_TO_SMINN', 'OCDEP', \
                        'BCDEP', 'COL_FIRE_CLOSS', 'HDM', 'LNFM', 'NEE', 'GPP', 'FPSN', 'AR', 'HR', \
                        'MR', 'GR', 'ER', 'NPP', 'TLAI', 'SOIL3C', 'TOTSOMC', 'TOTSOMC_1m', 'LEAFC', \
