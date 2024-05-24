@@ -54,17 +54,17 @@ parser.add_option("--parm_file_P", dest="parm_file_P", default='',
 parser.add_option("--machine", dest="machine", default = '', \
                   help = "machine to\n")
 parser.add_option("--compiler", dest="compiler", default='', \
-	          help = "compiler to use (pgi, gnu)")
+                  help = "compiler to use (pgi, gnu)")
 parser.add_option("--mpilib", dest="mpilib", default="mpi-serial", \
-                      help = "mpi library (openmpi, mpich, ibm, mpi-serial)")
+                  help = "mpi library (openmpi, mpich, ibm, mpi-serial)")
 parser.add_option("--diags", dest="diags", default=False, \
-                 action="store_true", help="Write special outputs for diagnostics")
+                  action="store_true", help="Write special outputs for diagnostics")
 parser.add_option("--debugq", dest="debug", default=False, \
-                 action="store_true", help='Use debug queue')
+                  action="store_true", help='Use debug queue')
 parser.add_option("--srcmods_loc", dest="srcmods_loc", default='', \
                   help = 'Copy sourcemods from this location')
 parser.add_option("--pio_version", dest="pio_version", default='2', \
-                      help = "PIO version (1 or 2)")
+                  help = "PIO version (1 or 2)")
 
 # CASE options
 parser.add_option("--coldstart", dest="coldstart", default=False, \
@@ -74,12 +74,8 @@ parser.add_option("--compset", dest="compset", default='I1850CNPRDCTCBC', \
                   help = "component set to use (required)\n"
                          "Currently supports ONLY *CLM45(CN) compsets")
 
-
-
-
-
 parser.add_option("--istrans", dest="istrans", default=False, action="store_true",\
-                 help="Force compset to act like transient")
+                  help="Force compset to act like transient")
 parser.add_option("--lat_bounds", dest="lat_bounds", default='-999,-999', \
                   help = 'latitude range for regional run')
 parser.add_option("--lon_bounds", dest="lon_bounds", default='-999,-999', \
@@ -90,7 +86,7 @@ parser.add_option("--humhol", dest="humhol", default=False, \
 parser.add_option("--marsh", dest="marsh", default=False, \
                   help = 'Use marsh hydrology/elevation', action="store_true")
 parser.add_option("--tide_components_file", dest="tide_components_file", default='', \
-                    help = 'NOAA tide components file')
+                  help = 'NOAA tide components file')
 parser.add_option("--mask", dest="mymask", default='', \
                   help = 'Mask file to use (regional only)')
 
@@ -101,12 +97,12 @@ parser.add_option("--namelist_file",  dest="namelist_file", default='', \
                   help="File containing custom namelist options for user_nl_clm")
 
 parser.add_option("--ilambvars", dest="ilambvars", default=False, \
-                 action="store_true", help="Write special outputs for diagnostics")
+                  action="store_true", help="Write special outputs for diagnostics")
 parser.add_option("--dailyvars", dest="dailyvars", default=False, \
-                 action="store_true", help="Write daily ouptut variables")
+                  action="store_true", help="Write daily ouptut variables")
 
 parser.add_option("--res", dest="res", default="CLM_USRDAT", \
-                      help='Resoultion for global simulation')
+                  help='Resoultion for global simulation')
 parser.add_option("--point_list", dest="point_list", default='', \
                   help = 'File containing list of points to run')
 
@@ -440,7 +436,7 @@ else:
 # check for a specific forcing data, GSWP3-Daymet4, to offline ELM
 # This is high-resolution dataset, usually together with user-defined domain and surface data
 if (options.daymet4):
-    if (not options.gswp3): options.gswp3 = True
+    if (not options.gswp3 and not options.crujra): options.gswp3 = True
     if (options.metdir=='none'):
         print('Error:  must provide user-defined " --metdir " for " --daymet4"')
         sys.exit(1)
@@ -574,7 +570,8 @@ if (options.metdir!='none'):# obviously user-provided met forcing is not reanaly
     use_reanalysis = False
 #CRU-NCEP 2 transient phases
 elif ('CRU' in compset or options.cruncep or options.gswp3 or options.gswp3_w5e5 or \
-            options.crujra or options.cruncepv8 or options.princeton or options.cplhist):
+      (options.crujra and not options.daymet4) or options.cruncepv8 or \
+      options.princeton or options.cplhist):
     use_reanalysis = True
 else:
     use_reanalysis = False
@@ -1148,21 +1145,37 @@ for i in range(1,int(options.ninst)+1):
             'ER', 'HR', 'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER', 'LIVESTEMC_XFER', \
             'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'SR', 'HR_vr', 'FIRA', 'CPOOL_TO_LIVESTEMC', 'TOTLITC', 'TOTSOMC'])
     if options.use_ew:
-        var_list_hourly.extend(['FORC_APP', 'FORC_MIN', 'FORC_PHO', 'FORC_GRA', 'FORC_SPH',
-            'PRIMARY_MINERAL_vr_1', 'CATION_vr_1', 'CATION_vr_2', 'BICARBONATE_vr', 'SILICATE_vr',
-            'SECONDARY_MINERAL_vr_1', 'ARMOR_THICKNESS_vr', 'SSA', 
-            'PRIMARY_MINERAL', 'CATION', 'BICARBONATE', 'SILICATE', 'SECONDARY_MINERAL', 
-            'PRIMARY_ADDED_vr_1', 'PRIMARY_DISSOLVE_vr_1', 'PRIMARY_CO2_FLUX_vr',
-            'PRIMARY_H2O_FLUX_vr', 'PRIMARY_CATION_FLUX_vr_1', 'PRIMARY_BICARBONATE_FLUX_vr',
-            'R_DISSOLVE_vr_1', 'SECONDARY_CATION_FLUX_vr_1', 'SECONDARY_BICARBONATE_FLUX_vr', 
-            'SECONDARY_PRECIP_vr_1', 'SECONDARY_CO2_FLUX_vr', 'R_PRECIP_vr_1',
-            'MINERAL_PRELEASE_vr', 'CATION_LEACHED_vr_1', 'BICARBONATE_LEACHED_vr', 
-            'CATION_RUNOFF_vr_1', 'BICARBONATE_RUNOFF_vr', 'PRIMARY_ADDED', 'PRIMARY_DISSOLVE',
-            'PRIMARY_CO2_FLUX', 'PRIMARY_H2O_FLUX', 'PRIMARY_CATION_FLUX',
-            'PRIMARY_BICARBONATE_FLUX', 'PRIMARY_SILICATE_FLUX', 'SECONDARY_CATION_FLUX', 
-            'SECONDARY_BICARBONATE_FLUX', 'SECONDARY_PRECIP', 'SECONDARY_CO2_FLUX',
-            'SECONDARY_H2O_FLUX', 'CATION_LEACHED', 'BICARBONATE_LEACHED', 'CATION_RUNOFF',
-            'BICARBONATE_RUNOFF'])
+        var_list_hourly.extend(['soil_pH', 'forc_app', 'forc_min', 'forc_pho', 'forc_gra',
+            'forc_sph', 'proton_vr', 'silica_vr', 'armor_thickness_vr', 'ssa', 'primary_mineral', 
+            'proton', 'cation', 'silica', 'secondary_mineral', 'primary_proton_flux_vr',
+            'primary_h2o_flux_vr', 'primary_prelease_vr', 'primary_added', 
+            'primary_dissolve', 'primary_cation_flux', 
+            'secondary_cation_flux', 'secondary_mineral_flux', 'cation_leached',
+            'cation_runoff', 'r_sequestration', 'background_weathering', 'cect_col',
+            'ceca_col', 'cece_col', 'secondary_silica_flux_vr',
+            'cec_proton_flux_vr', 'cec_proton_vr', 'proton_infl_vr', 
+            'proton_oufl_vr'])
+        var_list_hourly.extend([f'primary_mineral_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'cation_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'secondary_mineral_vr_{i+1}' for i in range(1)])
+        var_list_hourly.extend([f'primary_added_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'primary_dissolve_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'primary_cation_flux_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'r_dissolve_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'secondary_cation_flux_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'secondary_mineral_flux_vr_{i+1}' for i in range(2)])
+        var_list_hourly.extend([f'r_precip_vr_{i+1}' for i in range(2)])
+        var_list_hourly.extend([f'f_cation_soil_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'f_cation_water_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'cec_cation_flux_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'cec_cation_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'cation_infl_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'cation_oufl_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'cation_leached_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'cation_runoff_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'background_weathering_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'log_km_col_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'log_omega_vr_{i+1}' for i in range(5)])
     #var_list_hourly_bgc 
     var_list_daily = ['TLAI','SNOWDP','H2OSFC','ZWT']
     if ('RD' in compset or 'ECA' in compset):
@@ -1472,7 +1485,7 @@ for i in range(1,int(options.ninst)+1):
                     output.write(" metdata_type = 'cru-ncep'\n")
                     output.write(" metdata_bypass = '"+options.ccsm_input+"/atm/datm7/" \
                          +"atm_forcing.datm7.cruncep_qianFill.0.5d.V5.c140715/cpl_bypass_full'\n")
-            elif (options.crujra):
+            elif (options.crujra and not options.daymet4):
                     output.write(" metdata_type = 'crujra'\n")
                     output.write(" metdata_bypass = '"+options.ccsm_input+"/atm/datm7/" \
                          +"atm_forcing.datm7.CRUJRA.0.5d.v1.c190604/cpl_bypass_full'\n")
@@ -1515,10 +1528,12 @@ for i in range(1,int(options.ninst)+1):
         elif options.metdir != 'none':
             if (options.daymet4 and options.gswp3):
                 output.write(" metdata_type = 'gswp3_daymet4'\n")
+            elif (options.daymet4 and options.crujra):
+                output.write(" metdata_type = 'crujra_daymet'\n")
             #else:
             #    output.write(" metdata_type = 'gswp3v1_daymet'\n") # This needs to be updated for other types
             output.write(" metdata_bypass = '%s'\n"%options.metdir)
-            
+
         # not reanalysis
         else:
             if (options.site_forcing == ''):

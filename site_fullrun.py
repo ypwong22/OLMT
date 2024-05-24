@@ -115,6 +115,8 @@ parser.add_option("--gswp3_w5e5", dest="gswp3_w5e5", default=False, action="stor
                   help = 'Use GSWP3 meteorology')
 parser.add_option("--princeton", dest="princeton", default=False, action="store_true", \
                   help = 'Use Princeton meteorology')
+parser.add_option("--crujra", dest="crujra", default=False, action="store_true", \
+                  help = 'Use CRU-JRA55 meteorology')
 parser.add_option("--co2_file", dest="co2_file", default="fco2_datm_rcp4.5_1765-2500_c130312.nc", \
                   help = 'co2 data filename')
 parser.add_option("--eco2_file", dest="eco2_file", default="", \
@@ -579,11 +581,13 @@ for row in AFdatareader:
             basecmd = basecmd+' --gswp3_w5e5'    
         if (options.princeton):
             basecmd = basecmd+' --princeton'
+        if (options.crujra):
+            basecmd = basecmd+' --crujra'
         if (options.daymet):
             basecmd = basecmd+' --daymet'
         if (options.daymet4): # gswp3 v2 spatially-downscaled by daymet v4, usually together with user-defined domain and surface data
             basecmd = basecmd+' --daymet4'
-            if (not options.gswp3): basecmd = basecmd+' --gswp3'
+            if (not options.gswp3 and not options.crujra): basecmd = basecmd+' --gswp3'
         if (options.fates_paramfile != ''):
             basecmd = basecmd+ ' --fates_paramfile '+options.fates_paramfile
         if (options.fates_nutrient != ''):
