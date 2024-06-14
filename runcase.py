@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import netcdf4_functions as nffun
 import socket, os, sys, csv, time, math, numpy
@@ -697,7 +697,7 @@ mysimyr=1850
 #    mysimyr=2000
 
 if (options.nopointdata == False):
-    ptcmd = 'python makepointdata.py --ccsm_input '+options.ccsm_input+ \
+    ptcmd = 'python3 makepointdata.py --ccsm_input '+options.ccsm_input+ \
         ' --keep_duplicates --lat_bounds '+options.lat_bounds+' --lon_bounds '+ \
         options.lon_bounds+' --mysimyr '+str(mysimyr)+' --model '+options.mymodel
     if (options.metdir != 'none'):
@@ -2032,7 +2032,7 @@ if ((options.ensemble_file != '' or int(options.mc_ensemble) != -1) and (options
             if ('cades' in options.machine):
                #mpicmd = '/software/dev_tools/swtree/cs400_centos7.2_pe2016-08/openmpi/1.10.3/centos7.2_gnu5.3.0/bin/mpirun'
                mpicmd = 'srun'
-               cmd = mpicmd+' -n '+str(np_total)+' python manage_ensemble.py ' \
+               cmd = mpicmd+' -n '+str(np_total)+' python3 manage_ensemble.py ' \
                +'--case '+casename+' --runroot '+runroot+' --n_ensemble '+str(nsamples)+' --ens_file '+ \
                options.ensemble_file+' --exeroot '+exeroot+' --parm_list '+options.parm_list+' --cnp '+cnp + \
                ' --site '+options.site+' --model_name '+model_name

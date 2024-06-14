@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import getpass, os, sys, csv, math
 from optparse import OptionParser
@@ -454,7 +454,7 @@ if (lon_bounds[0] > -180 or lon_bounds[1] < 180 or lat_bounds[0] > -90 or \
         lat_bounds[1] < 90):
     isregional=True
 
-basecmd = 'python runcase.py --surfdata_grid --ccsm_input '+ \
+basecmd = 'python3 runcase.py --surfdata_grid --ccsm_input '+ \
     os.path.abspath(ccsm_input)+' --rmold --no_submit --machine ' \
     +options.machine+' --res '+options.res+' --model_root '+csmdir
 if (options.point_list != ''):

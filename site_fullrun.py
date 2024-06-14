@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import socket, getpass, os, sys, csv, math
 from optparse import OptionParser
@@ -538,7 +538,7 @@ for row in AFdatareader:
 #---------------- build base command for all calls to runcase.py -----------------------------
 
         #print year_align, fsplen
-        basecmd = 'python runcase.py --site '+site+' --ccsm_input '+ \
+        basecmd = 'python3 runcase.py --site '+site+' --ccsm_input '+ \
             os.path.abspath(ccsm_input)+' --rmold --no_submit --sitegroup ' + \
             options.sitegroup
         if (options.machine != ''):
@@ -990,7 +990,7 @@ for row in AFdatareader:
         #If not the first site, create point data here
         if ((sitenum > 0) and not options.nopointdata):
                 print('\n\nCreating point data for '+site+'\n')
-                ptcmd = 'python makepointdata.py '+ \
+                ptcmd = 'python3 makepointdata.py '+ \
                         ' --site '+site+' --sitegroup '+options.sitegroup+ \
                         ' --ccsm_input '+ccsm_input+' --model '+mymodel
                 if (options.nopftdyn):
@@ -1013,7 +1013,7 @@ for row in AFdatareader:
                 ad_case_firstsite = ad_case
                 result = runcmd(cmd_adsp)
             else:
-                ptcmd = 'python case_copy.py --runroot '+runroot+' --case_copy '+ \
+                ptcmd = 'python3 case_copy.py --runroot '+runroot+' --case_copy '+ \
                         ad_case_firstsite+' --site_orig '+firstsite +\
                         ' --site_new '+site+' --nyears '+str(ny_ad)+' --spin_cycle ' \
                         +str(endyear-startyear+1)
@@ -1035,7 +1035,7 @@ for row in AFdatareader:
                 print(cmd_fnsp+'\n')
                 result = os.system(cmd_fnsp)
             else:
-                ptcmd = 'python case_copy.py --runroot '+runroot+' --case_copy '+ \
+                ptcmd = 'python3 case_copy.py --runroot '+runroot+' --case_copy '+ \
                         fin_case_firstsite+' --site_orig '+firstsite +\
                         ' --site_new '+site+' --nyears '+str(ny_fin)
                 if (not options.sp):
@@ -1061,7 +1061,7 @@ for row in AFdatareader:
                   tr_case_firstsite = fin_case_firstsite.replace('1850','20TR')
                 result = runcmd(cmd_trns)
             else:
-                 ptcmd = 'python case_copy.py --runroot '+runroot+' --case_copy '+ \
+                 ptcmd = 'python3 case_copy.py --runroot '+runroot+' --case_copy '+ \
                         tr_case_firstsite+' --site_orig '+firstsite +\
                         ' --site_new '+site+' --finidat_year '+str(int(ny_fin)+1)+ \
                         ' --nyears '+str(translen)
@@ -1219,7 +1219,7 @@ for row in AFdatareader:
                 if ('cades' in options.machine):
                     output.write('source $MODULESHOME/init/bash\n')
                     output.write('module unload python\n')
-                    output.write('module load python/2.7.12\n')
+                    output.write('module load python/3.9.4\n')
             else:
                 output = open('./scripts/'+myscriptsdir+'/'+c+'_group'+str(groupnum)+'.pbs','a')   
                
@@ -1282,11 +1282,11 @@ for row in AFdatareader:
             if ('iniadjust' in c):
                 output.write("cd "+os.path.abspath(".")+'\n')
                 if (options.centbgc):
-                    output.write("python adjust_restart.py --rundir "+os.path.abspath(runroot)+ \
+                    output.write("python3 adjust_restart.py --rundir "+os.path.abspath(runroot)+ \
                                  '/'+ad_case+'/run/ --casename '+ ad_case+' --restart_year '+ \
                                  str(int(ny_ad)+1)+' --BGC --model_name '+model_name+'\n')
                 else:
-                    output.write("python adjust_restart.py --rundir "+os.path.abspath(runroot)+ \
+                    output.write("python3 adjust_restart.py --rundir "+os.path.abspath(runroot)+ \
                                  '/'+ad_case+'/run/ --casename '+ad_case+' --restart_year '+ \
                                  str(int(ny_ad)+1)+' --model_name '+model_name+'\n')
 
@@ -1296,7 +1296,7 @@ for row in AFdatareader:
                  else:
                      mycompsetcb = 'I1850'+mycompset
                  output.write("cd "+os.path.abspath(".")+'\n')
-                 plotcmd = "python plotcase.py --site "+site+" --spinup --compset "+mycompsetcb \
+                 plotcmd = "python3 plotcase.py --site "+site+" --spinup --compset "+mycompsetcb \
                                +" --csmdir "+os.path.abspath(runroot)+" --pdf --yend "+str(int(ny_ad)+30)
                  if (options.compare != ''):
                      plotcmd = plotcmd + ' --case '+mycaseid+','+options.compare
@@ -1360,7 +1360,7 @@ for row in AFdatareader:
                  output2 = open('./scripts/'+myscriptsdir+'/transdiag_'+site+'.csh','w')
                  output.write("cd "+os.path.abspath(".")+'\n')
                  output2.write("cd "+os.path.abspath(".")+'\n')
-                 plotcmd = "python plotcase.py --site "+site+" --compset "+mycompsetcb \
+                 plotcmd = "python3 plotcase.py --site "+site+" --compset "+mycompsetcb \
                           +" --csmdir "+os.path.abspath(runroot)+" --pdf --yend "+str(site_endyear)
                  if (options.compare != ''):
                      plotcmd = plotcmd + ' --case '+mycaseid+','+options.compare
