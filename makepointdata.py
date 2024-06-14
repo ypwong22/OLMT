@@ -70,8 +70,9 @@ parser.add_option("--nco_path", dest="nco_path", default="", \
 (options, args) = parser.parse_args()
 
 
+#
 ccsm_input = os.path.abspath(options.ccsm_input)
-
+print(os.environ['PATH'])
 #------------------- get site information ----------------------------------
 if HAS_MPI4PY:
     mycomm = MPI.COMM_WORLD
@@ -107,7 +108,7 @@ if ('hcru' in options.res):
         else:
             #CMIP6 stype (Hurtt v2)
             surffile_orig = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_360x720cru_simyr1850_c180216.nc'
-    pftdyn_orig = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_0.5x0.5_HIST_simyr1850-2015_c211019.nc'
+    pftdyn_orig = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_0.5x0.5_hist_simyr1850-2015_c240308.nc'
     nyears_landuse=166
 elif ('f19' in options.res):
     domainfile_orig = ccsm_input+'/share/domains/domain.lnd.fv1.9x2.5_gx1v6.090206.nc'
@@ -397,6 +398,8 @@ area_orig = nffun.getvar(surffile_orig, 'AREA')
 
 # in case NCO bin path not in $PATH
 if (options.nco_path!=''):
+    if not options.nco_path.endswith('/'):
+        options.nco_path=options.nco_path+'/'
     os.environ["PATH"] += options.nco_path
 
 domainfile_tmp = 'domain??????.nc' # filename pattern of 'domainfile_new'
@@ -416,7 +419,7 @@ for n in range(ng0_rank[myrank], ng_rank[myrank]+1):
     if (isglobal):
         os.system('cp '+domainfile_orig+' '+domainfile_new)
     else:
-        os.system('ncks -h -O -d ni,'+str(xgrid_min[n])+','+str(xgrid_max[n])+' -d nj,'+str(ygrid_min[n])+ \
+        os.system(options.nco_path+'ncks -h -O -d ni,'+str(xgrid_min[n])+','+str(xgrid_max[n])+' -d nj,'+str(ygrid_min[n])+ \
               ','+str(ygrid_max[n])+' '+domainfile_orig+' '+domainfile_new)
 
     # scaling x/y length for original grid
@@ -491,10 +494,10 @@ for n in range(ng0_rank[myrank], ng_rank[myrank]+1):
         
         ierr = nffun.putvar(domainfile_new, 'frac', frac)
         ierr = nffun.putvar(domainfile_new, 'mask', mask)
-        os.system('ncks -h -O --mk_rec_dim nj '+domainfile_new+' '+domainfile_new)
+        os.system(options.nco_path+'ncks -h -O --mk_rec_dim nj '+domainfile_new+' '+domainfile_new)
     elif (options.mymask != ''):
        print('Applying mask from '+options.mymask)
-       os.system('ncks -h -O -d lon,'+str(xgrid_min[n])+','+str(xgrid_max[n])+' -d lat,'+str(ygrid_min[n])+ \
+       os.system(options.nco_path+'ncks -h -O -d lon,'+str(xgrid_min[n])+','+str(xgrid_max[n])+' -d lat,'+str(ygrid_min[n])+ \
               ','+str(ygrid_max[n])+' '+options.mymask+' mask_temp.nc')
        newmask = nffun.getvar('mask_temp.nc', 'PNW_mask')
        ierr = nffun.putvar(domainfile_new, 'mask', newmask)
@@ -533,7 +536,7 @@ if myrank==0:
     if(ierr==0): 
         # NC-4 classic better for either NC-4 or NC-3 tools, 
         # but 'ncrename' not good with NC-4
-        ierr = os.system('nccopy -7 -u '+domainfile_new+' '+domainfile_new+'.tmp')
+        ierr = os.system('/usr/local/gcc-x/netcdf-4.x-hdf5-gcc/bin/nccopy -7 -u '+domainfile_new+' '+domainfile_new+'.tmp')
         if(ierr!=0):
             print('nccopy -7 -u '+domainfile_new+' '+domainfile_new+'.tmp')
             raise RuntimeError('Error: nccopy -7 -u ');# os.sys.exit()
@@ -570,10 +573,10 @@ for n in range(ng0_rank[myrank], ng_rank[myrank]+1):
         os.system('cp '+surffile_orig+' '+surffile_new)
     else:
         if ('ne' in options.res):
-          os.system('ncks -h -O --fix_rec_dmn time -d gridcell,'+str(xgrid_min[n])+','+str(xgrid_max[n])+ \
+          os.system(options.nco_path+'ncks -h -O --fix_rec_dmn time -d gridcell,'+str(xgrid_min[n])+','+str(xgrid_max[n])+ \
             ' '+surffile_orig+' '+surffile_new)
         else:
-          os.system('ncks -h -O --fix_rec_dmn time -d lsmlon,'+str(xgrid_min[n])+','+str(xgrid_max[n])+ \
+          os.system(options.nco_path+'ncks -h -O --fix_rec_dmn time -d lsmlon,'+str(xgrid_min[n])+','+str(xgrid_max[n])+ \
              ' -d lsmlat,'+str(ygrid_min[n])+','+str(ygrid_max[n])+' '+surffile_orig+' '+surffile_new)
 
     if (issite):
@@ -1068,7 +1071,7 @@ if myrank==0:
     
     if (n_grids > 1):
       # extract 2 constants in the original surfdata.nc, to avoid 'ncecat'ing them below 
-      ierr = os.system('ncks -O -h -v mxsoil_color,mxsoil_order '+surffile_orig+' -o ./temp/constants.nc');
+      ierr = os.system(options.nco_path+'ncks -O -h -v mxsoil_color,mxsoil_order '+surffile_orig+' -o ./temp/constants.nc');
       if(ierr!=0): raise RuntimeError('Error: ncks to extract constants')
       #os.system('ncecat '+surffile_list+' '+surffile_new) # not works with too long '_list'
       ierr = os.system('find ./temp/ -name "'+surffile_tmp+ \
@@ -1076,7 +1079,7 @@ if myrank==0:
         +surffile_new) # must exclude 'mxsoil_color, mxsoil_order', which are scalars and to be added back afterwards
       if(ierr!=0): raise RuntimeError('Error: ncecat '); #os.sys.exit()
       # append back 'constants.nc'
-      ierr = os.system('ncks -h -A ./temp/constants.nc -o '+surffile_new)
+      ierr = os.system(options.nco_path+'ncks -h -A ./temp/constants.nc -o '+surffile_new)
       #os.system('rm ./temp/surfdata?????.nc*') # not works with too many files
       os.system('find ./temp/ -name "'+surffile_tmp+'" -exec rm {} \;')
       os.system('rm ./temp/constants.nc')
@@ -1100,7 +1103,7 @@ if myrank==0:
     
     # NC-4 classic better for either NC-4 or NC-3 tools (though not writable as NC-4), 
     # but 'ncrename' used above may not works with NC-4
-    ierr = os.system('nccopy -7 -u '+surffile_new+' '+surffile_new+'.tmp')
+    ierr = os.system('/usr/local/gcc-x/netcdf-4.x-hdf5-gcc/bin/nccopy -7 -u '+surffile_new+' '+surffile_new+'.tmp')
     if(ierr!=0): 
         raise RuntimeError('Error: nccopy -7 -u ');# os.sys.exit()
     else:
@@ -1138,14 +1141,14 @@ if (options.nopftdyn == False):
         os.system('cp '+pftdyn_orig+' '+pftdyn_new)
     else:
         if ('ne' in options.res):
-          os.system('ncks -h -O --fix_rec_dmn time -d gridcell,'+str(xgrid_min[n])+','+str(xgrid_max[n])+ \
+          os.system(options.nco_path+'ncks -h -O --fix_rec_dmn time -d gridcell,'+str(xgrid_min[n])+','+str(xgrid_max[n])+ \
                   ' '+pftdyn_orig+' '+pftdyn_new)
         else:
-          os.system('ncks -h -O --fix_rec_dmn time -d lsmlon,'+str(xgrid_min[n])+','+str(xgrid_max[n])+ \
+          os.system(options.nco_path+'ncks -h -O --fix_rec_dmn time -d lsmlon,'+str(xgrid_min[n])+','+str(xgrid_max[n])+ \
                   ' -d lsmlat,'+str(ygrid_min[n])+','+str(ygrid_max[n])+' '+pftdyn_orig+' '+pftdyn_new)
     
     # in *.pftdyn.nc original file, there is a large variable of input file name (character array), which never used
-    os.system('ncks -h -O -x -v input_pftdata_filename '+pftdyn_new+' '+pftdyn_new)
+    os.system(options.nco_path+'ncks -h -O -x -v input_pftdata_filename '+pftdyn_new+' '+pftdyn_new)
     
     if (issite):
         landfrac     = nffun.getvar(pftdyn_new, 'LANDFRAC_PFT')
@@ -1348,7 +1351,7 @@ if (options.nopftdyn == False):
     
       if (n_grids > 1):
           # extract 'YEAR' in the original pftdyn.nc, to avoid 'ncecat'ing it below
-          ierr = os.system('ncks -O -h -v YEAR '+pftdyn_orig+' -o ./temp/year.nc');
+          ierr = os.system(options.nco_path+'ncks -O -h -v YEAR '+pftdyn_orig+' -o ./temp/year.nc');
           if(ierr!=0): raise RuntimeError('Error: ncks to extract "YEAR"')
 
           #ios.system('ncecat -h '+pftdyn_list+' '+pftdyn_new) # not works with too long '_list'
@@ -1356,7 +1359,7 @@ if (options.nopftdyn == False):
                         '" | xargs ls | sort | ncecat -O -h -x -v YEAR -o'+pftdyn_new)
           if(ierr!=0): raise RuntimeError('Error: ncecat '); #os.sys.exit()
           # append back 'year.nc'
-          ierr = os.system('ncks -h -A ./temp/year.nc -o '+pftdyn_new)
+          ierr = os.system(options.nco_path+'ncks -h -A ./temp/year.nc -o '+pftdyn_new)
 
           #os.system('rm ./temp/surfdata.pftdyn?????.nc*') # 'rm' not works for too long file list
           os.system('find ./temp/ -name "'+pftdyn_tmp+'" -exec rm {} \;')
