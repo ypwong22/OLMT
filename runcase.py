@@ -1145,16 +1145,18 @@ for i in range(1,int(options.ninst)+1):
             'ER', 'HR', 'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER', 'LIVESTEMC_XFER', \
             'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'SR', 'HR_vr', 'FIRA', 'CPOOL_TO_LIVESTEMC', 'TOTLITC', 'TOTSOMC'])
     if options.use_ew:
-        var_list_hourly.extend(['soil_pH', 'forc_app', 'forc_min', 'forc_pho', 'forc_gra',
-            'forc_sph', 'proton_vr', 'silica_vr', 'armor_thickness_vr', 'ssa', 'primary_mineral', 
+        var_list_hourly.extend(['QIN','QOUT', 'QLFX_ROOTSOI', 
+            'soil_pH', 'forc_app', 'forc_min', 'forc_pho', 'forc_gra', 
+            'proton_vr', 'silica_vr', 'armor_thickness_vr', 'ssa', 'primary_mineral', 
             'proton', 'cation', 'silica', 'secondary_mineral', 'primary_proton_flux_vr',
             'primary_h2o_flux_vr', 'primary_prelease_vr', 'primary_added', 
             'primary_dissolve', 'primary_cation_flux', 
             'secondary_cation_flux', 'secondary_mineral_flux', 'cation_leached',
             'cation_runoff', 'r_sequestration', 'background_weathering', 'cect_col',
-            'ceca_col', 'cece_col', 'secondary_silica_flux_vr',
-            'cec_proton_flux_vr', 'cec_proton_vr', 'proton_infl_vr', 
-            'proton_oufl_vr'])
+            'ceca_col', 'cece_col_1', 'cece_col_2', 'cece_col_3', 'cece_col_4', 'cece_col_5',
+            'secondary_silica_flux_vr', 'cec_proton_flux_vr', 'cec_proton_vr',
+            'proton_infl_vr', 'proton_oufl_vr', 'proton_uptake_vr',
+            'proton_leached_vr', 'proton_runoff_vr', 'bicarbonate_vr', 'carbonate_vr'])
         var_list_hourly.extend([f'primary_mineral_vr_{i+1}' for i in range(5)])
         var_list_hourly.extend([f'cation_vr_{i+1}' for i in range(5)])
         var_list_hourly.extend([f'secondary_mineral_vr_{i+1}' for i in range(1)])
@@ -1165,12 +1167,11 @@ for i in range(1,int(options.ninst)+1):
         var_list_hourly.extend([f'secondary_cation_flux_vr_{i+1}' for i in range(5)])
         var_list_hourly.extend([f'secondary_mineral_flux_vr_{i+1}' for i in range(2)])
         var_list_hourly.extend([f'r_precip_vr_{i+1}' for i in range(2)])
-        var_list_hourly.extend([f'f_cation_soil_vr_{i+1}' for i in range(5)])
-        var_list_hourly.extend([f'f_cation_water_vr_{i+1}' for i in range(5)])
         var_list_hourly.extend([f'cec_cation_flux_vr_{i+1}' for i in range(5)])
         var_list_hourly.extend([f'cec_cation_vr_{i+1}' for i in range(5)])
         var_list_hourly.extend([f'cation_infl_vr_{i+1}' for i in range(5)])
         var_list_hourly.extend([f'cation_oufl_vr_{i+1}' for i in range(5)])
+        var_list_hourly.extend([f'cation_uptake_vr_{i+1}' for i in range(5)])
         var_list_hourly.extend([f'cation_leached_vr_{i+1}' for i in range(5)])
         var_list_hourly.extend([f'cation_runoff_vr_{i+1}' for i in range(5)])
         var_list_hourly.extend([f'background_weathering_vr_{i+1}' for i in range(5)])
