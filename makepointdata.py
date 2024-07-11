@@ -108,7 +108,7 @@ if ('hcru' in options.res):
         else:
             #CMIP6 stype (Hurtt v2)
             surffile_orig = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_360x720cru_simyr1850_c180216.nc'
-    pftdyn_orig = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_0.5x0.5_hist_simyr1850-2015_c240308.nc'
+    pftdyn_orig = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_0.5x0.5_hist_simyr1850-2015_c191004.nc'
     nyears_landuse=166
 elif ('f19' in options.res):
     domainfile_orig = ccsm_input+'/share/domains/domain.lnd.fv1.9x2.5_gx1v6.090206.nc'
@@ -536,7 +536,7 @@ if myrank==0:
     if(ierr==0): 
         # NC-4 classic better for either NC-4 or NC-3 tools, 
         # but 'ncrename' not good with NC-4
-        ierr = os.system('/usr/local/gcc-x/netcdf-4.x-hdf5-gcc/bin/nccopy -7 -u '+domainfile_new+' '+domainfile_new+'.tmp')
+        ierr = os.system('nccopy -7 -u '+domainfile_new+' '+domainfile_new+'.tmp')
         if(ierr!=0):
             print('nccopy -7 -u '+domainfile_new+' '+domainfile_new+'.tmp')
             raise RuntimeError('Error: nccopy -7 -u ');# os.sys.exit()
@@ -1103,7 +1103,7 @@ if myrank==0:
     
     # NC-4 classic better for either NC-4 or NC-3 tools (though not writable as NC-4), 
     # but 'ncrename' used above may not works with NC-4
-    ierr = os.system('/usr/local/gcc-x/netcdf-4.x-hdf5-gcc/bin/nccopy -7 -u '+surffile_new+' '+surffile_new+'.tmp')
+    ierr = os.system('nccopy -7 -u '+surffile_new+' '+surffile_new+'.tmp')
     if(ierr!=0): 
         raise RuntimeError('Error: nccopy -7 -u ');# os.sys.exit()
     else:
