@@ -6,7 +6,7 @@ import subprocess
 import numpy
 import re
 
-parser = OptionParser();
+parser = OptionParser()
 
 parser.add_option("--caseidprefix", dest="mycaseid", default="", \
                   help="Unique identifier to include as a prefix to the case name")

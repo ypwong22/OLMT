@@ -199,8 +199,10 @@ parser.add_option("--c_only", dest="c_only", default=False, action ="store_true"
                   help='Carbon only (saturated N&P)')
 parser.add_option("--cn_only", dest="cn_only", default=False, action ="store_true", \
                   help='Carbon/Nitrogen only (saturated P)')
-parser.add_option("--use_ew", dest="use_ew", default=False, action ="store_true", \
-                  help='Run enhanced weathering code') 
+parser.add_option("--use_erw", dest="use_erw", default=False, action ="store_true", \
+                  help='Run enhanced weathering code')
+parser.add_option("--erw_parm_file", dest="erw_parm_file", default='', \
+                  help='Path to enhanced weathering parameter file')
 parser.add_option("--srcmods_loc", dest="srcmods_loc", default='', \
                   help = 'Copy sourcemods from this location')
 parser.add_option("--daymet", dest="daymet", default=False, \
@@ -567,8 +569,10 @@ for row in AFdatareader:
             basecmd = basecmd+' --c_only'
         if (options.cn_only):
             basecmd = basecmd+' --cn_only'
-        if (options.use_ew):
-            basecmd = basecmd+' --use_ew'
+        if (options.use_erw):
+            basecmd = basecmd+' --use_erw'
+            if (options.erw_parm_file != ''):
+                basecmd = basecmd+' --erw_parm_file '+options.erw_parm_file
         if (options.CH4):
             basecmd = basecmd+' --CH4'
         if (options.cruncep):

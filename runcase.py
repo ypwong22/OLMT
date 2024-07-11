@@ -282,8 +282,10 @@ parser.add_option("--cn_only", dest="cn_only", default=False, \
                   help = 'Carbon/Nitrogen only (supplemental P)', action="store_true")
 parser.add_option("--cp_only", dest="cp_only", default=False, \
                   help = 'Carbon/Phosphorus only (supplemental N)', action = "store_true")
-parser.add_option("--use_ew", dest="use_ew", default=False, \
+parser.add_option("--use_erw", dest="use_erw", default=False, \
                   help = 'Carbon/Nitrogen only (supplemental P)', action="store_true")
+parser.add_option("--erw_parm_file", dest="erw_parm_file", default='',
+                  help = 'file for enhanced weathering parameter modifications')
 parser.add_option("--ensemble_file", dest="ensemble_file", default='', \
                   help = 'Parameter sample file to generate ensemble')
 parser.add_option("--mc_ensemble", dest="mc_ensemble", default=-1, \
@@ -1144,7 +1146,7 @@ for i in range(1,int(options.ninst)+1):
             'CPOOL_TO_LIVESTEMC_STORAGE', 'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', \
             'ER', 'HR', 'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER', 'LIVESTEMC_XFER', \
             'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'SR', 'HR_vr', 'FIRA', 'CPOOL_TO_LIVESTEMC', 'TOTLITC', 'TOTSOMC'])
-    if options.use_ew:
+    if options.use_erw:
         var_list_hourly.extend(['QIN','QOUT', 'QLFX_ROOTSOI', 
             'soil_pH', 'forc_app', 'forc_min', 'forc_pho', 'forc_gra', 
             'proton_vr', 'silica_vr', 'armor_thickness_vr', 'ssa', 'primary_mineral', 
@@ -1530,7 +1532,7 @@ for i in range(1,int(options.ninst)+1):
             if (options.daymet4 and options.gswp3):
                 output.write(" metdata_type = 'gswp3_daymet4'\n")
             elif (options.daymet4 and options.crujra):
-                output.write(" metdata_type = 'crujra_daymet'\n")
+                output.write(" metdata_type = 'crujra_daymet4'\n")
             #else:
             #    output.write(" metdata_type = 'gswp3v1_daymet'\n") # This needs to be updated for other types
             output.write(" metdata_bypass = '%s'\n"%options.metdir)
@@ -1574,16 +1576,10 @@ for i in range(1,int(options.ninst)+1):
       output.write(" add_co2 = "+str(options.addco2)+"\n")
       output.write(" startdate_add_co2 = '"+str(options.sd_addco2)+"'\n")
 
-    if (options.use_ew):
+    if (options.use_erw):
       output.write(" use_ew = .true.\n")
-      output.write(" stream_year_first_ew = 1998\n")
-      output.write(" stream_year_last_ew = 2024\n")
-      output.write(" model_year_align_ew = 1998\n")
-      output.write(" doy_application_ew = 292\n")
-      output.write(" stream_fldFilename_ew = '"+options.ccsm_input+"/lnd/clm2/ewdata/ew_clm_hist_simyr1999_0.25x0.25_c150929.nc'\n")
-
+      output.write(" elm_erw_paramfile = '"+str(options.erw_parm_file)+"'\n")
     output.close()
-
 
 #configure case
 #if (isglobal):
