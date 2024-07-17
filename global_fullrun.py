@@ -402,7 +402,7 @@ if (options.cruncep or options.cruncepv8 or options.gswp3 or options.princeton o
         startyear = 1980
         endyear = 1999
     if (options.crujra):
-        site_endyear = 2017
+        site_endyear = 2023
 
 elif (options.site_forcing):
    #UMB only - test case

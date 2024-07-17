@@ -1490,8 +1490,10 @@ for i in range(1,int(options.ninst)+1):
                          +"atm_forcing.datm7.cruncep_qianFill.0.5d.V5.c140715/cpl_bypass_full'\n")
             elif (options.crujra and not options.daymet4):
                     output.write(" metdata_type = 'crujra'\n")
+                    #output.write(" metdata_bypass = '"+options.ccsm_input+"/atm/datm7/" \
+                    #     +"atm_forcing.datm7.CRUJRA.0.5d.v1.c190604/cpl_bypass_full'\n")
                     output.write(" metdata_bypass = '"+options.ccsm_input+"/atm/datm7/" \
-                         +"atm_forcing.datm7.CRUJRA.0.5d.v1.c190604/cpl_bypass_full'\n")
+                         +"atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'\n")
             elif (options.gswp3):
                 if (options.livneh):
                     output.write(" metdata_type = 'gswp3_livneh'\n")
