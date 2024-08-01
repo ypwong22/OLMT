@@ -1134,7 +1134,7 @@ for i in range(1,int(options.ninst)+1):
     #outputs for SPRUCE MiP and Jiafu's diagnostics code:
     var_list_hourly = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILLIQ','QOVER','QDRAI','TG','TV','TSA','TSOI', \
                       'FSA','FSDS','FLDS','TBOT','RAIN','SNOW','WIND','PBOT','QBOT','QVEGT','QVEGE','QSOIL', \
-                      'QH2OSFC','H2OSOI','ZWT','SNOWDP','TLAI','RH2M','QRUNOFF']
+                      'QH2OSFC','H2OSOI','SOILPSI','ZWT','SNOWDP','TLAI','RH2M','QRUNOFF']
     if ('RD' in compset or 'ECA' in compset):
       var_list_hourly.extend(['GPP', 'NEE', 'NEP', 'NPP', 'LEAFC_ALLOC', 'AGNPP', 'MR', \
             'CPOOL_TO_DEADSTEMC', 'LIVECROOTC_XFER_TO_LIVECROOTC', 'DEADCROOTC_XFER_TO_DEADCROOTC', \
@@ -1148,22 +1148,29 @@ for i in range(1,int(options.ninst)+1):
             'LIVESTEMC_STORAGE', 'DEADCROOTC_STORAGE', 'LIVECROOTC_STORAGE', 'CPOOL_TO_DEADSTEMC_STORAGE', \
             'CPOOL_TO_LIVESTEMC_STORAGE', 'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', \
             'ER', 'HR', 'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER', 'LIVESTEMC_XFER', \
-            'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'SR', 'HR_vr', 'FIRA', 'CPOOL_TO_LIVESTEMC', 'TOTLITC', 'TOTSOMC'])
+            'DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'SR', 'HR_vr', 'FIRA', 'CPOOL_TO_LIVESTEMC', 'TOTLITC', 'TOTSOMC', 'BTRAN']) # 'RRESIS'
+      if options.rootuptake:
+          var_list_hourly.extend(['LITR1_N_TO_FUNGI','LITR2_N_TO_FUNGI','LITR3_N_TO_FUNGI',
+                                  'LITR1_P_TO_FUNGI','LITR2_P_TO_FUNGI','LITR3_P_TO_FUNGI',
+                                  'LITR1_N_TO_FUNGI_vr','LITR2_N_TO_FUNGI_vr','LITR3_N_TO_FUNGI_vr',
+                                  'LITR1_P_TO_FUNGI_vr','LITR2_P_TO_FUNGI_vr','LITR3_P_TO_FUNGI_vr',
+                                  'LITR1N_vr','LITR2N_vr','LITR3N_vr',
+                                  'LITR1P_vr','LITR2P_vr','LITR3P_vr','SMIN_NH4_vr','SMIN_NO3_vr'])
     #var_list_hourly_bgc 
     var_list_daily = ['TLAI','SNOWDP','H2OSFC','ZWT']
     if ('RD' in compset or 'ECA' in compset):
       var_list_daily.extend(['TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 
                              'LITR3C_vr', 'SOIL1C_vr', 'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL',
                              'NPOOL','PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr',
-                             'SMINN', 'SMIN_NO3', 'SMIN_NH4', 'SMINN_vr', 'SMINP', 
+                             'SMINN', 'SMIN_NO3', 'SMIN_NH4', 'SMINN_vr','SMINP',
                              'SOLUTIONP_vr', 'ACTUAL_IMMOB', 'ACTUAL_IMMOB_P'])
 
     # various PFT variables 
-    var_list_pft = ['FPSN','TLAI','QVEGE','QVEGT']
+    var_list_pft = ['FPSN','TLAI','QVEGE','QVEGT','BTRAN','ROOTFR']
     if ('RD' in compset or 'ECA' in compset):
       # (1) turnover diagnostics
       var_list_pft.extend(['GPP', 'NPP', 'AGNPP', 'BGNPP', 'AR', 'MR', 'GR', 'XR', 
-                           'LITFALL', 'TOTVEGC', 'TOTVEGC_ABG'])
+                           'LITFALL', 'TOTVEGC', 'TOTVEGC_ABG','XSMRPOOL'])
       # (2) individual pools
       for organ in ['LEAF', 'FROOT', 'LIVESTEM', 'DEADSTEM', 'LIVECROOT', 'DEADCROOT']:
           var_list_pft.extend([f'{organ}C', f'{organ}C_STORAGE', f'{organ}C_XFER',
@@ -1175,12 +1182,22 @@ for i in range(1,int(options.ninst)+1):
       for organ in ['LEAF', 'FROOT']:
           var_list_pft.extend([f'{organ}C_ALLOC', f'{organ}C_TO_LITTER'])
       # (3) nutrient diagnostics
-      var_list_pft.extend(['CPOOL'])
-      var_list_pft.extend(['NPOOL', 'PPOOL', 'SMINN_TO_NPOOL', 'SMINP_TO_PPOOL'])
+      var_list_pft.extend(['CPOOL','NPOOL', 'PPOOL', 'SMINN_TO_NPOOL', 'SMINP_TO_PPOOL',
+                           'PLANT_NDEMAND','PLANT_PDEMAND',
+                           'RETRANSN_TO_NPOOL','RETRANSP_TO_PPOOL',
+                           'FROOTN','FROOTP','LEAFN','LEAFP'])
       if options.rootuptake:
-        var_list_pft.extend(['FPG_PATCH', 'FPG_P_PATCH','PLANT_NFUNGI_PATCH','PLANT_PFUNGI_PATCH',
-                             'PLANT_NDEMAND','PLANT_PDEMAND','PLANT_NABSORB','PLANT_PABSORB',
-                             'ZWT_ROOT_PATCH'])
+        var_list_pft.extend(['FPG_PATCH', 'FPG_P_PATCH',
+                             'PLANT_NDEMAND_POT','PLANT_PDEMAND_POT','FROOT_NDEMAND_POT',
+                             'FROOT_PDEMAND_POT','FUNGI_NDEMAND_POT','FUNGI_PDEMAND_POT',
+                             'FUNGI_LITR1_NDEMAND','FUNGI_LITR2_NDEMAND','FUNGI_LITR3_NDEMAND',
+                             'FUNGI_LITR1_PDEMAND','FUNGI_LITR2_PDEMAND','FUNGI_LITR3_PDEMAND',
+                             'FUNGI_SOM_TO_NPOOL', 'FUNGI_SOM_TO_PPOOL',
+                             'PLANT_NALLOC','PLANT_PALLOC',
+                             'FUNGI_INHIB_PATCH','ZWT_FROOT_PATCH','FFR_SRA_PATCH',
+                             'FFR_N_PATCH','FFR_P_PATCH','FFR_TSOI_PATCH','FFR_SWC_PATCH',
+                             'FFR_FPG_PATCH','FFR_FPG_P_PATCH','FFN_N_PATCH','FFN_P_PATCH',
+                             'FFN_NSC_PATCH','CPOOL_TO_FUNGI'])
       # (4) root phenology diagnostics
       if options.rootphenology:
         var_list_pft.extend([
