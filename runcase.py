@@ -283,7 +283,7 @@ parser.add_option("--cn_only", dest="cn_only", default=False, \
 parser.add_option("--cp_only", dest="cp_only", default=False, \
                   help = 'Carbon/Phosphorus only (supplemental N)', action = "store_true")
 parser.add_option("--use_erw", dest="use_erw", default=False, \
-                  help = 'Carbon/Nitrogen only (supplemental P)', action="store_true")
+                  help = 'Turn on enhanced weathering', action="store_true")
 parser.add_option("--erw_parm_file", dest="erw_parm_file", default='',
                   help = 'file for enhanced weathering parameter modifications')
 parser.add_option("--ensemble_file", dest="ensemble_file", default='', \
@@ -685,6 +685,8 @@ if (options.nopointdata == False):
         ptcmd = ptcmd + ' --marsh'
     if(options.humhol):
         ptcmd = ptcmd + ' --humhol'
+    if (options.use_erw):
+        ptcmd = ptcmd+' --use_erw'
 
     print(ptcmd)
     result = os.system(ptcmd)

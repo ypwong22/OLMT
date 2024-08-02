@@ -58,6 +58,8 @@ parser.add_option("--usersurfnc", dest="usersurfnc", default="none", \
                   help = 'User-provided surface data nc file, with one or more variable(s) as defined')
 parser.add_option("--usersurfvar", dest="usersurfvar", default="none", \
                   help = 'variable name(s) in User-provided surface data nc file, separated by ","')
+parser.add_option("--use_erw", dest="use_erw", default=False, \
+                  help = 'Turn on enhanced weathering', action="store_true")
 (options, args) = parser.parse_args()
 
 
@@ -78,42 +80,67 @@ mysimyr=int(options.mysimyr)
 if ('hcru' in options.res):
     resx = 0.5
     resy = 0.5
-    domainfile_orig = ccsm_input+'/share/domains/domain.clm/domain.lnd.360x720_cruncep.c20190221.nc'
+    if options.use_erw:
+        domainfile_orig = ccsm_input+'/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
+    else:
+        domainfile_orig = ccsm_input+'/share/domains/domain.clm/domain.lnd.360x720_cruncep.c20190221.nc'
 
     if (options.mymodel == 'CLM5'):
-        surffile_orig = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_360x720cru_16pfts_Irrig_CMIP6_simyr1850_c170824.nc'
+        if options.use_erw:
+            raise Exception('Not implemented')
+        else:
+            surffile_orig = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_360x720cru_16pfts_Irrig_CMIP6_simyr1850_c170824.nc'
     elif (options.crop):
-        surffile_orig = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_360x720cru_24pfts_simyr2000_c150227.nc'
+        if options.use_erw:
+            raise Exception('Not implemented')
+        else:
+            surffile_orig = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_360x720cru_24pfts_simyr2000_c150227.nc'
     else:
         if (mysimyr == 2000):
-            surffile_orig =  ccsm_input+'/lnd/clm2/surfdata_map/surfdata_360x720cru_simyr2000_c180216.nc'
+            if options.use_erw:
+                raise Exception('Not implemented')
+            else:
+                surffile_orig =  ccsm_input+'/lnd/clm2/surfdata_map/surfdata_360x720cru_simyr2000_c180216.nc'
         else:
-            #CMIP6 stype (Hurtt v2)
-            surffile_orig = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_0.5x0.5_simyr1850_c240308_newlon.nc'
-    pftdyn_orig = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_0.5x0.5_hist_simyr1850-2015_c240308_newlon.nc'
+            if options.use_erw:
+                surffile_orig = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
+            else:
+                #CMIP6 stype (Hurtt v2)
+                surffile_orig = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_0.5x0.5_simyr1850_c240308_newlon.nc'
+    if options.use_erw:
+        # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        # This will be changed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        pftdyn_orig = ccsm_input+'/lnd/clm2/surfdata_map/erw_ensemble/landuse.timeseries_conus_erw_on_hist_simyr1850_c240712_ensemble_54.nc'
+    else:
+        pftdyn_orig = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_0.5x0.5_hist_simyr1850-2015_c240308_newlon.nc'
     nyears_landuse=166
-elif ('f19' in options.res):
-    domainfile_orig = ccsm_input+'/share/domains/domain.lnd.fv1.9x2.5_gx1v6.090206.nc'
-    surffile_orig =  ccsm_input+'/lnd/clm2/surfdata_map/surfdata_1.9x2.5_simyr1850_c180306.nc'
-    pftdyn_orig = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_rcp8.5_simyr1850-2100_c141219.nc'
-    nyears_landuse=251
-    resx = 2.5
-    resy = 1.9
-elif ('f09' in options.res):
-    domainfile_orig = ccsm_input+'/share/domains/domain.lnd.fv0.9x1.25_gx1v6.090309.nc'
-    surffile_orig =  ccsm_input+'/lnd/clm2/surfdata_map/surfdata_0.9x1.25_simyr1850_c180306.nc'
-    pftdyn_orig = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_rcp8.5_simyr1850-2100_c141219.nc'
-    nyears_landuse=251
-    resx = 1.25
-    resy = 0.9
-elif ('ne30' in options.res):
-    #domainfile_orig = ccsm_input+'/share/domains/domain.lnd.ne30np4_oEC60to30.20151214.nc'
-    #water cycle experiment
-    domainfile_orig = ccsm_input+'/share/domains/domain.lnd.ne30np4_oEC60to30v3.161222.nc'  
-    #surffile_orig   = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_ne30np4_simyr1850_2015_c171018.nc'
-    surffile_orig   = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_ne30np4_simyr1850_c180306.nc'
-    pftdyn_orig     = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_simyr1850_2015_c20171018.nc'
-    nyears_landuse  = 166
+else:
+    if options.use_erw:
+        raise Exception('Not implemented')
+
+    if ('f19' in options.res):
+        domainfile_orig = ccsm_input+'/share/domains/domain.lnd.fv1.9x2.5_gx1v6.090206.nc'
+        surffile_orig =  ccsm_input+'/lnd/clm2/surfdata_map/surfdata_1.9x2.5_simyr1850_c180306.nc'
+        pftdyn_orig = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_rcp8.5_simyr1850-2100_c141219.nc'
+        nyears_landuse=251
+        resx = 2.5
+        resy = 1.9
+    elif ('f09' in options.res):
+        domainfile_orig = ccsm_input+'/share/domains/domain.lnd.fv0.9x1.25_gx1v6.090309.nc'
+        surffile_orig =  ccsm_input+'/lnd/clm2/surfdata_map/surfdata_0.9x1.25_simyr1850_c180306.nc'
+        pftdyn_orig = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_rcp8.5_simyr1850-2100_c141219.nc'
+        nyears_landuse=251
+        resx = 1.25
+        resy = 0.9
+    elif ('ne30' in options.res):
+        #domainfile_orig = ccsm_input+'/share/domains/domain.lnd.ne30np4_oEC60to30.20151214.nc'
+        #water cycle experiment
+        domainfile_orig = ccsm_input+'/share/domains/domain.lnd.ne30np4_oEC60to30v3.161222.nc'  
+        #surffile_orig   = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_ne30np4_simyr1850_2015_c171018.nc'
+        surffile_orig   = ccsm_input+'/lnd/clm2/surfdata_map/surfdata_ne30np4_simyr1850_c180306.nc'
+        pftdyn_orig     = ccsm_input+'/lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_simyr1850_2015_c20171018.nc'
+        nyears_landuse  = 166
 
 n_grids=1
 issite = False
@@ -131,7 +158,7 @@ elif (options.point_list != ''):
     input_file = open(options.point_list,'r')
     n_grids=0
     point_pfts=[]
-    
+
     # if providing a user-defined nc file for extracting surface data other than standard inputs
     if (options.usersurfnc!='none'):
         if (options.usersurfvar=='none'):
@@ -218,8 +245,13 @@ else:
 
 #get corresponding 0.5x0.5 and 1.9x2.5 degree grid cells
 if (options.res == 'hcru_hcru'):
-     longxy = (numpy.cumsum(numpy.ones([721]))-1)*0.5
-     latixy = (numpy.cumsum(numpy.ones([361]))-1)*0.5 -90.0
+    if not options.use_erw:
+       longxy = (numpy.cumsum(numpy.ones([721]))-1)*0.5
+       latixy = (numpy.cumsum(numpy.ones([361]))-1)*0.5 -90.0
+    else:
+        longxy = nffun.getvar(surffile_orig, 'LONGXY')[0, :]
+        latixy = nffun.getvar(surffile_orig, 'LATIXY')[:, 0]
+
 elif ('f19' in options.res):
     longxy = (numpy.cumsum(numpy.ones([145]))-1)*2.5-1.25
     latixy_centers = (numpy.cumsum(numpy.ones([96]))-1)*(180.0/95) - 90.0
@@ -268,7 +300,6 @@ for n in range(0,n_grids):
           xgrid_max[n] = i
           mindist=thisdist
     else:
-      
       for i in range(0,longxy.shape[0]-1):
         if (lon_bounds[0] >= longxy[i]):
             xgrid_min[n] = i
@@ -391,7 +422,6 @@ for n in range(0,n_grids):
             side_deg = math.sqrt(float(options.point_area_deg2)) # degx X degy, NOT square radians
             yscalar = side_deg/resy
             xscalar = side_deg/resx
-
 
     if (issite):
         frac = nffun.getvar(domainfile_new, 'frac')
@@ -555,6 +585,17 @@ for n in range(0,n_grids):
         monthly_sai  = nffun.getvar(surffile_new, 'MONTHLY_SAI')
         monthly_height_top = nffun.getvar(surffile_new, 'MONTHLY_HEIGHT_TOP')
         monthly_height_bot = nffun.getvar(surffile_new, 'MONTHLY_HEIGHT_BOT')
+
+        if options.use_erw:
+            cec_acid = nffun.getvar(surffile_new, 'CEC_ACID')
+            cec_1 = nffun.getvar(surffile_new, 'CEC_EFF_1')
+            cec_2 = nffun.getvar(surffile_new, 'CEC_EFF_2')
+            cec_3 = nffun.getvar(surffile_new, 'CEC_EFF_3')
+            cec_4 = nffun.getvar(surffile_new, 'CEC_EFF_4')
+            cec_5 = nffun.getvar(surffile_new, 'CEC_EFF_5')
+            soil_ph = nffun.getvar(surffile_new, 'SOIL_PH')
+            pct_kaolinite = nffun.getvar(surffile_new, 'PCT_KAOLINITE')
+            pct_calcite = nffun.getvar(surffile_new, 'PCT_CALCITE')
 
         npft = 17
         npft_crop = 0
@@ -742,7 +783,18 @@ for n in range(0,n_grids):
         ierr = nffun.putvar(surffile_new, 'MONTHLY_HEIGHT_TOP', monthly_height_top)
         ierr = nffun.putvar(surffile_new, 'MONTHLY_HEIGHT_BOT', monthly_height_bot)
         ierr = nffun.putvar(surffile_new, 'MONTHLY_LAI', monthly_lai)
-    
+
+        if options.use_erw:
+            ierr = nffun.putvar(surffile_new, 'CEC_ACID', cec_acid)
+            ierr = nffun.putvar(surffile_new, 'CEC_EFF_1', cec_1)
+            ierr = nffun.putvar(surffile_new, 'CEC_EFF_2', cec_2)
+            ierr = nffun.putvar(surffile_new, 'CEC_EFF_3', cec_3)
+            ierr = nffun.putvar(surffile_new, 'CEC_EFF_4', cec_4)
+            ierr = nffun.putvar(surffile_new, 'CEC_EFF_5', cec_5)
+            ierr = nffun.putvar(surffile_new, 'SOIL_PH', soil_ph)
+            ierr = nffun.putvar(surffile_new, 'PCT_KAOLINITE', pct_kaolinite)
+            ierr = nffun.putvar(surffile_new, 'PCT_CALCITE', pct_calcite)
+
     else: # not if(issite)
         if (int(options.mypft) >= 0):
           pct_pft      = nffun.getvar(surffile_new, 'PCT_NAT_PFT')
@@ -832,6 +884,16 @@ if (options.nopftdyn == False):
         harvest_vh1  = nffun.getvar(pftdyn_new, 'HARVEST_VH1')
         harvest_vh2  = nffun.getvar(pftdyn_new, 'HARVEST_VH2')
         
+        if (options.use_erw):
+            erw_doy = nffun.getvar(pftdyn_new, 'SOIL_AMENDMENTS_DOY')
+            erw_rate = nffun.getvar(pftdyn_new, 'SOIL_AMENDMENTS_RATE')
+            erw_size = nffun.getvar(pftdyn_new, 'SOIL_AMENDMENTS_GRAINSIZE')
+            erw_pct = nffun.getvar(pftdyn_new, 'SOIL_AMENDMENTS_PCT')
+            try:
+                erw_pho = nffun.getvar(pftdyn_new, 'SOIL_AMENDMENTS_NUTRIENT_PCT')
+            except:
+                erw_pho = None
+
         #read file for site-specific PFT information
         dynexist = False
         mypft_frac=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -983,6 +1045,15 @@ if (options.nopftdyn == False):
         ierr = nffun.putvar(pftdyn_new, 'HARVEST_SH3', harvest_sh3)
         ierr = nffun.putvar(pftdyn_new, 'HARVEST_VH1', harvest_vh1)
         ierr = nffun.putvar(pftdyn_new, 'HARVEST_VH2', harvest_vh2)
+
+        if (options.use_erw):
+            ierr = nffun.putvar(pftdyn_new, 'SOIL_AMENDMENTS_DOY', erw_doy)
+            ierr = nffun.putvar(pftdyn_new, 'SOIL_AMENDMENTS_RATE', erw_rate)
+            ierr = nffun.putvar(pftdyn_new, 'SOIL_AMENDMENTS_GRAINSIZE', erw_size)
+            ierr = nffun.putvar(pftdyn_new, 'SOIL_AMENDMENTS_PCT', erw_pct)
+            if not erw_pho is None:
+                ierr = nffun.putvar(pftdyn_new, 'SOIL_AMENDMENTS_NUTRIENT_PCT', erw_pho)
+
     pftdyn_old = pftdyn_new
 
   pftdyn_new = './temp/surfdata.pftdyn.nc'
@@ -1026,4 +1097,3 @@ if (options.nopftdyn == False):
       ierr = os.system('mv '+pftdyn_new+'.tmp '+pftdyn_new)
 
   print("INFO: Extracted and Compiled '"+ pftdyn_new + "' FROM: '" + pftdyn_orig+"'! \n")
-

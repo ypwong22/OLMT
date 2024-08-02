@@ -180,7 +180,10 @@ parser.add_option("--walltime", dest="walltime", default=24, \
                   help = "desired walltime for each job (hours)")
 parser.add_option("--no_submit",dest="no_submit",default=False,action="store_true",
                     help='Do not submit jobs')
-
+parser.add_option("--use_erw", dest="use_erw", default=False, \
+                  help = 'Turn on enhanced weathering', action="store_true")
+parser.add_option("--erw_parm_file", dest="erw_parm_file", default='',
+                  help = 'file for enhanced weathering parameter modifications')
 (options, args) = parser.parse_args()
 
 #------------ define function for pbs submission
@@ -279,7 +282,7 @@ if (options.makepointdata_only): # don't configure/build/run model
     options.nofn = True
     options.notrans = True
     options.nopointdata = False
-    
+
 print(options.machine)
 #default compilers
 if (options.compiler == ''):
@@ -549,6 +552,10 @@ if (options.domainfile != ''):
     basecmd = basecmd+' --domainfile '+options.domainfile
 if (options.pftdynfile != ''):
     basecmd = basecmd + ' --landusefile '+options.pftdynfile
+if (options.use_erw):
+    basecmd = basecmd + ' --use_erw'
+    if (options.erw_parm_file != ''):
+        basecmd = basecmd+' --erw_parm_file '+options.erw_parm_file
 basecmd = basecmd + ' --np '+str(options.np)
 basecmd = basecmd + ' --tstep '+str(options.tstep)
 basecmd = basecmd + ' --co2_file '+options.co2_file

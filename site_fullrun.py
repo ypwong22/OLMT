@@ -200,7 +200,7 @@ parser.add_option("--c_only", dest="c_only", default=False, action ="store_true"
 parser.add_option("--cn_only", dest="cn_only", default=False, action ="store_true", \
                   help='Carbon/Nitrogen only (saturated P)')
 parser.add_option("--use_erw", dest="use_erw", default=False, action ="store_true", \
-                  help='Run enhanced weathering code')
+                  help='Turn on enhanced weathering')
 parser.add_option("--erw_parm_file", dest="erw_parm_file", default='', \
                   help='Path to enhanced weathering parameter file')
 parser.add_option("--srcmods_loc", dest="srcmods_loc", default='', \
@@ -949,6 +949,8 @@ for row in AFdatareader:
                     ptcmd = ptcmd+' --humhol'
                 if (options.marsh):
                     ptcmd = ptcmd+' --marsh'
+                if (options.use_erw):
+                    ptcmd = ptcmd+' --use_erw'
                 result = runcmd(ptcmd)
                 if (result > 0):
                     print('Site_fullrun:  Error creating point data for '+site)
