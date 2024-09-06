@@ -1170,7 +1170,7 @@ for i in range(1,int(options.ninst)+1):
     if ('RD' in compset or 'ECA' in compset):
       # (1) turnover diagnostics
       var_list_pft.extend(['GPP', 'NPP', 'AGNPP', 'BGNPP', 'AR', 'MR', 'GR', 'XR', 
-                           'LITFALL', 'TOTVEGC', 'TOTVEGC_ABG','XSMRPOOL'])
+                           'LITFALL', 'TOTVEGC', 'TOTVEGC_ABG','XSMRPOOL','AVAILC'])
       # (2) individual pools
       for organ in ['LEAF', 'FROOT', 'LIVESTEM', 'DEADSTEM', 'LIVECROOT', 'DEADCROOT']:
           var_list_pft.extend([f'{organ}C', f'{organ}C_STORAGE', f'{organ}C_XFER',
@@ -1921,7 +1921,7 @@ if ((options.ensemble_file != '' or int(options.mc_ensemble) != -1) and (options
               output_run.write('#SBATCH --qos=short\n')
             if ('cades-baseline' in options.machine):
               output_run.write('#SBATCH -A CLI185\n')
-              output_run.write('#SBATCH -p batch\n')
+              output_run.write('#SBATCH -p batch_ccsi\n')
               output_run.write('#SBATCH --ntasks-per-node 128\n')
             elif ('cades' in options.machine):
                output_run.write('#SBATCH -A ccsi\n')
