@@ -493,7 +493,7 @@ else:
                         elif ('landuse_timeseries' in s):
                           lnd_in_new.write(s.replace('plot07','plot'+pst))
                         elif ('paramfile' in s):
-                          lnd_in_new.write('./clm_params_'+jobst+'.nc')
+                          lnd_in_new.write("paramfile = './clm_params_"+jobst[1:]+".nc'\n")
                         else:
                           lnd_in_new.write(s)
                       lnd_in_old.close()
