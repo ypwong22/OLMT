@@ -492,6 +492,8 @@ else:
                             lnd_in_new.write(" startdate_add_co2 = '20160315'\n") 
                         elif ('landuse_timeseries' in s):
                           lnd_in_new.write(s.replace('plot07','plot'+pst))
+                        elif ('paramfile' in s):
+                          lnd_in_new.write('./clm_params_'+jobst+'.nc')
                         else:
                           lnd_in_new.write(s)
                       lnd_in_old.close()
