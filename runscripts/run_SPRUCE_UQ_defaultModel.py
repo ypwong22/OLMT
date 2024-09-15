@@ -1,176 +1,106 @@
 import sys
 sys.path.append('..')
 import model_ELM
-from OLMTutils import get_machine_info, get_site_info, get_point_list
+from OLMTutils import get_machine_info, get_site_info
 import os
 import numpy as np
 
 
 #Get default directories, automatically detect machine if machine_name=''
 #machine, rootdir, inputdata = get_machine_info(machine_name='')
-machine='cades-baseline'
-rootdir='/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM'
-inputdata=rootdir+'/inputdata'
+machine = 'cades-baseline'
+rootdir = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM'
+inputdata = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdat'
 
 #set rootdir and inputdata below if you want to override defaults
-caseroot= rootdir+'/case_dirs'
-runroot = rootdir+'/output'
+caseroot= rootdir+'/e3sm_cases'
+runroot = rootdir+'/e3sm_run'
 #TODO:  add option to clone repository
-modelroot = os.environ['HOME']+'/models/E3SM_cbgc-v3'  #Existing E3SM code directory
+modelroot = os.environ['HOME']+'/models/ELM-Peatlands2'  #Existing E3SM code directory
 
-<<<<<<<< HEAD:runscripts/run_TGU.py
-#Set the full path of the bld directory to use a pre-built executable. Set exeroot='' to build 
-exeroot = '/pscratch/sd/r/ricciuto/e3sm_run/20250313_region_I1850WCCNPTGU_ad_spinup/bld/'
-
-#----------------------Required inputs---------------------------------------------
-
-runtype = 'latlon_list'               #site,latlon_list,latlon_bbox
-mettype = 'default'              #Site or reanalysis product to use (site, gswp3, crujra)
-case_suffix = ''               #Identifier for cases (leave blank if none)
-
-if (runtype == 'site'):
-    sites = 'US-UMB'           #Site name, list of site names, or 'all' for all sites in site group
-    sitegroup = 'AmeriFlux'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
-    numproc = 1
-else:
-    region_name = 'region'   #Set the name of the region/point list to be simulated
-    numproc = 384            #Number of processors, must be <= the number of active gridcells
-    if (runtype == 'latlon_list'):
-        point_list_file = '/global/homes/r/ricciuto/models/elm-olmt/runscripts/tgu_points.txt'   #file with a list of lat lons
-#If neither point_list or site is defined, it will use the bounds below.
-lat_bounds = [-90,90]
-lon_bounds = [-180,180]
-res = 'r05_r05'          #Resolution of global files to extract from
-
-use_cpl_bypass = False      #Coupler bypass for meteorology
-========
 #We are going to use a pre-built executable. Set exeroot='' to build 
-#exeroot = '/gpfs/wolf2/cades/cli185/scratch/zdr/e3sm_run/20240813_region_ICB1850CNRDCTCBC_ad_spinup/bld/'
+#exeroot = '/gpfs/wolf2/cades/cli185/scratch/zdr/e3sm_run/20240812_US-SPR_ICB1850CNRDCTCBC_ad_spinup/bld'
 exeroot = ''
-
 #----------------------Required inputs---------------------------------------------
+sites = 'US-SPR'           #Site or list of sites (6-character FLUXNET ID) or 'all for all sites in group
+sitegroup = 'AmeriFlux'    #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
+mettype = 'site'           #Site or reanalysis product
+case_suffix = '20231113'   #Identifier for cases (leave blank if none)
 
-runtype = 'latlon_bbox'        #site,latlon_list,latlon_bbox 
-mettype = 'crujra'             #Site or reanalysis product to use (site, gswp3, crujra)
-case_suffix = ''               #Identifier for cases (leave blank if none)
-
-if (runtype == 'site'):
-    sites = 'all'           #Site name, list of site names, or 'all' for all sites in site group
-    sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
-    numproc = 1
-else:
-    region_name = 'smallbox'  #Set the name of the region/point list to be simulated
-    numproc = 15            #Number of processors, must be <= the number of active gridcells
-    if (runtype == 'latlon_list'):
-        point_list_file = '/ccsopen/home/zdr/models/OLMT/point_lists/ERW_sitedata.txt'   #List of lat lons
-#If neither point_list or site is defined, it will use the bounds below. 
-lat_bounds = [37.25,38.75]
-lon_bounds = [-82.75,-80.25]
-res = 'hcru_hcru'          #Resolution of global files to extract from
-
-use_cpl_bypass = True      #Use Coupler bypass for meteorology
-use_erw        = True      #Use enhanced rock weathering code
->>>>>>>> 34fd080 (runscripts):runscripts/run_ERW_bbox.py
+use_cpl_bypass = True      #Coupler bypass for meteorology
 use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with FATES-SP)
 use_fates      = False     #Use FATES compsets
-fates_nutrient = False      #Use FATES nutrient (parteh_mode = 2)
-use_TGU        = True
+fates_nutrient = False     #Use FATES nutrient (parteh_mode = 2)
 
-<<<<<<<< HEAD:runscripts/run_TGU.py
-nyears_ad      =   40      #number of years for ad spinup
-nyears_final   =   40      #number of years for final spinup OR for SP run
-nyears_trans   =  164      #number of years for transient run 
-========
 nyears_ad      =  200     #number of years for ad spinup
 nyears_final   =  400      #number of years for final spinup OR for SP run
 nyears_trans   =  165      #number of years for transient run 
->>>>>>>> 34fd080 (runscripts):runscripts/run_ERW_bbox.py
                            #  If -1, the final year will be the last year of forcing data.
 run_startyear  = 1850      #Starting year for transient run OR for SP run
 
 
 #---------------------Optional inputs via namelist variables------------------------
 #Define a dictionary to handle namelist options.
-#note:  use surffile, domainfile, pftdynfile, metdir instead of the standard namelist variables for those files.
+#note:  set  'surffile', 'domainfile', 'pftdynfile', 'metdir' instead of the standard namelist variables for those files.
+#note:  Also set options here that use CPPDEFS (e.g. marsh, humhol)
 #case_options['option'] = value or [value1, value2, value3] if applying different options to different compsets
 case_options={} 
-<<<<<<<< HEAD:runscripts/run_TGU.py
-#case_options['fates_paramfile'] = inputdata+'/lnd/clm2/paramdata/fates_params_api.32.0.0_pft1_c231215.nc'
-#case_options['hist_mfilt']  = '1'
-#case_options['hist_nhtfrq'] = '0'
-========
-#Use Custom CONUS files
-case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
-case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
-case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.timeseries_conus_erw_on_hist_simyr1850_c240712_ensemble_1.nc'
-case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
-if (use_erw):
-    case_options['use_ew'] = '.true.'
-    case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
->>>>>>>> 34fd080 (runscripts):runscripts/run_ERW_bbox.py
+case_options['humhol'] = True
+case_options['metdir'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/'
+case_options['pftdynfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/pftdyn/surfdata.pftdyn_plot07.nc'
+case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_CNP'
+case_options['use_nofire'] = '.true.'
 
 #--------------------ensemble options------------------------------------------------
 
-parm_list      = ''  #'parm_list_example' #Set parameter list (leave blank for no ensemble)
+parm_list      = ''    #Set parameter list (leave blank for no ensemble)
 nsamples       =  1000    #number of samples to run
 np_ensemble    =  384    #number of ensemble numbers to run in parallel (MUST be <= nsamples)
 ensemble_file  = ''     #File containing samples (if blank, OLMT will generate one)
 postproc_vars  = ['GPP','ER','NPP','NEE','TLAI','FSH','EFLX_LH_TOT']  #Variables to automatically post-process
-postproc_startyear = 2007
-postproc_endyear   = 2008
+postproc_startyear = 2000
+postproc_endyear   = 2007
 postproc_freq      = 'monthly'   #Can be daily, monthly, annual
 
 #----------------------Define treatment cases ----------------------------------------
 #
-#Treatmeant cases will use the same compset as the last case, and will inherit case_options
+#Treatment cases will use the same compset as the last case, and will inherit case_options unless overwritten
 #Specify additional options for treatments as a list (one for each desired treatment)
-nyears_treatment   = 85                              #number of years to run treatment simulation (assumed all same)
+nyears_treatment   = 7                               #number of years to run treatment simulation (assumed all same)
 startyear_treatment = run_startyear + nyears_trans   #Starting year (assuming to start from end of transient
 treatment_options={}
-#treatment_options['suffix']        = ['reseed']      #List of suffixes for different treatments (required)
-#treatment_options['restart_leafc_storage'] = [10.]           #Restart file manipulation (experimental)
-#treatment_options['restart_soil4c_vr'] = ['*0.5']
-#treatment_options['restart_soil4n_vr'] = ['*0.5']
-#treatment_options['restart_soil4p_vr'] = ['*0.5']
+#Treatment cases
+treatments=['TAMB','T0.00','T2.25','T4.50','T6.75','T9.00','T0.00ECO2','T2.25CO2', \
+            'T4.50CO2','T6.75CO2','T9.00CO2']
+plots=[7,6,20,13,8,17,19,11,4,16,10]  #Plot numbers corresponding to each treatment
+#Add Treatment cases
+treatment_options['suffix'] = treatments
+treatment_options['metdir'] = []
+treatment_options['pftdynfile']=[]
+for p in range(0,len(plots)):
+    plotstr = str(100+plots[p])[1:]
+    treatment_options['metdir'].append(case_options['metdir']+'/plot'+plotstr)  #Each case has its own met data directory
+    #Each case has its own dynamic PFT file
+    treatment_options['pftdynfile'].append(inputdata+'/SPRUCE_data/pftdyn/surfdata.pftdyn_plot'+plotstr+'.nc')
 
 #---------------End of user input -----------------------------------------------------
 
-print('\n')
-if (runtype == 'site'):
-  #Check to see if all reqested sites exist
-  if not isinstance(sites,list):
-        sites=[sites]
 
-  if (sites[0] != ''):
-    siteinfo = get_site_info(inputdata, sitegroup=sitegroup)
-    if sites[0] == 'all':
-        sites = list(siteinfo.keys())
-        print('Running all sites in '+sitegroup+' site group:')
-        print(sites)
-    else:
-        for s in sites:
-            if not (s in siteinfo.keys()):
-                print(s+' not in '+sitegroup+' site group. Exiting.')
-                print('Available sites: ',siteinfo.keys())
-                sys.exit(1)
-        print('Running site(s): ', sites)
-  point_list  = []
-  region_name = ''
+#Check to see if all reqested sites exist
+siteinfo = get_site_info(inputdata, sitegroup=sitegroup)
+if not isinstance(sites,list):
+    sites=[sites]
+if sites[0] == 'all':
+    sites = list(siteinfo.keys())
+    print('Running all sites in '+sitegroup+' site group:')
+    print(sites)
 else:
-    sites=['']
-    if (runtype == 'latlon_list'):
-        point_list = get_point_list(point_list_file)
-        print('Running ', len(point_list), 'grid cells')
-        print('Points in '+point_list_file)
-        if (numproc > len(point_list)):
-            numproc = len(point_list)
-            print('Warning:  number of proceessors greater than number '\
-                    ,'of grid cells. Setting numproc = ',numproc)
-    else:
-        point_list = []
-        print('Running with lat/lon bounding box')
-        print('Lat: ', lat_bounds)
-        print('Lon: ', lon_bounds)
+    for s in sites:
+        if not (s in siteinfo.keys()):
+            print(s+' not in '+sitegroup+' site group. Exiting.')
+            print('Available sites: ',siteinfo.keys())
+            sys.exit(1)
+    print('Running site(s): ', sites)
 
 #Construct the list of compsets and suppring information
 compset_type="I"
@@ -181,14 +111,11 @@ twophase=False
 compset_base='CNPRDCTCBC'
 if (use_fates):
     compset_base='ELMFATES'
-if (use_TGU):
-    compset_base='WCCNPTGU'
-
 compset_type="I"
 if (use_cpl_bypass):
     compset_type='ICB'
 elif ((mettype != 'site' or 'PR-LUQ' in sites) and nyears_trans != 0):
-    twophase=True       #if using BOTH DATM and reanalysis, split into 2 cases
+    twophase=True       #if using DATM and reanalysis, split into 2 cases
 
 #TODO - move construction of compset lists to a function (in OLMTinfo)
 compsets=[]
@@ -203,7 +130,7 @@ if (use_SP):
   depends=[-1]
 else:
   if (nyears_ad > 0):
-    compsets.append(compset_type+'1850'+compset_base) #.replace('CNP','CN'))  #ad_spinup
+    compsets.append(compset_type+'1850'+compset_base.replace('CNP','CN'))  #ad_spinup
     suffix.append('ad_spinup')
     startyear.append(1)
     nyears.append(nyears_ad)
@@ -277,15 +204,12 @@ for site in sites:
     cases[c] = model_ELM.ELMcase(caseid='',compset=compsets[c], site=site, \
         caseroot=caseroot,runroot=runroot,inputdata=inputdata,modelroot=modelroot, \
         machine=machine, exeroot=exeroot, suffix=mysuffix,  \
-        res=res, nyears=nyears[c],startyear=startyear[c], region_name=region_name, \
-        lat_bounds=lat_bounds, lon_bounds=lon_bounds, np=numproc, point_list=point_list)
+        res='hcru_hcru', nyears=nyears[c],startyear=startyear[c])
 
     #Create the case
     cases[c].create_case()
     cases[c].case_options={}
-    if (site != ''):
-        cases[c].siteinfo = siteinfo[site]
-
+    cases[c].siteinfo = siteinfo[site]
     #Get the namelist options for this case
     for key in case_options.keys():
         if isinstance(case_options[key], list):
@@ -309,15 +233,11 @@ for site in sites:
     if ('phase2' in suffix[c]):
       #Set the starting year from the last case
       cases[c].startyear = cases[c-1].startyear+cases[c-1].run_n
-    if mettype != 'default':
-      if ('metdir' in cases[c].case_options.keys()):
+    if ('metdir' in cases[c].case_options.keys()):
         metdir = cases[c].case_options['metdir']
         cases[c].get_forcing(mettype=mettype, metdir=metdir)
-      else:
-        cases[c].get_forcing(mettype=mettype)
     else:
-        cases[c].forcing='default'
-        cases[c].nyears_spinup = 20
+        cases[c].get_forcing(mettype=mettype)
 
     #Set the initial data file (if depends on previous case)
     cases[c].dependcase=''

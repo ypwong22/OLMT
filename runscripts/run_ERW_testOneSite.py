@@ -5,6 +5,7 @@ from OLMTutils import get_machine_info, get_site_info, get_point_list
 import os
 import numpy as np
 
+#---------------------Set up directories -----------------------------------------
 
 #Get default directories, automatically detect machine if machine_name=''
 #machine, rootdir, inputdata = get_machine_info(machine_name='')
@@ -16,89 +17,55 @@ inputdata=rootdir+'/inputdata'
 caseroot= rootdir+'/case_dirs'
 runroot = rootdir+'/output'
 #TODO:  add option to clone repository
-modelroot = os.environ['HOME']+'/models/E3SM_cbgc-v3'  #Existing E3SM code directory
+modelroot = os.environ['HOME']+'/models/E3SM_ERW'  #Existing E3SM code directory
 
-<<<<<<<< HEAD:runscripts/run_TGU.py
-#Set the full path of the bld directory to use a pre-built executable. Set exeroot='' to build 
-exeroot = '/pscratch/sd/r/ricciuto/e3sm_run/20250313_region_I1850WCCNPTGU_ad_spinup/bld/'
-
-#----------------------Required inputs---------------------------------------------
-
-runtype = 'latlon_list'               #site,latlon_list,latlon_bbox
-mettype = 'default'              #Site or reanalysis product to use (site, gswp3, crujra)
-case_suffix = ''               #Identifier for cases (leave blank if none)
-
-if (runtype == 'site'):
-    sites = 'US-UMB'           #Site name, list of site names, or 'all' for all sites in site group
-    sitegroup = 'AmeriFlux'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
-    numproc = 1
-else:
-    region_name = 'region'   #Set the name of the region/point list to be simulated
-    numproc = 384            #Number of processors, must be <= the number of active gridcells
-    if (runtype == 'latlon_list'):
-        point_list_file = '/global/homes/r/ricciuto/models/elm-olmt/runscripts/tgu_points.txt'   #file with a list of lat lons
-#If neither point_list or site is defined, it will use the bounds below.
-lat_bounds = [-90,90]
-lon_bounds = [-180,180]
-res = 'r05_r05'          #Resolution of global files to extract from
-
-use_cpl_bypass = False      #Coupler bypass for meteorology
-========
 #We are going to use a pre-built executable. Set exeroot='' to build 
 #exeroot = '/gpfs/wolf2/cades/cli185/scratch/zdr/e3sm_run/20240813_region_ICB1850CNRDCTCBC_ad_spinup/bld/'
 exeroot = ''
 
 #----------------------Required inputs---------------------------------------------
 
-runtype = 'latlon_bbox'        #site,latlon_list,latlon_bbox 
+runtype = 'site'               #site,latlon_list,latlon_bbox 
 mettype = 'crujra'             #Site or reanalysis product to use (site, gswp3, crujra)
-case_suffix = ''               #Identifier for cases (leave blank if none)
+case_suffix = 'erw'           #Identifier for cases (leave blank if none)
 
 if (runtype == 'site'):
-    sites = 'all'           #Site name, list of site names, or 'all' for all sites in site group
+    sites = 'test10'        #Site name, list of site names, or 'all' for all sites in site group
     sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
     numproc = 1
 else:
-    region_name = 'smallbox'  #Set the name of the region/point list to be simulated
-    numproc = 15            #Number of processors, must be <= the number of active gridcells
+    region_name = 'test'  #Set the name of the region/point list to be simulated
+    numproc = 1           #Number of processors, must be <= the number of active gridcells
     if (runtype == 'latlon_list'):
         point_list_file = '/ccsopen/home/zdr/models/OLMT/point_lists/ERW_sitedata.txt'   #List of lat lons
 #If neither point_list or site is defined, it will use the bounds below. 
-lat_bounds = [37.25,38.75]
-lon_bounds = [-82.75,-80.25]
+lat_bounds = [37.1,37.5]
+lon_bounds = [-81.5,-81.1]
 res = 'hcru_hcru'          #Resolution of global files to extract from
 
 use_cpl_bypass = True      #Use Coupler bypass for meteorology
-use_erw        = True      #Use enhanced rock weathering code
->>>>>>>> 34fd080 (runscripts):runscripts/run_ERW_bbox.py
+use_erw        = True     #Use enhanced rock weathering code
 use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with FATES-SP)
 use_fates      = False     #Use FATES compsets
-fates_nutrient = False      #Use FATES nutrient (parteh_mode = 2)
-use_TGU        = True
+fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
 
-<<<<<<<< HEAD:runscripts/run_TGU.py
-nyears_ad      =   40      #number of years for ad spinup
-nyears_final   =   40      #number of years for final spinup OR for SP run
-nyears_trans   =  164      #number of years for transient run 
-========
 nyears_ad      =  200     #number of years for ad spinup
 nyears_final   =  400      #number of years for final spinup OR for SP run
 nyears_trans   =  165      #number of years for transient run 
->>>>>>>> 34fd080 (runscripts):runscripts/run_ERW_bbox.py
                            #  If -1, the final year will be the last year of forcing data.
 run_startyear  = 1850      #Starting year for transient run OR for SP run
 
 
-#---------------------Optional inputs via namelist variables------------------------
-#Define a dictionary to handle namelist options.
-#note:  use surffile, domainfile, pftdynfile, metdir instead of the standard namelist variables for those files.
+#---------------------Optional: inputs via namelist variables------------------------
+
+#Define case_options, a dictionary to handle all desired namelist options.
 #case_options['option'] = value or [value1, value2, value3] if applying different options to different compsets
+#  This applies to all namelist variables EXCEPT for the following:
+#      set 'surffile', 'domainfile', 'pftdynfile' instead of the standard namelist variables for those files.
+#      set 'surffile_global', 'domain_global' and 'pftdyn_global' to specify which global/regional files to extract from
+#      set 'metdir' for custom met data directory and to set the appropriate corresponding namelist/xml options.
+
 case_options={} 
-<<<<<<<< HEAD:runscripts/run_TGU.py
-#case_options['fates_paramfile'] = inputdata+'/lnd/clm2/paramdata/fates_params_api.32.0.0_pft1_c231215.nc'
-#case_options['hist_mfilt']  = '1'
-#case_options['hist_nhtfrq'] = '0'
-========
 #Use Custom CONUS files
 case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
 case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
@@ -107,31 +74,28 @@ case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/a
 if (use_erw):
     case_options['use_ew'] = '.true.'
     case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
->>>>>>>> 34fd080 (runscripts):runscripts/run_ERW_bbox.py
 
-#--------------------ensemble options------------------------------------------------
+#-------------------------Optional: ensemble options-----------------------------------
 
-parm_list      = ''  #'parm_list_example' #Set parameter list (leave blank for no ensemble)
+parm_list      = '' #'parm_list_test_bgc' #'parm_list_fatesUQ' #'parm_list_example' #'parm_list_FATES'    #Set parameter list (leave blank for no ensemble)
 nsamples       =  1000    #number of samples to run
 np_ensemble    =  384    #number of ensemble numbers to run in parallel (MUST be <= nsamples)
 ensemble_file  = ''     #File containing samples (if blank, OLMT will generate one)
-postproc_vars  = ['GPP','ER','NPP','NEE','TLAI','FSH','EFLX_LH_TOT']  #Variables to automatically post-process
-postproc_startyear = 2007
-postproc_endyear   = 2008
+postproc_vars  = ['GPP','ER','NPP','NEE','TLAI','FSH','EFLX_LH_TOT']  #Variables to automatically post-process, applied to last case or treatments
+postproc_startyear = 2000
+postproc_endyear   = 2007
 postproc_freq      = 'monthly'   #Can be daily, monthly, annual
 
-#----------------------Define treatment cases ----------------------------------------
+#----------------------Optional: define treatment cases --------------------------------
 #
-#Treatmeant cases will use the same compset as the last case, and will inherit case_options
+#Treatment cases can be used to manipulate restart files, met data, surface data or parameters at a given time. 
+#Treatment cases will use the same compset as the last case, and will inherit case_options
+#Multiple treatment cases can be specified, all will begin from the last year of the previous case.
 #Specify additional options for treatments as a list (one for each desired treatment)
-nyears_treatment   = 85                              #number of years to run treatment simulation (assumed all same)
+nyears_treatment   = 0                              #number of years to run treatment simulation (assumed all same)
 startyear_treatment = run_startyear + nyears_trans   #Starting year (assuming to start from end of transient
 treatment_options={}
-#treatment_options['suffix']        = ['reseed']      #List of suffixes for different treatments (required)
-#treatment_options['restart_leafc_storage'] = [10.]           #Restart file manipulation (experimental)
-#treatment_options['restart_soil4c_vr'] = ['*0.5']
-#treatment_options['restart_soil4n_vr'] = ['*0.5']
-#treatment_options['restart_soil4p_vr'] = ['*0.5']
+#treatment_options['suffix']        = ['test']      #List of suffixes to define the different treatments (required)
 
 #---------------End of user input -----------------------------------------------------
 
@@ -181,14 +145,11 @@ twophase=False
 compset_base='CNPRDCTCBC'
 if (use_fates):
     compset_base='ELMFATES'
-if (use_TGU):
-    compset_base='WCCNPTGU'
-
 compset_type="I"
 if (use_cpl_bypass):
     compset_type='ICB'
 elif ((mettype != 'site' or 'PR-LUQ' in sites) and nyears_trans != 0):
-    twophase=True       #if using BOTH DATM and reanalysis, split into 2 cases
+    twophase=True       #if using DATM and reanalysis, split into 2 cases
 
 #TODO - move construction of compset lists to a function (in OLMTinfo)
 compsets=[]
@@ -203,7 +164,7 @@ if (use_SP):
   depends=[-1]
 else:
   if (nyears_ad > 0):
-    compsets.append(compset_type+'1850'+compset_base) #.replace('CNP','CN'))  #ad_spinup
+    compsets.append(compset_type+'1850'+compset_base.replace('CNP','CN'))  #ad_spinup
     suffix.append('ad_spinup')
     startyear.append(1)
     nyears.append(nyears_ad)
@@ -309,15 +270,11 @@ for site in sites:
     if ('phase2' in suffix[c]):
       #Set the starting year from the last case
       cases[c].startyear = cases[c-1].startyear+cases[c-1].run_n
-    if mettype != 'default':
-      if ('metdir' in cases[c].case_options.keys()):
+    if ('metdir' in cases[c].case_options.keys()):
         metdir = cases[c].case_options['metdir']
         cases[c].get_forcing(mettype=mettype, metdir=metdir)
-      else:
-        cases[c].get_forcing(mettype=mettype)
     else:
-        cases[c].forcing='default'
-        cases[c].nyears_spinup = 20
+        cases[c].get_forcing(mettype=mettype)
 
     #Set the initial data file (if depends on previous case)
     cases[c].dependcase=''
