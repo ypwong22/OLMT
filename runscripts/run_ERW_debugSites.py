@@ -30,8 +30,8 @@ mettype = 'crujra'             #Site or reanalysis product to use (site, gswp3, 
 case_suffix = 'erw'           #Identifier for cases (leave blank if none)
 
 if (runtype == 'site'):
-    sites = 'UIEF'         #Site name, list of site names, or 'all' for all sites in site group
-    sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
+    sites = 'debug2'         #Site name, list of site names, or 'all' for all sites in site group
+    sitegroup = 'ERW'        #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
     numproc = 1
 else:
     region_name = 'test'  #Set the name of the region/point list to be simulated
