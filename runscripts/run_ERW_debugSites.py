@@ -25,33 +25,26 @@ exeroot = ''
 
 #----------------------Required inputs---------------------------------------------
 
-runtype = 'latlon_bbox'        #site,latlon_list,latlon_bbox 
+runtype = 'site'               #site,latlon_list,latlon_bbox 
 mettype = 'crujra'             #Site or reanalysis product to use (site, gswp3, crujra)
-case_suffix = ''               #Identifier for cases (leave blank if none)
+case_suffix = 'erw'           #Identifier for cases (leave blank if none)
 
 if (runtype == 'site'):
-  sites = 'all'           #Site name, list of site names, or 'all' for all sites in site group
-  sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
-  numproc = 1
-elif (runtype == 'latlon_list'):
-  region_name = 'ERWSites'   #Set the name of the region/point list to be simulated
-  numproc = 15               #Number of processors, must be <= the number of active gridcells
-  point_list_file = '/ccsopen/home/zdr/models/OLMT/point_lists/ERW_sitedata.txt'   #List of lat lons
+    sites = 'debug2'         #Site name, list of site names, or 'all' for all sites in site group
+    sitegroup = 'ERW'        #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
+    numproc = 1
 else:
-  region_name = 'conus'   #Set the name of the region/point list to be simulated
-  #If neither point_list or site is defined, it will use the bounds below. 
-  if region_name == 'smallbox': # test box, 15-grid; check numproc = 15 above
-    numproc = 15
-    lat_bounds = [37.25,38.75]
-    lon_bounds = [-82.75,-80.25]
-  elif region_name == 'conus':
-    numproc = 512
-    lat_bounds = [23.0,54.5]
-    lon_bounds = [-125.5,-66.5]
+    region_name = 'test'  #Set the name of the region/point list to be simulated
+    numproc = 1           #Number of processors, must be <= the number of active gridcells
+    if (runtype == 'latlon_list'):
+        point_list_file = '/ccsopen/home/zdr/models/OLMT/point_lists/ERW_sitedata.txt'   #List of lat lons
+#If neither point_list or site is defined, it will use the bounds below. 
+lat_bounds = [37.1,37.5]
+lon_bounds = [-81.5,-81.1]
 res = 'hcru_hcru'          #Resolution of global files to extract from
 
 use_cpl_bypass = True      #Use Coupler bypass for meteorology
-use_erw        = True      #Use enhanced rock weathering code
+use_erw        = True     #Use enhanced rock weathering code
 use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with FATES-SP)
 use_fates      = False     #Use FATES compsets
 fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
@@ -76,11 +69,11 @@ case_options={}
 #Use Custom CONUS files
 case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
 case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
-case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.timeseries_conus_erw_on_hist_simyr1850_c240712_ensemble_1.nc' # 10 um
+case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.timeseries_conus_erw_on_hist_simyr1850_c240712_ensemble_1.nc'
 case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
 if (use_erw):
-  case_options['use_ew'] = '.true.'
-  case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
+    case_options['use_ew'] = '.true.'
+    case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
 
 #---------------------Optional: custom input variables---------------------------------
 # will be added to daily column and PFT level outputs
@@ -158,6 +151,7 @@ custom_vars_pft = ['FPSN','TLAI','QVEGE','QVEGT','GPP', 'NPP', 'LEAF_MR', 'LEAFC
                    'CPOOL_TO_LIVECROOTC_STORAGE', 'FROOTC_STORAGE', 'LEAFC_STORAGE', 
                    'CPOOL_TO_LIVESTEMC']
 custom_vars = custom_vars_col + custom_vars_erw_col + [f'{var}_pft' for var in custom_vars_pft]
+
 
 #-------------------------Optional: ensemble options-----------------------------------
 
