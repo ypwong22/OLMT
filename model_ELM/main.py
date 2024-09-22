@@ -16,7 +16,7 @@ class ELMcase():
             res='',tstep=1,np=1,nyears=1,startyear=-1, machine='', \
             exeroot='', modelroot='', runroot='',caseroot='',inputdata='', \
             region_name='', lat_bounds=[-90,90],lon_bounds=[-180,180], \
-            point_list=[], namelist_options=[],casename=''):
+            point_list=[], namelist_options=[],casename='',mpilib=''):
 
       if (casename != ''):
         #get case information from pre-existing pkl file:
@@ -98,6 +98,7 @@ class ELMcase():
         self.postproc_startyear=-1
         self.postproc_endyear=9999
         self.namelist_options=namelist_options
+        self.mpilib=mpilib
 
   def setup_ensemble(self, sampletype='monte_carlo',parm_list='', ensemble_file='', \
           np_ensemble=64, nsamples=100):
@@ -278,7 +279,8 @@ class ELMcase():
       cmd = cmd+' --project '+self.project
     if (self.compiler != ''):
       cmd = cmd+' --compiler '+self.compiler
-    #ADD MPILIB OPTION HERE
+    if (self.mpilib != ''):
+      cmd = cmd+' --mpilib '+self.mpilib
     cmd = cmd+' > '+self.OLMTdir+'/create_newcase.log'
     os.chdir(self.modelroot+'/cime/scripts')
     result = subprocess.run(cmd, stdout=subprocess.PIPE, \

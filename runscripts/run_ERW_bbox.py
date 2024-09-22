@@ -62,6 +62,8 @@ nyears_trans   =  165      #number of years for transient run
                            #  If -1, the final year will be the last year of forcing data.
 run_startyear  = 1850      #Starting year for transient run OR for SP run
 
+#---------------------Optional: change the MPI lib-----------------------------------
+mpilib='openmpi' #'openmpi-amanzitpls'
 
 #---------------------Optional: inputs via namelist variables------------------------
 
@@ -72,7 +74,7 @@ run_startyear  = 1850      #Starting year for transient run OR for SP run
 #      set 'surffile_global', 'domain_global' and 'pftdyn_global' to specify which global/regional files to extract from
 #      set 'metdir' for custom met data directory and to set the appropriate corresponding namelist/xml options.
 
-case_options={} 
+case_options={}
 #Use Custom CONUS files
 case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
 case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
@@ -319,11 +321,15 @@ for site in sites:
   for c in range(0,ncases):
     mysuffix = '_'.join(filter(None,[suffix[c],case_suffix]))
 
+    if not 'mpilib' in locals():
+      mpilib = ''
+
     cases[c] = model_ELM.ELMcase(caseid='',compset=compsets[c], site=site, \
         caseroot=caseroot,runroot=runroot,inputdata=inputdata,modelroot=modelroot, \
         machine=machine, exeroot=exeroot, suffix=mysuffix,  \
         res=res, nyears=nyears[c],startyear=startyear[c], region_name=region_name, \
-        lat_bounds=lat_bounds, lon_bounds=lon_bounds, np=numproc, point_list=point_list)
+        lat_bounds=lat_bounds, lon_bounds=lon_bounds, np=numproc, point_list=point_list,
+        mpilib=mpilib)
 
     #Create the case
     cases[c].create_case()
