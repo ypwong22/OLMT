@@ -32,10 +32,10 @@ case_suffix = ''               #Identifier for cases (leave blank if none)
 if (runtype == 'site'):
     sites = 'all'           #Site name, list of site names, or 'all' for all sites in site group
     sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
-    numproc = 15
+    numproc = 1
 else:
     region_name = 'ERWsites'  #Set the name of the region/point list to be simulated
-    numproc = 64            #Number of processors, must be <= the number of active gridcells
+    numproc = 15              #Number of processors, must be <= the number of active gridcells
     if (runtype == 'latlon_list'):
         point_list_file = '/ccsopen/home/zdr/models/OLMT/point_lists/ERW_sitedata.txt'   #List of lat lons
 #If neither point_list or site is defined, it will use the bounds below. 
@@ -84,8 +84,7 @@ custom_vars_col = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILL
                    'TG','TV','TSA','TSOI', 'FSA','FSDS','FLDS','TBOT','RAIN','SNOW','WIND','PBOT',
                    'QBOT','QVEGT','QVEGE','QSOIL', 'QH2OSFC','H2OSOI','H2OSNO','ZWT','SNOWDP',
                    'TLAI','RH2M','QRUNOFF','GPP', 'NEE', 'NEP', 'NPP', 'LEAFC_ALLOC', 'AGNPP', 
-                   'MR', 'CPOOL_TO_DEADSTEMC', 'LIVECROOTC_XFER_TO_LIVECROOTC', 
-                   'DEADCROOTC_XFER_TO_DEADCROOTC', 'CPOOL_TO_LIVECROOTC', 'CPOOL_TO_DEADCROOTC',
+                   'MR', 'CPOOL_TO_DEADSTEMC', 'CPOOL_TO_LIVECROOTC', 'CPOOL_TO_DEADCROOTC',
                    'FROOTC_ALLOC', 'AR', 'LEAF_MR', 'CPOOL_LEAF_GR', 'TRANSFER_LEAF_GR',
                    'CPOOL_LEAF_STORAGE_GR', 'LIVESTEM_MR', 'CPOOL_LIVESTEM_GR', \
                    'TRANSFER_LIVESTEM_GR', 'CPOOL_LIVESTEM_STORAGE_GR', 'CPOOL_DEADSTEM_GR', \
@@ -97,13 +96,11 @@ custom_vars_col = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILL
                    'DEADCROOTC', 'DEADSTEMC_STORAGE', 'LIVESTEMC_STORAGE', 'DEADCROOTC_STORAGE',
                    'LIVECROOTC_STORAGE', 'CPOOL_TO_DEADSTEMC_STORAGE','CPOOL_TO_LIVESTEMC_STORAGE',
                    'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', 'ER', 'HR',
-                   'FROOTC_STORAGE', 'LEAFC_STORAGE', 'LEAFC_XFER', 'FROOTC_XFER', 
-                   'LIVESTEMC_XFER','DEADSTEMC_XFER', 'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'SR',
+                   'FROOTC_STORAGE', 'LEAFC_STORAGE', 'SR',
                    'HR_vr', 'FIRA', 'CPOOL_TO_LIVESTEMC', 'TOTLITC', 'TOTSOMC',
                    'TLAI','SNOWDP','H2OSFC','ZWT','TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 'LITR3C_vr', 'SOIL1C_vr', 'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL','NPOOL',
                    'PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr']
-
-custom_vars_erw_col = ['QIN','QOUT', 'QLFX_ROOTSOI', 'soil_pH', 'forc_app', 'forc_min', 
+custom_vars_erw_col = ['QIN','QOUT', 'QLFX_ROOTSOI', 'bd_col', 'soil_pH', 'forc_app', 'forc_min', 
                        'forc_pho', 'forc_gra', 'proton_vr', 'silica_vr', 'armor_thickness_vr',
                        'ssa', 'primary_mineral', 'proton', 'cation', 'silica', 'secondary_mineral',
                        'primary_proton_flux_vr','primary_h2o_flux_vr', 'primary_prelease_vr',
@@ -114,30 +111,32 @@ custom_vars_erw_col = ['QIN','QOUT', 'QLFX_ROOTSOI', 'soil_pH', 'forc_app', 'for
                        'cece_col_5', 'secondary_silica_flux_vr', 'cec_proton_flux_vr',
                        'cec_proton_vr','proton_infl_vr', 'proton_oufl_vr', 'proton_uptake_vr',
                        'proton_leached_vr', 'proton_runoff_vr', 'bicarbonate_vr', 'carbonate_vr']
-custom_vars_erw_col.extend([f'primary_mineral_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'cation_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'secondary_mineral_vr_{i+1}' for i in range(1)])
-custom_vars_erw_col.extend([f'primary_added_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'primary_dissolve_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'primary_cation_flux_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'r_dissolve_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'secondary_cation_flux_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'secondary_mineral_flux_vr_{i+1}' for i in range(2)])
-custom_vars_erw_col.extend([f'r_precip_vr_{i+1}' for i in range(2)])
-custom_vars_erw_col.extend([f'cec_cation_flux_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'cec_cation_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'cation_infl_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'cation_oufl_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'cation_uptake_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'cation_leached_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'cation_runoff_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'background_weathering_vr_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'log_km_col_{i+1}' for i in range(5)])
-custom_vars_erw_col.extend([f'log_omega_vr_{i+1}' for i in range(5)])
+nminerals = 10
+ncations = 5
+nminsecs = 2
+custom_vars_erw_col.extend([f'primary_mineral_vr_{i+1}' for i in range(nminerals)])
+custom_vars_erw_col.extend([f'cation_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'secondary_mineral_vr_{i+1}' for i in range(nminsecs)])
+custom_vars_erw_col.extend([f'primary_added_vr_{i+1}' for i in range(nminerals)])
+custom_vars_erw_col.extend([f'primary_dissolve_vr_{i+1}' for i in range(nminerals)])
+custom_vars_erw_col.extend([f'primary_cation_flux_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'r_dissolve_vr_{i+1}' for i in range(nminerals)])
+custom_vars_erw_col.extend([f'secondary_cation_flux_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'secondary_mineral_flux_vr_{i+1}' for i in range(nminsecs)])
+custom_vars_erw_col.extend([f'r_precip_vr_{i+1}' for i in range(nminsecs)])
+custom_vars_erw_col.extend([f'cec_cation_flux_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cec_cation_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cation_infl_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cation_oufl_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cation_uptake_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cation_leached_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cation_runoff_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'background_weathering_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'log_km_col_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'log_omega_vr_{i+1}' for i in range(ncations)])
 
 custom_vars_pft = ['FPSN','TLAI','QVEGE','QVEGT','GPP', 'NPP', 'LEAF_MR', 'LEAFC_ALLOC',
-                   'AGNPP', 'CPOOL_TO_DEADSTEMC', 'LIVECROOTC_XFER_TO_LIVECROOTC',
-                   'DEADCROOTC_XFER_TO_DEADCROOTC','CPOOL_TO_LIVECROOTC','CPOOL_TO_DEADCROOTC',
+                   'AGNPP', 'CPOOL_TO_DEADSTEMC', 'CPOOL_TO_LIVECROOTC','CPOOL_TO_DEADCROOTC',
                    'FROOTC_ALLOC', 'AR', 'MR', 'CPOOL_LEAF_GR', 'TRANSFER_LEAF_GR',
                    'CPOOL_LEAF_STORAGE_GR','LIVESTEM_MR', 'CPOOL_LIVESTEM_GR',
                    'TRANSFER_LIVESTEM_GR', 'CPOOL_LIVESTEM_STORAGE_GR', 'CPOOL_DEADSTEM_GR',
@@ -150,10 +149,8 @@ custom_vars_pft = ['FPSN','TLAI','QVEGE','QVEGT','GPP', 'NPP', 'LEAF_MR', 'LEAFC
                    'DEADCROOTC_STORAGE', 'LIVECROOTC_STORAGE', 'CPOOL_TO_DEADSTEMC_STORAGE',
                    'CPOOL_TO_LIVESTEMC_STORAGE', 'CPOOL_TO_DEADCROOTC_STORAGE',
                    'CPOOL_TO_LIVECROOTC_STORAGE', 'FROOTC_STORAGE', 'LEAFC_STORAGE', 
-                   'LEAFC_XFER', 'FROOTC_XFER', 'LIVESTEMC_XFER', 'DEADSTEMC_XFER',
-                   'LIVECROOTC_XFER', 'DEADCROOTC_XFER', 'CPOOL_TO_LIVESTEMC']
+                   'CPOOL_TO_LIVESTEMC']
 custom_vars = custom_vars_col + custom_vars_erw_col + [f'{var}_pft' for var in custom_vars_pft]
-
 
 #-------------------------Optional: ensemble options-----------------------------------
 
