@@ -25,19 +25,19 @@ exeroot = ''
 
 #----------------------Required inputs---------------------------------------------
 
-runtype = 'site'               #site,latlon_list,latlon_bbox 
+runtype = 'latlon_list'               #site,latlon_list,latlon_bbox 
 mettype = 'crujra'             #Site or reanalysis product to use (site, gswp3, crujra)
 case_suffix = 'erw'           #Identifier for cases (leave blank if none)
 
 if (runtype == 'site'):
-    sites = 'debug2'         #Site name, list of site names, or 'all' for all sites in site group
-    sitegroup = 'ERW'        #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
+    sites = 'all'           #Site name, list of site names, or 'all' for all sites in site group
+    sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
     numproc = 1
 else:
-    region_name = 'test'  #Set the name of the region/point list to be simulated
-    numproc = 1           #Number of processors, must be <= the number of active gridcells
+    region_name = 'debug'  #Set the name of the region/point list to be simulated
+    numproc = 1            #Number of processors, must be <= the number of active gridcells
     if (runtype == 'latlon_list'):
-        point_list_file = '/ccsopen/home/zdr/models/OLMT/point_lists/ERW_sitedata.txt'   #List of lat lons
+        point_list_file = inputdata+'/lnd/clm2/PTCLM/ERW_siteDebug.txt'   #List of lat lons
 #If neither point_list or site is defined, it will use the bounds below. 
 lat_bounds = [37.1,37.5]
 lon_bounds = [-81.5,-81.1]

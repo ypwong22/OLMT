@@ -33,18 +33,29 @@ if (runtype == 'site'):
     sites = 'UIEF'         #Site name, list of site names, or 'all' for all sites in site group
     sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
     numproc = 1
+elif (runtype == 'latlon_list'):
+  region_name = 'ERWSites'   #Set the name of the region/point list to be simulated
+  numproc = 15               #Number of processors, must be <= the number of active gridcells
+  point_list_file = inputdata+'/lnd/clm2/PTCLM/ERW_sitedata.txt'   #List of lat lons
+  lat_bounds = [-90,90]
+  lon_bounds = [-180,180]
 else:
-    region_name = 'test'  #Set the name of the region/point list to be simulated
-    numproc = 1           #Number of processors, must be <= the number of active gridcells
-    if (runtype == 'latlon_list'):
-        point_list_file = '/ccsopen/home/zdr/models/OLMT/point_lists/ERW_sitedata.txt'   #List of lat lons
-#If neither point_list or site is defined, it will use the bounds below. 
-lat_bounds = [37.1,37.5]
-lon_bounds = [-81.5,-81.1]
+  region_name = 'conus'   #Set the name of the region/point list to be simulated
+  #If neither point_list or site is defined, it will use the bounds below. 
+  if region_name == 'smallbox': # test box, 15-grid; check numproc = 15 above
+    numproc = 15
+    lat_bounds = [37.25,38.75]
+    lon_bounds = [-82.75,-80.25]
+  elif region_name == 'conus':
+    numproc = 512
+    lat_bounds = [23.0,54.5]
+    lon_bounds = [-125.5,-66.5]
 res = 'hcru_hcru'          #Resolution of global files to extract from
 
 use_cpl_bypass = True      #Use Coupler bypass for meteorology
 use_erw        = True     #Use enhanced rock weathering code
+if (use_erw):
+  case_suffix = 'erw'
 use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with FATES-SP)
 use_fates      = False     #Use FATES compsets
 fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
@@ -55,6 +66,8 @@ nyears_trans   =  165      #number of years for transient run
                            #  If -1, the final year will be the last year of forcing data.
 run_startyear  = 1850      #Starting year for transient run OR for SP run
 
+#---------------------Optional: change the MPI lib-----------------------------------
+mpilib='openmpi' #'openmpi-amanzitpls'
 
 #---------------------Optional: inputs via namelist variables------------------------
 
@@ -72,8 +85,11 @@ case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/i
 case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.timeseries_conus_erw_on_hist_simyr1850_c240712_ensemble_1.nc'
 case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
 if (use_erw):
-    case_options['use_ew'] = '.true.'
-    case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
+  case_options['use_erw'] = '.true.'
+  case_options['year_start_erw'] = '1850'
+  case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
+  case_options['use_erw_verbose'] = '0'
+  case_options['builtin_site'] = '0'
 
 #---------------------Optional: custom input variables---------------------------------
 # will be added to daily column and PFT level outputs
@@ -312,11 +328,15 @@ for site in sites:
   for c in range(0,ncases):
     mysuffix = '_'.join(filter(None,[suffix[c],case_suffix]))
 
+    if not 'mpilib' in locals():
+      mpilib = ''
+
     cases[c] = model_ELM.ELMcase(caseid='',compset=compsets[c], site=site, \
         caseroot=caseroot,runroot=runroot,inputdata=inputdata,modelroot=modelroot, \
         machine=machine, exeroot=exeroot, suffix=mysuffix,  \
         res=res, nyears=nyears[c],startyear=startyear[c], region_name=region_name, \
-        lat_bounds=lat_bounds, lon_bounds=lon_bounds, np=numproc, point_list=point_list)
+        lat_bounds=lat_bounds, lon_bounds=lon_bounds, np=numproc, point_list=point_list,
+        mpilib=mpilib)
 
     #Create the case
     cases[c].create_case()
