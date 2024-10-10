@@ -33,6 +33,8 @@ if (runtype == 'site'):
   sites = 'all'           #Site name, list of site names, or 'all' for all sites in site group
   sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
   numproc = 1
+  lat_bounds = [-90,90]
+  lon_bounds = [-180,180]
 elif (runtype == 'latlon_list'):
   region_name = 'ERWSites'   #Set the name of the region/point list to be simulated
   numproc = 15               #Number of processors, must be <= the number of active gridcells
@@ -55,7 +57,7 @@ res = 'hcru_hcru'          #Resolution of global files to extract from
 use_cpl_bypass = True      #Use Coupler bypass for meteorology
 use_erw        = True      #Use enhanced rock weathering code
 if (use_erw):
-  case_suffix = 'erw'
+  case_suffix += 'erw'
 use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with FATES-SP)
 use_fates      = False     #Use FATES compsets
 fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
@@ -87,9 +89,11 @@ case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/a
 if (use_erw):
   case_options['use_erw'] = '.true.'
   case_options['year_start_erw'] = '1850'
+  case_options['nyear_erw_calibrate'] = '6'
   case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
   case_options['use_erw_verbose'] = '0'
   case_options['builtin_site'] = '0'
+  case_options['check_dynpft_consistency'] = '.false.'
 
 #---------------------Optional: custom input variables---------------------------------
 # will be added to daily column and PFT level outputs
@@ -125,7 +129,8 @@ custom_vars_erw_col_sanitycheck = ['QIN','QOUT', 'QLFX_ROOTSOI', 'forc_app', 'fo
 # 'proton_uptake_vr', 'proton_infl_vr', 'proton_oufl_vr', 'proton_leached_vr', 'proton_runoff_vr',
 # 'proton_vr', 'silica_vr',  'primary_proton_flux_vr', 'primary_h2o_flux_vr', 
 custom_vars_erw_col = ['bd_col', 'soil_pH', 'primary_prelease_vr', 'r_sequestration', 
-                       'cec_proton_flux_vr', 'cec_proton_vr', 'bicarbonate_vr', 'carbonate_vr']
+                       'cec_proton_flux_vr', 'cec_proton_vr', 'bicarbonate_vr', 'carbonate_vr', 
+                       'proton_limit_vr']
 nminerals = 10
 ncations = 5
 nminsecs = 2
@@ -146,7 +151,14 @@ custom_vars_erw_col.extend([f'cation_infl_vr_{i+1}' for i in range(ncations)])
 #custom_vars_erw_col.extend([f'cation_uptake_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cation_leached_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cation_runoff_vr_{i+1}' for i in range(ncations)])
-custom_vars_erw_col.extend([f'background_weathering_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'background_flux_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'background_cec_vr_{i+1}' for i in range(ncations)])
+#custom_vars_erw_col.extend([f'annavg_cec_delta_vr_{i+1}' for i in range(ncations)])
+#custom_vars_erw_col.extend([f'annavg_tot_delta_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'annavg_cec_delta_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'annavg_tot_delta_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cec_limit_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'flux_limit_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'log_omega_vr_{i+1}' for i in range(ncations)])
 # this is to add to sanity check
 custom_vars_erw_col_sanitycheck.extend([f'log_km_col_{i+1}' for i in range(ncations)])
