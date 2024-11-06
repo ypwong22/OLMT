@@ -1136,7 +1136,7 @@ for i in range(1,int(options.ninst)+1):
                       'FSA','FSDS','FLDS','TBOT','RAIN','SNOW','WIND','PBOT','QBOT','QVEGT','QVEGE','QSOIL', \
                       'QH2OSFC','H2OSOI','SOILPSI','ZWT','SNOWDP','TLAI','RH2M','QRUNOFF']
     if ('RD' in compset or 'ECA' in compset):
-      var_list_hourly.extend(['GPP', 'NEE', 'NEP', 'NPP', 'LEAFC_ALLOC', 'AGNPP', 'MR', \
+      var_list_hourly.extend(['GPP', 'NEE', 'NEP', 'NPP', 'LEAFC_ALLOC', 'AGNPP', 'BGNPP', 'MR', \
             'CPOOL_TO_DEADSTEMC', 'LIVECROOTC_XFER_TO_LIVECROOTC', 'DEADCROOTC_XFER_TO_DEADCROOTC', \
             'CPOOL_TO_LIVECROOTC', 'CPOOL_TO_DEADCROOTC', 'FROOTC_ALLOC', 'AR', 'LEAF_MR', 'CPOOL_LEAF_GR',
             'TRANSFER_LEAF_GR', 'CPOOL_LEAF_STORAGE_GR', 'LIVESTEM_MR', 'CPOOL_LIVESTEM_GR', \
@@ -1153,17 +1153,20 @@ for i in range(1,int(options.ninst)+1):
           var_list_hourly.extend(['LITR1_N_TO_FUNGI','LITR2_N_TO_FUNGI','LITR3_N_TO_FUNGI',
                                   'LITR1_P_TO_FUNGI','LITR2_P_TO_FUNGI','LITR3_P_TO_FUNGI',
                                   'LITR1_N_TO_FUNGI_vr','LITR2_N_TO_FUNGI_vr','LITR3_N_TO_FUNGI_vr',
-                                  'LITR1_P_TO_FUNGI_vr','LITR2_P_TO_FUNGI_vr','LITR3_P_TO_FUNGI_vr',
-                                  'LITR1N_vr','LITR2N_vr','LITR3N_vr',
-                                  'LITR1P_vr','LITR2P_vr','LITR3P_vr','SMIN_NH4_vr','SMIN_NO3_vr'])
+                                  'LITR1_P_TO_FUNGI_vr','LITR2_P_TO_FUNGI_vr','LITR3_P_TO_FUNGI_vr'])
     #var_list_hourly_bgc 
     var_list_daily = ['TLAI','SNOWDP','H2OSFC','ZWT']
     if ('RD' in compset or 'ECA' in compset):
-      var_list_daily.extend(['TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 
-                             'LITR3C_vr', 'SOIL1C_vr', 'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL',
+      var_list_daily.extend(['TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 'LITR3C_vr',
+                             'SOIL1C_vr', 'SOIL2C_vr', 'SOIL3C_vr', 'SOIL4C_vr', 'CPOOL',
+                             'LITR1N_vr', 'LITR2N_vr', 'LITR3N_vr',  
+                             'LITR1P_vr', 'LITR2P_vr', 'LITR3P_vr', 
+                             'SOIL1N_vr', 'SOIL2N_vr', 'SOIL3N_vr', 'SOIL4N_vr', 
+                             'SOIL1P_vr', 'SOIL2P_vr', 'SOIL3P_vr', 'SOIL4P_vr',
                              'NPOOL','PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr',
-                             'SMINN', 'SMIN_NO3', 'SMIN_NH4', 'SMINN_vr','SMINP',
-                             'SOLUTIONP_vr', 'ACTUAL_IMMOB', 'ACTUAL_IMMOB_P'])
+                             'SMINN', 'SMIN_NO3', 'SMIN_NH4', 'SMIN_NH4_vr','SMIN_NO3_vr',
+                             'SMINN_vr','SMINP', 'SOLUTIONP_vr', 'ACTUAL_IMMOB', 'ACTUAL_IMMOB_P',
+                             'NET_NMIN', 'NET_PMIN', 'NET_NMIN_vr', 'NET_PMIN_vr'])
 
     # various PFT variables 
     var_list_pft = ['FPSN','TLAI','QVEGE','QVEGT','BTRAN','ROOTFR']
