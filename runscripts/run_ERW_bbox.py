@@ -84,12 +84,12 @@ case_options={}
 #Use Custom CONUS files
 case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
 case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
-case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.timeseries_conus_erw_on_hist_simyr1850_c240712_ensemble_1.nc' # 10 um
+case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.timeseries_conus_erw_on_hist_simyr1850_c240712_ensemble_5.nc' # 10 um
 case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
 if (use_erw):
   case_options['use_erw'] = '.true.'
   case_options['year_start_erw'] = '1850'
-  case_options['nyear_erw_calibrate'] = '6'
+  case_options['nyear_erw_calibrate'] = '3'
   case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
   case_options['use_erw_verbose'] = '0'
   case_options['builtin_site'] = '0'
@@ -150,7 +150,7 @@ custom_vars_erw_col.extend([f'cation_infl_vr_{i+1}' for i in range(ncations)])
 #custom_vars_erw_col.extend([f'cation_oufl_vr_{i+1}' for i in range(ncations)])
 #custom_vars_erw_col.extend([f'cation_uptake_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cation_leached_vr_{i+1}' for i in range(ncations)])
-custom_vars_erw_col.extend([f'cation_runoff_vr_{i+1}' for i in range(ncations)])
+#custom_vars_erw_col.extend([f'cation_runoff_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'background_flux_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'background_cec_vr_{i+1}' for i in range(ncations)])
 #custom_vars_erw_col.extend([f'annavg_cec_delta_vr_{i+1}' for i in range(ncations)])
