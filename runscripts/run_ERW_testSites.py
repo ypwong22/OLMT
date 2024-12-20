@@ -27,7 +27,7 @@ exeroot = ''
 
 runtype = 'latlon_list'        #site,latlon_list,latlon_bbox 
 mettype = 'crujra'             #Site or reanalysis product to use (site, gswp3, crujra)
-case_suffix = '50year_twined'         #Identifier for cases (leave blank if none)
+case_suffix = ''         #Identifier for cases (leave blank if none)
 
 if (runtype == 'site'):
   sites = 'all'           #Site name, list of site names, or 'all' for all sites in site group
@@ -82,12 +82,12 @@ case_options={}
 #Use Custom CONUS files
 case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
 case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
-case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.timeseries_conus_erw_on_hist_simyr1850_c240712_ensemble_1.nc'
+case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.timeseries_conus_erw_on_hist_simyr1850_c240712_ensemble_5.nc'
 case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
 if (use_erw):
   case_options['use_erw'] = '.true.'
   case_options['year_start_erw'] = '1850'
-  case_options['nyear_erw_calibrate'] = '6'
+  case_options['nyear_erw_calibrate'] = '3'
   case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
   case_options['use_erw_verbose'] = '0'
   case_options['builtin_site'] = '0'
@@ -123,9 +123,8 @@ custom_vars_erw_col_sanitycheck = ['QIN','QOUT', 'QLFX_ROOTSOI', 'forc_app', 'fo
                                    'secondary_silica_flux_vr', 'ssa']
 # 'armor_thickness_vr','primary_mineral', 'proton', 'cation', 'silica', 'secondary_mineral',
 # 'primary_added', 'primary_dissolve', 'primary_cation_flux', 'secondary_cation_flux',
-# 'secondary_mineral_flux', 'cation_leached', 'cation_runoff', 'background_weathering', 
-# 'proton_uptake_vr', 'proton_infl_vr', 'proton_oufl_vr', 'proton_leached_vr', 'proton_runoff_vr',
-# 'proton_vr', 'silica_vr',  'primary_proton_flux_vr', 'primary_h2o_flux_vr', 
+# 'secondary_mineral_flux', 'cation_leached', 'cation_runoff', 
+# 'proton_vr', 'silica_vr', 'primary_h2o_flux_vr', 
 custom_vars_erw_col = ['bd_col', 'soil_pH', 'primary_prelease_vr', 'r_sequestration', 
                        'cec_proton_flux_vr', 'cec_proton_vr', 'bicarbonate_vr', 'carbonate_vr',
                        'proton_limit_vr']
