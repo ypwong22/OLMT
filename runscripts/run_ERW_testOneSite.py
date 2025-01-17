@@ -29,7 +29,7 @@ runtype = 'site'               #site,latlon_list,latlon_bbox
 mettype = 'site'               #Site or reanalysis product to use (site, gswp3, crujra)
 #case_suffix = '3year_rmethod1_appCtrl' #Identifier for cases (leave blank if none)
 #case_suffix = '3year_rmethod1_addT' #test 
-case_suffix = '3year_rmethod1_testRain'
+case_suffix = '3year_rmethod1_testRainVert_appCtrl'
 
 if (runtype == 'site'):
   sites = 'HBR'           #Site name, list of site names, or 'all' for all sites in site group
