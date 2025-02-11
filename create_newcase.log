@@ -30,9 +30,9 @@ setting additional fields from config_pes: {}
  Grid is: a%null_l%360x720cru_oi%null_r%r05_g%null_w%null_z%null_m%360x720cru 
  Components in compset are: ['satm', 'elm', 'sice', 'socn', 'mosart', 'sglc', 'swav', 'siac', 'sesp'] 
 No charge_account info available, using value from PROJECT
-e3sm model version found: 1f27cc2583
+e3sm model version found: 104595d971
 Batch_system_type is slurm
 job is case.run USER_REQUESTED_WALLTIME 24:0:00 USER_REQUESTED_QUEUE None WALLTIME_FORMAT %H:%M:%S
 job is case.post_run_io USER_REQUESTED_WALLTIME None USER_REQUESTED_QUEUE None WALLTIME_FORMAT %H:%M:%S
 job is case.st_archive USER_REQUESTED_WALLTIME None USER_REQUESTED_QUEUE None WALLTIME_FORMAT %H:%M:%S
- Creating Case directory /gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/case_dirs/20250116_UC_Davis_ICB20TRCNPRDCTCBC_erw
+ Creating Case directory /gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/case_dirs/20250211_conus_ICB20TRCNPRDCTCBC_3yearerw

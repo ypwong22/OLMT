@@ -29,7 +29,7 @@ runtype = 'site'               #site,latlon_list,latlon_bbox
 mettype = 'site'               #Site or reanalysis product to use (site, gswp3, crujra)
 #case_suffix = '3year_rmethod1_appCtrl' #Identifier for cases (leave blank if none)
 #case_suffix = '3year_rmethod1_addT' #test 
-case_suffix = '3year_rmethod1_testRainVert_appCtrl'
+case_suffix = '3year_rmethod1' # _VertOMappCtrl'
 
 if (runtype == 'site'):
   sites = 'HBR'           #Site name, list of site names, or 'all' for all sites in site group
@@ -86,7 +86,10 @@ case_options={}
 
 if sites in ['HBR','UC_Davis','UIEF']:
   #Use Custom CONUS files
-  case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw.nc'
+  if sites == 'HBR':
+    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP.nc'
+  else:
+    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw.nc'
   case_options['domainfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/domain.nc'
 
   if 'appCtrl' in case_suffix:
@@ -97,6 +100,7 @@ if sites in ['HBR','UC_Davis','UIEF']:
   if sites == 'HBR':
     case_options['metdir'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/atm/datm7/CLM1PT_data/1x1pt_HBR'
     case_options['use_var_soil_thick'] = '.true.'
+    case_options['use_top_solar_rad'] = '.true.'
   else:
     case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
 
@@ -109,20 +113,24 @@ else:
   case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
   case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.timeseries_conus_erw_on_hist_simyr1850_c240712_ensemble_0.nc'
   case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
+
 if (use_erw):
   case_options['use_erw'] = '.true.'
   case_options['year_start_erw'] = '1850'
   case_options['nyear_erw_calibrate'] = '3'
   case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
   case_options['use_erw_verbose'] = '0'
-  if sites == 'HBR':
-    case_options['builtin_site'] = '1'
-  elif sites == 'UC_Davis':
-    case_options['builtin_site'] = '2'
-  elif sites == 'UIEF':
-    case_options['builtin_site'] = '3'
-  else:
+  if 'appCtrl' in case_suffix:
     case_options['builtin_site'] = '0'
+  else:
+    if sites == 'HBR':
+      case_options['builtin_site'] = '1'
+    elif sites == 'UC_Davis':
+      case_options['builtin_site'] = '2'
+    elif sites == 'UIEF':
+      case_options['builtin_site'] = '3'
+    else:
+      case_options['builtin_site'] = '0'
   case_options['check_dynpft_consistency'] = '.false.'
 
 #---------------------Optional: custom input variables---------------------------------
@@ -161,7 +169,7 @@ custom_vars_erw_col = ['QIN','QOUT', 'QLFX_ROOTSOI', 'bd_col', 'soil_pH', 'forc_
                        'primary_h2o_flux_vr', 'primary_prelease_vr',
                        'primary_added', 'primary_dissolve', 'primary_cation_flux', 
                        'secondary_cation_flux', 'secondary_mineral_flux', 'cation_leached',
-                       'cation_runoff', 'r_sequestration', 'cect_col',
+                       'cation_runoff', 'r_sequestration', 'cect_col', 'cect_dyn',
                        'ceca_col', 'cece_col_1', 'cece_col_2', 'cece_col_3', 'cece_col_4',
                        'cece_col_5', 'secondary_silica_flux_vr', 'cec_proton_vr',
                        'bicarbonate_vr', 'carbonate_vr', 'proton_limit_vr', 'background_flux',
