@@ -111,7 +111,7 @@ else:
   #Use Custom CONUS files
   case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
   case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
-  case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.timeseries_conus_erw_on_hist_simyr1850_c240712_ensemble_0.nc'
+  case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble_JRA55/landuse.conus_erw_on_combined_simyr1850-2100_c240508_ensemble_1.nc'
   case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
 
 if (use_erw):
@@ -163,18 +163,16 @@ custom_vars_col = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILL
                    'TLAI','SNOWDP','H2OSFC','ZWT','TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 'LITR3C_vr', 'SOIL1C_vr', 'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL','NPOOL',
                    'PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr', 
                    'F_N2O_DENIT', 'F_N2O_NIT']
-custom_vars_erw_col = ['QIN','QOUT', 'QLFX_ROOTSOI', 'bd_col', 'soil_pH', 'forc_app', 'forc_min', 
-                       'forc_pho', 'forc_gra', 'proton_vr', 'silica_vr', 'armor_thickness_vr',
-                       'ssa', 'primary_mineral', 'proton', 'cation', 'silica', 'secondary_mineral',
-                       'primary_h2o_flux_vr', 'primary_prelease_vr',
-                       'primary_added', 'primary_dissolve', 'primary_cation_flux', 
-                       'secondary_cation_flux', 'secondary_mineral_flux', 'cation_leached',
-                       'cation_runoff', 'r_sequestration', 'cect_col', 'cect_dyn',
-                       'ceca_col', 'cece_col_1', 'cece_col_2', 'cece_col_3', 'cece_col_4',
-                       'cece_col_5', 'secondary_silica_flux_vr', 'cec_proton_vr',
-                       'bicarbonate_vr', 'carbonate_vr', 'proton_limit_vr', 'background_flux',
-                       'background_cec','bicarbonate_drainage','carbonate_drainage',
-                       'bicarbonate_leached_vr', 'carbonate_leached_vr']
+custom_vars_erw_col_sanitycheck = ['QIN','QOUT', 'QLFX_ROOTSOI', 'forc_app', 'forc_min', 
+                                   'forc_pho', 'forc_gra',  'cect_col', 'ceca_col', 'cece_col_1', 'cece_col_2', 'cece_col_3', 'cece_col_4', 'cece_col_5', 'ssa',
+                                   'primary_mineral', 'proton', 'cation', 'silica', 'secondary_mineral', 'primary_added', 'primary_dissolve', 'primary_cation_flux', 'secondary_cation_flux', 'secondary_mineral_flux', 'cation_leached', 'cation_runoff',
+                                   'background_flux', 'background_cec']
+custom_vars_erw_col = ['bd_col', 'soil_pH', 'proton_vr', 'silica_vr', 'armor_thickness_vr', 
+                       'primary_h2o_flux_vr', 'primary_prelease_vr', 'secondary_silica_flux_vr', 
+                       'r_sequestration', 'cect_dyn', 'cect_delta', 'cece_delta_1', 'cece_delta_2', 
+                       'cece_delta_3', 'cece_delta_4', 'cece_delta_5', 'cec_proton_vr', 
+                       'bicarbonate_vr', 'carbonate_vr', 'proton_limit_vr', 
+                       'bicarbonate_drainage', 'carbonate_drainage', 'bicarbonate_leached_vr', 'carbonate_leached_vr']
 nminerals = 10
 ncations = 5
 nminsecs = 2
@@ -189,6 +187,7 @@ custom_vars_erw_col.extend([f'secondary_cation_flux_vr_{i+1}' for i in range(nca
 custom_vars_erw_col.extend([f'secondary_mineral_flux_vr_{i+1}' for i in range(nminsecs)])
 custom_vars_erw_col.extend([f'r_precip_vr_{i+1}' for i in range(nminsecs)])
 custom_vars_erw_col.extend([f'cec_cation_flux_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cec_cation_flux2_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cec_cation_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cation_infl_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cation_oufl_vr_{i+1}' for i in range(ncations)])
@@ -203,8 +202,10 @@ custom_vars_erw_col.extend([f'annavg_cec_delta_vr_{i+1}' for i in range(ncations
 custom_vars_erw_col.extend([f'annavg_tot_delta_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cec_limit_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'flux_limit_vr_{i+1}' for i in range(ncations)])
-custom_vars_erw_col.extend([f'log_km_col_{i+1}' for i in range(ncations)])
+#custom_vars_erw_col.extend([f'log_km_col_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'log_omega_vr_{i+1}' for i in range(ncations)])
+# this is to add to sanity check
+custom_vars_erw_col_sanitycheck.extend([f'log_km_col_{i+1}' for i in range(ncations)])
 
 custom_vars_pft = ['FPSN','TLAI','QVEGE','QVEGT','GPP', 'NPP', 'LEAF_MR', 'LEAFC_ALLOC',
                    'AGNPP', 'CPOOL_TO_DEADSTEMC', 'CPOOL_TO_LIVECROOTC','CPOOL_TO_DEADCROOTC',
@@ -221,7 +222,9 @@ custom_vars_pft = ['FPSN','TLAI','QVEGE','QVEGT','GPP', 'NPP', 'LEAF_MR', 'LEAFC
                    'CPOOL_TO_LIVESTEMC_STORAGE', 'CPOOL_TO_DEADCROOTC_STORAGE',
                    'CPOOL_TO_LIVECROOTC_STORAGE', 'FROOTC_STORAGE', 'LEAFC_STORAGE', 
                    'CPOOL_TO_LIVESTEMC']
-custom_vars = custom_vars_col + custom_vars_erw_col + [f'{var}_pft' for var in custom_vars_pft]
+custom_vars = custom_vars_col + [f'{var}_pft' for var in custom_vars_pft]
+if (use_erw):
+  custom_vars = custom_vars + custom_vars_erw_col + custom_vars_erw_col_sanitycheck
 
 #-------------------------Optional: ensemble options-----------------------------------
 

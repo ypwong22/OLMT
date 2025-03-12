@@ -25,36 +25,51 @@ exeroot = ''
 
 #----------------------Required inputs---------------------------------------------
 
-runtype = 'latlon_list'               #site,latlon_list,latlon_bbox 
-mettype = 'crujra'             #Site or reanalysis product to use (site, gswp3, crujra)
-case_suffix = 'erw'           #Identifier for cases (leave blank if none)
+runtype = 'latlon_bbox'        #site,latlon_list,latlon_bbox 
+mettype = 'gfdl_historical'    #Site or reanalysis product to use (site, gswp3, crujra)
+case_suffix = '3year_GFDL'     #Identifier for cases (leave blank if none)
 
 if (runtype == 'site'):
-    sites = 'all'           #Site name, list of site names, or 'all' for all sites in site group
-    sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
-    numproc = 1
+  sites = 'all'           #Site name, list of site names, or 'all' for all sites in site group
+  sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
+  numproc = 1
+  lat_bounds = [-90,90]
+  lon_bounds = [-180,180]
+elif (runtype == 'latlon_list'):
+  region_name = 'ERWSites'   #Set the name of the region/point list to be simulated
+  numproc = 15               #Number of processors, must be <= the number of active gridcells
+  point_list_file = inputdata+'/lnd/clm2/PTCLM/ERW_sitedata.txt'   #List of lat lons
+  lat_bounds = [-90,90]
+  lon_bounds = [-180,180]
 else:
-    region_name = 'debug'  #Set the name of the region/point list to be simulated
-    numproc = 1            #Number of processors, must be <= the number of active gridcells
-    if (runtype == 'latlon_list'):
-        point_list_file = inputdata+'/lnd/clm2/PTCLM/ERW_siteDebug.txt'   #List of lat lons
-#If neither point_list or site is defined, it will use the bounds below. 
-lat_bounds = [37.1,37.5]
-lon_bounds = [-81.5,-81.1]
+  region_name = 'conus'   #Set the name of the region/point list to be simulated
+  #If neither point_list or site is defined, it will use the bounds below. 
+  if region_name == 'smallbox': # test box, 15-grid; check numproc = 15 above
+    numproc = 15
+    lat_bounds = [37.25,38.75]
+    lon_bounds = [-82.75,-80.25]
+  elif region_name == 'conus':
+    numproc = 512
+    lat_bounds = [23.0,54.5]
+    lon_bounds = [-125.5,-66.5]
 res = 'hcru_hcru'          #Resolution of global files to extract from
 
 use_cpl_bypass = True      #Use Coupler bypass for meteorology
-use_erw        = True     #Use enhanced rock weathering code
+use_erw        = True      #Use enhanced rock weathering code
+if (use_erw):
+  case_suffix += 'erw'
 use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with FATES-SP)
 use_fates      = False     #Use FATES compsets
 fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
 
-nyears_ad      =  200     #number of years for ad spinup
+nyears_ad      =  200      #number of years for ad spinup
 nyears_final   =  400      #number of years for final spinup OR for SP run
 nyears_trans   =  165      #number of years for transient run 
                            #  If -1, the final year will be the last year of forcing data.
 run_startyear  = 1850      #Starting year for transient run OR for SP run
 
+#---------------------Optional: change the MPI lib-----------------------------------
+mpilib='openmpi' #'openmpi-amanzitpls'
 
 #---------------------Optional: inputs via namelist variables------------------------
 
@@ -65,18 +80,19 @@ run_startyear  = 1850      #Starting year for transient run OR for SP run
 #      set 'surffile_global', 'domain_global' and 'pftdyn_global' to specify which global/regional files to extract from
 #      set 'metdir' for custom met data directory and to set the appropriate corresponding namelist/xml options.
 
-case_options={} 
+case_options={}
 #Use Custom CONUS files
 case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
 case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
-case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble_JRA55/landuse.conus_erw_on_combined_simyr1850-2100_c240508_ensemble_1.nc'
-case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
+# 10um, 40 ton/ha, start from 2025, every year
+case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.conus_erw_on_combined_simyr1850-2100_c240508_ensemble_637.nc'
+case_options['metdir'] = '/gpfs/wolf2/cades/cli185/proj-shared/zdr/atm_forcing.ISIMIP.DonghuiXu.2024/cpl_bypass_full'
 if (use_erw):
   case_options['use_erw'] = '.true.'
   case_options['year_start_erw'] = '1850'
   case_options['nyear_erw_calibrate'] = '3'
   case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
-  case_options['use_erw_verbose'] = '2'
+  case_options['use_erw_verbose'] = '0'
   case_options['builtin_site'] = '0'
   case_options['check_dynpft_consistency'] = '.false.'
   # case_options['finidat'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250210_conus_ICB1850CNPRDCTCBC_3yearerw/run/20250210_conus_ICB1850CNPRDCTCBC_3yearerw.elm.r.0401-01-01-00000.nc'"
@@ -109,15 +125,16 @@ custom_vars_col = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILL
                    'PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr', 
                    'F_N2O_DENIT', 'F_N2O_NIT']
 custom_vars_erw_col_sanitycheck = ['QIN','QOUT', 'QLFX_ROOTSOI', 'forc_app', 'forc_min', 
-                                   'forc_pho', 'forc_gra',  'cect_col', 'ceca_col', 'cece_col_1', 'cece_col_2', 'cece_col_3', 'cece_col_4', 'cece_col_5', 'ssa',
-                                   'primary_mineral', 'proton', 'cation', 'silica', 'secondary_mineral', 'primary_added', 'primary_dissolve', 'primary_cation_flux', 'secondary_cation_flux', 'secondary_mineral_flux', 'cation_leached', 'cation_runoff',
-                                   'background_flux', 'background_cec']
+                                   'forc_pho', 'forc_gra',  'cect_col', 'ceca_col', 'cece_col_1', 'cece_col_2', 'cece_col_3', 'cece_col_4', 'cece_col_5', 
+                                   'secondary_silica_flux_vr', 'ssa']
 custom_vars_erw_col = ['bd_col', 'soil_pH', 'proton_vr', 'silica_vr', 'armor_thickness_vr', 
-                       'primary_h2o_flux_vr', 'primary_prelease_vr', 'secondary_silica_flux_vr', 
-                       'r_sequestration', 'cect_dyn', 'cect_delta', 'cece_delta_1', 'cece_delta_2', 
-                       'cece_delta_3', 'cece_delta_4', 'cece_delta_5', 'cec_proton_vr', 
-                       'bicarbonate_vr', 'carbonate_vr', 'proton_limit_vr', 
-                       'bicarbonate_drainage', 'carbonate_drainage', 'bicarbonate_leached_vr', 'carbonate_leached_vr']
+                       'ssa', 'primary_mineral', 'proton', 'cation', 'silica', 'secondary_mineral',
+                       'primary_h2o_flux_vr', 'primary_prelease_vr',
+                       'primary_added', 'primary_dissolve', 'primary_cation_flux', 
+                       'secondary_cation_flux', 'secondary_mineral_flux', 'cation_leached',
+                       'cation_runoff', 'r_sequestration', 'cec_proton_vr', 'bicarbonate_vr', 'carbonate_vr', 'proton_limit_vr', 
+                       'background_flux', 'background_cec','bicarbonate_drainage',
+                       'carbonate_drainage', 'bicarbonate_leached_vr', 'carbonate_leached_vr']
 nminerals = 10
 ncations = 5
 nminsecs = 2
@@ -132,7 +149,6 @@ custom_vars_erw_col.extend([f'secondary_cation_flux_vr_{i+1}' for i in range(nca
 custom_vars_erw_col.extend([f'secondary_mineral_flux_vr_{i+1}' for i in range(nminsecs)])
 custom_vars_erw_col.extend([f'r_precip_vr_{i+1}' for i in range(nminsecs)])
 custom_vars_erw_col.extend([f'cec_cation_flux_vr_{i+1}' for i in range(ncations)])
-custom_vars_erw_col.extend([f'cec_cation_flux2_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cec_cation_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cation_infl_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cation_oufl_vr_{i+1}' for i in range(ncations)])
@@ -331,11 +347,15 @@ for site in sites:
   for c in range(0,ncases):
     mysuffix = '_'.join(filter(None,[suffix[c],case_suffix]))
 
+    if not 'mpilib' in locals():
+      mpilib = ''
+
     cases[c] = model_ELM.ELMcase(caseid='',compset=compsets[c], site=site, \
         caseroot=caseroot,runroot=runroot,inputdata=inputdata,modelroot=modelroot, \
         machine=machine, exeroot=exeroot, suffix=mysuffix,  \
         res=res, nyears=nyears[c],startyear=startyear[c], region_name=region_name, \
-        lat_bounds=lat_bounds, lon_bounds=lon_bounds, np=numproc, point_list=point_list)
+        lat_bounds=lat_bounds, lon_bounds=lon_bounds, np=numproc, point_list=point_list,
+        mpilib=mpilib)
 
     #Create the case
     cases[c].create_case()

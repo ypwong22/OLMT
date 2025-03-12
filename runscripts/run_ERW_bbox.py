@@ -62,9 +62,9 @@ use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with F
 use_fates      = False     #Use FATES compsets
 fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
 
-nyears_ad      =  0        #number of years for ad spinup
-nyears_final   =  0        #number of years for final spinup OR for SP run
-nyears_trans   =  165      #number of years for transient run 
+nyears_ad      =  200      #number of years for ad spinup
+nyears_final   =  400      #number of years for final spinup OR for SP run
+nyears_trans   =  173      #number of years for transient run 
                            #  If -1, the final year will be the last year of forcing data.
 run_startyear  = 1850      #Starting year for transient run OR for SP run
 
@@ -84,8 +84,8 @@ case_options={}
 #Use Custom CONUS files
 case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
 case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
-# 10um, 40 ton/ha, start from 2025, every year
-case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.conus_erw_on_combined_simyr1850-2100_c240508_ensemble_637.nc'
+# 10um, 40 ton/ha, start from 1993; from 0-4 is different frequencies
+case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble_JRA55/landuse.conus_erw_on_combined_simyr1850-2100_c240508_ensemble_1.nc'
 case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
 if (use_erw):
   case_options['use_erw'] = '.true.'
@@ -95,7 +95,7 @@ if (use_erw):
   case_options['use_erw_verbose'] = '0'
   case_options['builtin_site'] = '0'
   case_options['check_dynpft_consistency'] = '.false.'
-  case_options['finidat'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250210_conus_ICB1850CNPRDCTCBC_3yearerw/run/20250210_conus_ICB1850CNPRDCTCBC_3yearerw.elm.r.0401-01-01-00000.nc'"
+  # case_options['finidat'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250223_conus_ICB1850CNPRDCTCBC_3yearerw/run/20250223_conus_ICB1850CNPRDCTCBC_3yearerw/.elm.r.0401-01-01-00000.nc'"
 
 #---------------------Optional: custom input variables---------------------------------
 # will be added to daily column and PFT level outputs
@@ -125,16 +125,15 @@ custom_vars_col = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILL
                    'PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr', 
                    'F_N2O_DENIT', 'F_N2O_NIT']
 custom_vars_erw_col_sanitycheck = ['QIN','QOUT', 'QLFX_ROOTSOI', 'forc_app', 'forc_min', 
-                                   'forc_pho', 'forc_gra',  'cect_col', 'ceca_col', 'cece_col_1', 'cece_col_2', 'cece_col_3', 'cece_col_4', 'cece_col_5', 
-                                   'secondary_silica_flux_vr', 'ssa']
+                                   'forc_pho', 'forc_gra',  'cect_col', 'ceca_col', 'cece_col_1', 'cece_col_2', 'cece_col_3', 'cece_col_4', 'cece_col_5', 'ssa',
+                                   'primary_mineral', 'proton', 'cation', 'silica', 'secondary_mineral', 'primary_added', 'primary_dissolve', 'primary_cation_flux', 'secondary_cation_flux', 'secondary_mineral_flux', 'cation_leached', 'cation_runoff',
+                                   'background_flux', 'background_cec']
 custom_vars_erw_col = ['bd_col', 'soil_pH', 'proton_vr', 'silica_vr', 'armor_thickness_vr', 
-                       'ssa', 'primary_mineral', 'proton', 'cation', 'silica', 'secondary_mineral',
-                       'primary_h2o_flux_vr', 'primary_prelease_vr',
-                       'primary_added', 'primary_dissolve', 'primary_cation_flux', 
-                       'secondary_cation_flux', 'secondary_mineral_flux', 'cation_leached',
-                       'cation_runoff', 'r_sequestration', 'cec_proton_vr', 'bicarbonate_vr', 'carbonate_vr', 'proton_limit_vr', 
-                       'background_flux', 'background_cec','bicarbonate_drainage',
-                       'carbonate_drainage', 'bicarbonate_leached_vr', 'carbonate_leached_vr']
+                       'primary_h2o_flux_vr', 'primary_prelease_vr', 'secondary_silica_flux_vr', 
+                       'r_sequestration', 'cect_dyn', 'cect_delta', 'cece_delta_1', 'cece_delta_2', 
+                       'cece_delta_3', 'cece_delta_4', 'cece_delta_5', 'cec_proton_vr', 
+                       'bicarbonate_vr', 'carbonate_vr', 'proton_limit_vr', 
+                       'bicarbonate_drainage', 'carbonate_drainage', 'bicarbonate_leached_vr', 'carbonate_leached_vr']
 nminerals = 10
 ncations = 5
 nminsecs = 2
@@ -149,6 +148,7 @@ custom_vars_erw_col.extend([f'secondary_cation_flux_vr_{i+1}' for i in range(nca
 custom_vars_erw_col.extend([f'secondary_mineral_flux_vr_{i+1}' for i in range(nminsecs)])
 custom_vars_erw_col.extend([f'r_precip_vr_{i+1}' for i in range(nminsecs)])
 custom_vars_erw_col.extend([f'cec_cation_flux_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cec_cation_flux2_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cec_cation_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cation_infl_vr_{i+1}' for i in range(ncations)])
 custom_vars_erw_col.extend([f'cation_oufl_vr_{i+1}' for i in range(ncations)])
