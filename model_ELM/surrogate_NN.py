@@ -15,7 +15,7 @@ def train_surrogate(self,myvars):
  self.qoi_bad={}
  self.qoi_bad_meanval={}
  for var in myvars:
-    vname=var
+    vname  = var
     nparms = self.nparms_ensemble
     nqoi   = self.output[vname].shape[0]
 

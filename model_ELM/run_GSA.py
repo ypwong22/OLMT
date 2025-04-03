@@ -37,6 +37,7 @@ def GSA(self, myvars, n_saltelli=8192):
         self.sens_main[v][:,i]=Si['S1']
         self.sens_tot[v][:,i]=Si['ST']
 
+
 def plot_GSA(self, myvars):
     for v in myvars:
       #Plot main sensitivity indices
