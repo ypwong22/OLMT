@@ -32,12 +32,11 @@ mettype = 'site'               #Site or reanalysis product to use (site, gswp3, 
 #case_suffix = '3year_rmethod1' # _VertOMappCtrl'
 #case_suffix = '3year_rmethod1_appCtrl' # _VertOMappCtrl'
 #case_suffix = '3year_rmethod1' # _VertOMappCtrl'
-#case_suffix = '6year_rmethod1_appCtrl'
-case_suffix = '6year_rmethod1_2xCO2_appCtrl' # used "co2_atm = 2 * top_as%pco2bot(t) / 101325"
+case_suffix = '6year_rmethod1'
 
 
 if (runtype == 'site'):
-  sites = 'UIEF'          #Site name, list of site names, or 'all' for all sites in site group
+  sites = 'HBR'           #Site name, list of site names, or 'all' for all sites in site group
   sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
   numproc = 1
   lat_bounds = [-90,90]
@@ -69,8 +68,8 @@ use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with F
 use_fates      = False     #Use FATES compsets
 fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
 
-nyears_ad      =  0 # 200     #number of years for ad spinup
-nyears_final   =  0 # 400     #number of years for final spinup OR for SP run
+nyears_ad      =  200 # 200     #number of years for ad spinup
+nyears_final   =  400 # 400     #number of years for final spinup OR for SP run
 nyears_trans   =  173     #number of years for transient run 
                           #  If -1, the final year will be the last year of forcing data.
 run_startyear  = 1850      #Starting year for transient run OR for SP run
@@ -110,7 +109,7 @@ if sites in ['HBR','UC_Davis','UIEF']:
     case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
 
   # transient-only, need finidat
-  case_options['finidat'] = f"'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250323_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw/run/20250323_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw.elm.r.0401-01-01-00000.nc'"
+  # case_options['finidat'] = f"'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250323_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw/run/20250323_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw.elm.r.0401-01-01-00000.nc'"
 
 else:
   #Use Custom CONUS files
@@ -236,11 +235,11 @@ if (use_erw):
 
 #-------------------------Optional: ensemble options-----------------------------------
 
-parm_list      = '' #'parm_list_test_bgc' #'parm_list_fatesUQ' #'parm_list_example' #'parm_list_FATES'    #Set parameter list (leave blank for no ensemble)
+parm_list      = os.path.join(os.environ['HOME'], 'models', 'OLMT', 'runscripts', 'parm_list_HBR') #'parm_list_test_bgc' #'parm_list_fatesUQ' #'parm_list_example' #'parm_list_FATES'    #Set parameter list (leave blank for no ensemble)
 nsamples       =  1000    #number of samples to run
 np_ensemble    =  384    #number of ensemble numbers to run in parallel (MUST be <= nsamples)
 ensemble_file  = ''     #File containing samples (if blank, OLMT will generate one)
-postproc_vars  = ['GPP','ER','NPP','NEE','TLAI','FSH','EFLX_LH_TOT']  #Variables to automatically post-process, applied to last case or treatments
+postproc_vars  = [] # ['GPP','ER','NPP','NEE','TLAI','FSH','EFLX_LH_TOT']  #Variables to automatically post-process, applied to last case or treatments
 postproc_startyear = 2000
 postproc_endyear   = 2007
 postproc_freq      = 'monthly'   #Can be daily, monthly, annual
