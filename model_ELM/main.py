@@ -843,6 +843,7 @@ class ELMcase():
     else:
         result = subprocess.run(cmd, stderr=subprocess.STDOUT, \
                 stdout=subprocess.PIPE, text=True)
+        print(result)
         output = result.stdout.strip()
         jobnum = int(output.split()[-1])
         print('\nSubmitted '+str(jobnum))

@@ -120,22 +120,22 @@ else:
 
 if (use_erw):
   case_options['use_erw'] = '.true.'
-  case_options['year_start_erw'] = '1850'
-  case_options['nyear_erw_calibrate'] = '6'
+  case_options['year_start_erw'] = 1850
+  case_options['nyear_erw_calibrate'] = 6
   if sites == 'UIEF':
-    case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_UIEF_params_c240718.nc'"
+    case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_UIEF_params_c240718.nc'
   else:
-    case_options['elm_erw_paramfile'] = "'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'"
-  case_options['use_erw_verbose'] = '0'
+    case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'
+    case_options['use_erw_verbose'] = 0
   if 'appCtrl' in case_suffix:
-    case_options['builtin_site'] = '0'
+    case_options['builtin_site'] = 0
   else:
     if sites == 'HBR':
-      case_options['builtin_site'] = '1'
+      case_options['builtin_site'] = 1
     elif sites == 'UC_Davis':
-      case_options['builtin_site'] = '2'
+      case_options['builtin_site'] = 2
     elif sites == 'UIEF':
-      case_options['builtin_site'] = '3'
+      case_options['builtin_site'] = 3
     else:
       case_options['builtin_site'] = '0'
   case_options['check_dynpft_consistency'] = '.false.'

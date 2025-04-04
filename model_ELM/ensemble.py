@@ -176,7 +176,7 @@ def ensemble_copy(self, ens_num):
                 os.system('mv '+paramfile_new+'_tmp '+paramfile_new)
                 myoutput.write(" fates_paramfile = '"+paramfile_new+"'\n")
                 fates_paramfile = ens_dir+'/fates_params_'+gst[1:]+'.nc'
-            elif ('paramfile' in s):
+            elif ('paramfile' in s and not 'elm_erw_paramfile' in s):
                 paramfile_orig = ((s.split()[2]).strip("'"))
                 if (paramfile_orig[0:2] == './'):
                    paramfile_orig = orig_dir+'/'+paramfile_orig[2:]
