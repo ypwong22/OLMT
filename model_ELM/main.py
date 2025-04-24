@@ -128,7 +128,7 @@ class ELMcase():
     self.queue='batch'
     if ('baseline' in self.machine):
         self.project='CLI185'
-        self.queue='batch'
+        self.queue='batch_ccsi'
     elif ('chrysalis' in self.machine):
         self.project='e3sm'
         self.queue='debug'

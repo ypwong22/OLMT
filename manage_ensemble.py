@@ -129,6 +129,8 @@ if (mycase.noslurm == False):
     process_nodes = []
     mynodes = get_nodelist()
 
+print(mynodes)
+
 #Run the simulations 
 while (n_job <= mycase.nsamples):
   pactive = active_processes(processes,process_jobnum,process_hang)

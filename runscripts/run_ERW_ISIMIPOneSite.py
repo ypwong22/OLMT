@@ -25,26 +25,27 @@ exeroot = ''
 
 #----------------------Required inputs---------------------------------------------
 
-runtype = 'site'               #site,latlon_list,latlon_bbox 
-mettype = 'site'               #Site or reanalysis product to use (site, gswp3, crujra)
+runtype = 'latlon_list'               #site,latlon_list,latlon_bbox 
+mettype = 'gfdl_historical'    #Site or reanalysis product to use (site, gswp3, crujra)
 #case_suffix = '3year_rmethod1_appCtrl' #Identifier for cases (leave blank if none)
 #case_suffix = '3year_rmethod1_addT' #test 
-#case_suffix = '3year_rmethod1' # _VertOMappCtrl'
+case_suffix = '3year_rmethod1' # _VertOMappCtrl'
 #case_suffix = '3year_rmethod1_appCtrl' # _VertOMappCtrl'
 #case_suffix = '3year_rmethod1' # _VertOMappCtrl'
-case_suffix = '6year_rmethod1'
+#case_suffix = '6year_rmethod1_appCtrl'
+#case_suffix = '6year_rmethod1_2xCO2_appCtrl' # used "co2_atm = 2 * top_as%pco2bot(t) / 101325"
 
 
 if (runtype == 'site'):
-  sites = 'HBR'           #Site name, list of site names, or 'all' for all sites in site group
+  sites = 'debug2'        #Site name, list of site names, or 'all' for all sites in site group
   sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
   numproc = 1
   lat_bounds = [-90,90]
   lon_bounds = [-180,180]
 elif (runtype == 'latlon_list'):
-  region_name = 'ERWSites'   #Set the name of the region/point list to be simulated
-  numproc = 15               #Number of processors, must be <= the number of active gridcells
-  point_list_file = inputdata+'/lnd/clm2/PTCLM/ERW_sitedata.txt'   #List of lat lons
+  region_name = 'debug'   #Set the name of the region/point list to be simulated
+  numproc = 1             #Number of processors, must be <= the number of active gridcells
+  point_list_file = inputdata+'/lnd/clm2/PTCLM/ERW_siteDebug.txt'   #List of lat lons
   lat_bounds = [-90,90]
   lon_bounds = [-180,180]
 else:
@@ -69,8 +70,8 @@ use_fates      = False     #Use FATES compsets
 fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
 
 nyears_ad      =  200     #number of years for ad spinup
-nyears_final   =  400     #number of years for final spinup OR for SP run
-nyears_trans   =  173     #number of years for transient run 
+nyears_final   =  250     #number of years for final spinup OR for SP run
+nyears_trans   =  232     #number of years for transient run 
                           #  If -1, the final year will be the last year of forcing data.
 run_startyear  = 1850      #Starting year for transient run OR for SP run
 
@@ -88,58 +89,20 @@ mpilib='openmpi' #'openmpi-amanzitpls'
 
 case_options={} 
 
-if sites in ['HBR','UC_Davis','UIEF']:
-  #Use Custom CONUS files
-  if sites == 'HBR':
-    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP.nc'
-  else:
-    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw.nc'
-
-  case_options['domainfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/domain.nc'
-
-  # Ctrl will automatically be overwritten using builtin site
-  case_options['pftdynfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata.pftdyn_erw_ctrl.nc'
-
-  if sites == 'HBR':
-    case_options['metdir'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/atm/datm7/CLM1PT_data/1x1pt_HBR'
-    case_options['use_var_soil_thick'] = '.true.'
-    case_options['use_top_solar_rad'] = '.true.'
-  else:
-    mettype = 'crujra'
-    case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
-
-  # transient-only, need finidat
-  # case_options['finidat'] = f"'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250323_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw/run/20250323_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw.elm.r.0401-01-01-00000.nc'"
-
-else:
-  #Use Custom CONUS files
-  case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
-  case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
-  case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble_JRA55/landuse.conus_erw_on_combined_simyr1850-2100_c240508_ensemble_1.nc'
-  case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
+#Use Custom CONUS files
+case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
+case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
+case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble/landuse.conus_erw_on_combined_simyr1850-2100_c240508_ensemble_55.nc'
+case_options['metdir'] = '/gpfs/wolf2/cades/cli185/proj-shared/zdr/atm_forcing.ISIMIP.DonghuiXu.2024/cpl_bypass_full'
 
 if (use_erw):
   case_options['use_erw'] = '.true.'
   case_options['year_start_erw'] = 1850
-  case_options['nyear_erw_calibrate'] = 6
-  if sites == 'UIEF':
-    case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_UIEF_params_c240718.nc'
-  else:
-    case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'
-    case_options['use_erw_verbose'] = 0
-  if 'appCtrl' in case_suffix:
-    case_options['builtin_site'] = 0
-  else:
-    if sites == 'HBR':
-      case_options['builtin_site'] = 1
-    elif sites == 'UC_Davis':
-      case_options['builtin_site'] = 2
-    elif sites == 'UIEF':
-      case_options['builtin_site'] = 3
-    else:
-      case_options['builtin_site'] = '0'
+  case_options['nyear_erw_calibrate'] = 3
+  case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'
+  case_options['use_erw_verbose'] = 2
+  case_options['builtin_site'] = 0
   case_options['check_dynpft_consistency'] = '.false.'
-
 
 #---------------------Optional: custom input variables---------------------------------
 # will be added to daily column and PFT level outputs
@@ -149,29 +112,101 @@ if (use_erw):
 
 # F_N2O_DENIT: gN/m2/s, denitrification N2O flux
 # F_N2O_NIT: gN/m2/s, nitrification N2O flux
+custom_vars_col = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILLIQ','QOVER','QDRAI',
+                   'QDRAI_PERCH','QEXFL','QIN_EXTERNAL', 'QOUT_EXTERNAL', 
+                   'TG','TV','TSA','TSOI', 'FSA','FSDS','FLDS','TBOT','RAIN','SNOW','WIND','PBOT',
+                   'QBOT','QVEGT','QVEGE','QSOIL', 'QH2OSFC','H2OSOI','H2OSNO','ZWT','SNOWDP',
+                   'TLAI','RH2M','QRUNOFF','GPP', 'NEE', 'NEP', 'NPP', 'LEAFC_ALLOC', 'AGNPP', 
+                   'MR', 'CPOOL_TO_DEADSTEMC', 'CPOOL_TO_LIVECROOTC', 'CPOOL_TO_DEADCROOTC',
+                   'FROOTC_ALLOC', 'AR', 'LEAF_MR', 'CPOOL_LEAF_GR', 'TRANSFER_LEAF_GR',
+                   'CPOOL_LEAF_STORAGE_GR', 'LIVESTEM_MR', 'CPOOL_LIVESTEM_GR', \
+                   'TRANSFER_LIVESTEM_GR', 'CPOOL_LIVESTEM_STORAGE_GR', 'CPOOL_DEADSTEM_GR', \
+                   'TRANSFER_DEADSTEM_GR', 'CPOOL_DEADSTEM_STORAGE_GR', 'LIVECROOT_MR', 
+                   'CPOOL_LIVECROOT_GR','TRANSFER_LIVECROOT_GR', 'CPOOL_LIVECROOT_STORAGE_GR',
+                   'CPOOL_DEADCROOT_GR', 'TRANSFER_DEADCROOT_GR', 'CPOOL_DEADCROOT_STORAGE_GR', \
+                   'FROOT_MR', 'CPOOL_FROOT_GR', 'TRANSFER_FROOT_GR', 'CPOOL_FROOT_STORAGE_GR',
+                   'TOTVEGC', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'FROOTC', 'LIVECROOTC',
+                   'DEADCROOTC', 'DEADSTEMC_STORAGE', 'LIVESTEMC_STORAGE', 'DEADCROOTC_STORAGE',
+                   'LIVECROOTC_STORAGE', 'CPOOL_TO_DEADSTEMC_STORAGE','CPOOL_TO_LIVESTEMC_STORAGE',
+                   'CPOOL_TO_DEADCROOTC_STORAGE', 'CPOOL_TO_LIVECROOTC_STORAGE', 'ER', 'HR',
+                   'FROOTC_STORAGE', 'LEAFC_STORAGE', 'SR',
+                   'HR_vr', 'FIRA', 'CPOOL_TO_LIVESTEMC', 'TOTLITC', 'TOTSOMC',
+                   'TLAI','SNOWDP','H2OSFC','ZWT','TOTLITC', 'TOTSOMC', 'CWDC', 'LITR1C_vr', 'LITR2C_vr', 'LITR3C_vr', 'SOIL1C_vr', 'SOIL2C_vr', 'SOIL3C_vr', 'CPOOL','NPOOL',
+                   'PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr', 
+                   'F_N2O_DENIT', 'F_N2O_NIT']
+custom_vars_erw_col_sanitycheck = ['QIN','QOUT', 'QLFX_ROOTSOI', 'forc_app', 'forc_min', 
+                                   'forc_pho', 'forc_gra',  'cect_col', 'ceca_col', 'cece_col_1', 'cece_col_2', 'cece_col_3', 'cece_col_4', 'cece_col_5', 'ssa',
+                                   'primary_mineral', 'proton', 'cation', 'silica', 'secondary_mineral', 'primary_added', 'primary_dissolve', 'primary_cation_flux', 'secondary_cation_flux', 'secondary_mineral_flux', 'cation_leached', 'cation_runoff',
+                                   'background_flux', 'background_cec']
+custom_vars_erw_col = ['bd_col', 'soil_pH', 'proton_vr', 'silica_vr', 'armor_thickness_vr', 
+                       'primary_h2o_flux_vr', 'primary_prelease_vr', 'secondary_silica_flux_vr', 
+                       'r_sequestration', 'cect_dyn', 'cect_delta', 'cece_delta_1', 'cece_delta_2', 
+                       'cece_delta_3', 'cece_delta_4', 'cece_delta_5', 'cec_proton_vr', 
+                       'bicarbonate_vr', 'carbonate_vr', 'proton_limit_vr', 
+                       'bicarbonate_drainage', 'carbonate_drainage', 'bicarbonate_leached_vr', 'carbonate_leached_vr']
+nminerals = 10
+ncations = 5
+nminsecs = 2
+custom_vars_erw_col.extend([f'primary_mineral_vr_{i+1}' for i in range(nminerals)])
+custom_vars_erw_col.extend([f'cation_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'secondary_mineral_vr_{i+1}' for i in range(nminsecs)])
+custom_vars_erw_col.extend([f'primary_added_vr_{i+1}' for i in range(nminerals)])
+custom_vars_erw_col.extend([f'primary_dissolve_vr_{i+1}' for i in range(nminerals)])
+custom_vars_erw_col.extend([f'primary_cation_flux_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'r_dissolve_vr_{i+1}' for i in range(nminerals)])
+custom_vars_erw_col.extend([f'secondary_cation_flux_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'secondary_mineral_flux_vr_{i+1}' for i in range(nminsecs)])
+custom_vars_erw_col.extend([f'r_precip_vr_{i+1}' for i in range(nminsecs)])
+custom_vars_erw_col.extend([f'cec_cation_flux_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cec_cation_flux2_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cec_cation_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cation_infl_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cation_oufl_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cation_uptake_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cation_leached_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cation_runoff_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'background_flux_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'background_cec_vr_{i+1}' for i in range(ncations)])
+#custom_vars_erw_col.extend([f'annavg_cec_delta_vr_{i+1}' for i in range(ncations)])
+#custom_vars_erw_col.extend([f'annavg_tot_delta_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'annavg_cec_delta_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'annavg_tot_delta_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'cec_limit_vr_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'flux_limit_vr_{i+1}' for i in range(ncations)])
+#custom_vars_erw_col.extend([f'log_km_col_{i+1}' for i in range(ncations)])
+custom_vars_erw_col.extend([f'log_omega_vr_{i+1}' for i in range(nminerals)])
+# this is to add to sanity check
+custom_vars_erw_col_sanitycheck.extend([f'log_km_col_{i+1}' for i in range(ncations)])
 
-"""
-Manually add to usr_nl_elm of the 20th century run. Since we are only interested in
-hydrology, skip all the ERW variables. 
-
- hist_mfilt = 1,365,365
- hist_nhtfrq = -8760,-24,-24
- hist_dov2xy = .true.,.true.,.false.
- hist_fincl3 = 'FPSN','TLAI','QVEGE','QVEGT','GPP','NPP','LEAF_MR','LEAFC_ALLOC','AGNPP','CPOOL_TO_DEADSTEMC','CPOOL_TO_LIVECROOTC','CPOOL_TO_DEADCROOTC','FROOTC_ALLOC','AR','MR','CPOOL_LEAF_GR','TRANSFER_LEAF_GR','CPOOL_LEAF_STORAGE_GR','LIVESTEM_MR','CPOOL_LIVESTEM_GR','TRANSFER_LIVESTEM_GR','CPOOL_LIVESTEM_STORAGE_GR','CPOOL_DEADSTEM_GR','TRANSFER_DEADSTEM_GR','CPOOL_DEADSTEM_STORAGE_GR','LIVECROOT_MR','CPOOL_LIVECROOT_GR','TRANSFER_LIVECROOT_GR','CPOOL_LIVECROOT_STORAGE_GR','CPOOL_DEADCROOT_GR','TRANSFER_DEADCROOT_GR','CPOOL_DEADCROOT_STORAGE_GR','FROOT_MR','CPOOL_FROOT_GR','TRANSFER_FROOT_GR','CPOOL_FROOT_STORAGE_GR','FCTR','FCEV','TOTVEGC','LEAFC','LIVESTEMC','DEADSTEMC','FROOTC','LIVECROOTC','DEADCROOTC','DEADSTEMC_STORAGE','LIVESTEMC_STORAGE','DEADCROOTC_STORAGE','LIVECROOTC_STORAGE','CPOOL_TO_DEADSTEMC_STORAGE','CPOOL_TO_LIVESTEMC_STORAGE','CPOOL_TO_DEADCROOTC_STORAGE','CPOOL_TO_LIVECROOTC_STORAGE','FROOTC_STORAGE','LEAFC_STORAGE','CPOOL_TO_LIVESTEMC'
- hist_fincl2 = 'FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILLIQ','QOVER','QDRAI','QDRAI_PERCH','QEXFL','QIN_EXTERNAL','QOUT_EXTERNAL','TG','TV','TSA','TSOI','FSA','FSDS','FLDS','TBOT','RAIN','SNOW','WIND','PBOT','QBOT','QVEGT','QVEGE','QSOIL','QH2OSFC','H2OSOI','H2OSNO','ZWT','SNOWDP','TLAI','RH2M','QRUNOFF','GPP','NEE','NEP','NPP','LEAFC_ALLOC','AGNPP','MR','CPOOL_TO_DEADSTEMC','CPOOL_TO_LIVECROOTC','CPOOL_TO_DEADCROOTC','FROOTC_ALLOC','AR','LEAF_MR','CPOOL_LEAF_GR','TRANSFER_LEAF_GR','CPOOL_LEAF_STORAGE_GR','LIVESTEM_MR','CPOOL_LIVESTEM_GR','TRANSFER_LIVESTEM_GR','CPOOL_LIVESTEM_STORAGE_GR','CPOOL_DEADSTEM_GR','TRANSFER_DEADSTEM_GR','CPOOL_DEADSTEM_STORAGE_GR','LIVECROOT_MR','CPOOL_LIVECROOT_GR','TRANSFER_LIVECROOT_GR','CPOOL_LIVECROOT_STORAGE_GR','CPOOL_DEADCROOT_GR','TRANSFER_DEADCROOT_GR','CPOOL_DEADCROOT_STORAGE_GR','FROOT_MR','CPOOL_FROOT_GR','TRANSFER_FROOT_GR','CPOOL_FROOT_STORAGE_GR','TOTVEGC','LEAFC','LIVESTEMC','DEADSTEMC','FROOTC','LIVECROOTC','DEADCROOTC','DEADSTEMC_STORAGE','LIVESTEMC_STORAGE','DEADCROOTC_STORAGE','LIVECROOTC_STORAGE','CPOOL_TO_DEADSTEMC_STORAGE','CPOOL_TO_LIVESTEMC_STORAGE','CPOOL_TO_DEADCROOTC_STORAGE','CPOOL_TO_LIVECROOTC_STORAGE','ER','HR','FROOTC_STORAGE','LEAFC_STORAGE','SR','HR_vr','FIRA','CPOOL_TO_LIVESTEMC','TOTLITC','TOTSOMC','TLAI','SNOWDP','H2OSFC','ZWT','TOTLITC','TOTSOMC','CWDC','LITR1C_vr','LITR2C_vr','LITR3C_vr','SOIL1C_vr','SOIL2C_vr','SOIL3C_vr','CPOOL','NPOOL','PPOOL','FPI','FPI_P','FPG','FPG_P','FPI_vr','FPI_P_vr','F_N2O_DENIT','F_N2O_NIT','QIN','QOUT','QLFX_ROOTSOI','ZWT_PERCH'
-"""
-
+custom_vars_pft = ['FPSN','TLAI','QVEGE','QVEGT','GPP', 'NPP', 'LEAF_MR', 'LEAFC_ALLOC',
+                   'AGNPP', 'CPOOL_TO_DEADSTEMC', 'CPOOL_TO_LIVECROOTC','CPOOL_TO_DEADCROOTC',
+                   'FROOTC_ALLOC', 'AR', 'MR', 'CPOOL_LEAF_GR', 'TRANSFER_LEAF_GR',
+                   'CPOOL_LEAF_STORAGE_GR','LIVESTEM_MR', 'CPOOL_LIVESTEM_GR',
+                   'TRANSFER_LIVESTEM_GR', 'CPOOL_LIVESTEM_STORAGE_GR', 'CPOOL_DEADSTEM_GR',
+                   'TRANSFER_DEADSTEM_GR', 'CPOOL_DEADSTEM_STORAGE_GR', 'LIVECROOT_MR',
+                   'CPOOL_LIVECROOT_GR','TRANSFER_LIVECROOT_GR', 'CPOOL_LIVECROOT_STORAGE_GR',
+                   'CPOOL_DEADCROOT_GR', 'TRANSFER_DEADCROOT_GR', 'CPOOL_DEADCROOT_STORAGE_GR',
+                   'FROOT_MR','CPOOL_FROOT_GR', 'TRANSFER_FROOT_GR', 'CPOOL_FROOT_STORAGE_GR',
+                   'FCTR', 'FCEV', 'TOTVEGC', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'FROOTC',
+                   'LIVECROOTC','DEADCROOTC', 'DEADSTEMC_STORAGE', 'LIVESTEMC_STORAGE',
+                   'DEADCROOTC_STORAGE', 'LIVECROOTC_STORAGE', 'CPOOL_TO_DEADSTEMC_STORAGE',
+                   'CPOOL_TO_LIVESTEMC_STORAGE', 'CPOOL_TO_DEADCROOTC_STORAGE',
+                   'CPOOL_TO_LIVECROOTC_STORAGE', 'FROOTC_STORAGE', 'LEAFC_STORAGE', 
+                   'CPOOL_TO_LIVESTEMC']
+custom_vars = custom_vars_col + [f'{var}_pft' for var in custom_vars_pft]
+if (use_erw):
+  custom_vars = custom_vars + custom_vars_erw_col + custom_vars_erw_col_sanitycheck
 
 #-------------------------Optional: ensemble options-----------------------------------
 
-parm_list      = os.path.join(os.environ['HOME'], 'models', 'OLMT', 'runscripts', 'parm_list_HBR') #'parm_list_test_bgc' #'parm_list_fatesUQ' #'parm_list_example' #'parm_list_FATES'    #Set parameter list (leave blank for no ensemble)
-nsamples       =  4000    #number of samples to run
-np_ensemble    =  400     #number of ensemble numbers to run in parallel (MUST be <= nsamples)
-ensemble_file  = ''       #File containing samples (if blank, OLMT will generate one)
-postproc_vars  = ['TLAI','QRUNOFF','QDRAI'] # ['GPP','ER','NPP','NEE','TLAI','FSH','EFLX_LH_TOT']  #Variables to automatically post-process, applied to last case or treatments
-postproc_startyear = 2012
-postproc_endyear   = 2022
-postproc_freq      = 'daily'   #Can be daily, monthly, annual
+parm_list      = '' #'parm_list_test_bgc' #'parm_list_fatesUQ' #'parm_list_example' #'parm_list_FATES'    #Set parameter list (leave blank for no ensemble)
+nsamples       =  1000    #number of samples to run
+np_ensemble    =  384    #number of ensemble numbers to run in parallel (MUST be <= nsamples)
+ensemble_file  = ''     #File containing samples (if blank, OLMT will generate one)
+postproc_vars  = ['GPP','ER','NPP','NEE','TLAI','FSH','EFLX_LH_TOT']  #Variables to automatically post-process, applied to last case or treatments
+postproc_startyear = 2000
+postproc_endyear   = 2007
+postproc_freq      = 'monthly'   #Can be daily, monthly, annual
 
 #----------------------Optional: define treatment cases --------------------------------
 #
@@ -384,12 +419,10 @@ for site in sites:
       cases[c].postproc_startyear = postproc_startyear
       cases[c].postproc_endyear = postproc_endyear
       cases[c].postproc_freq = postproc_freq
-    #elif custom_vars:
-    #  cases[c].postproc_vars = custom_vars
-    #  cases[c].postproc_freq = postproc_freq
+    elif custom_vars:
+      cases[c].postproc_vars = custom_vars
     else:
       cases[c].postproc_vars=[]
-      cases[c].postproc_freq = postproc_freq
 
     #Set up the case (surface, domain and pftdata)
     print('Setting up case for site: '+site)

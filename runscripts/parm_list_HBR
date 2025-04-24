@@ -1,4 +1,6 @@
 slatop       7   0.001     0.054
 leafcn       7   14.2      64
 flnr         7   0.0231    0.264
-froot_leaf   7   0.3     2.5
+froot_leaf   7   0.3       2.5
+mbbopt       7   4.5       13.5
+bbbopt       7   5000      15000
