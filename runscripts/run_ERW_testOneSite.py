@@ -142,12 +142,12 @@ if (use_erw):
   else:
     if sites == 'HBR':
       case_options['builtin_site'] = 1
-      case_options['mixing_layer'] = 2 # 4.5cm; we donno real depth but this seems to work
+      case_options['mixing_layer'] = 1 # 1.75cm; we donno real depth but this seems to work best
     elif sites == 'UC_Davis':
       case_options['builtin_site'] = 2
-      case_options['mixing_layer'] = 4 # 16.55cm; real depth is 18cm
     elif sites == 'UIEF':
       case_options['builtin_site'] = 3
+      case_options['mixing_layer'] = 4 # 16.55cm; real depth is 18cm
     else:
       case_options['builtin_site'] = 0
   case_options['check_dynpft_consistency'] = '.false.'

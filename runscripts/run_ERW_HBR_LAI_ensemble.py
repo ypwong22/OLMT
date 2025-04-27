@@ -32,7 +32,7 @@ mettype = 'site'               #Site or reanalysis product to use (site, gswp3, 
 #case_suffix = '3year_rmethod1' # _VertOMappCtrl'
 #case_suffix = '3year_rmethod1_appCtrl' # _VertOMappCtrl'
 #case_suffix = '3year_rmethod1' # _VertOMappCtrl'
-case_suffix = '6year_rmethod1'
+case_suffix = ''
 
 
 if (runtype == 'site'):
@@ -91,7 +91,7 @@ case_options={}
 if sites in ['HBR','UC_Davis','UIEF']:
   #Use Custom CONUS files
   if sites == 'HBR':
-    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP.nc'
+    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP_FMAX_UP.nc'
   else:
     case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw.nc'
 
@@ -121,7 +121,7 @@ else:
 if (use_erw):
   case_options['use_erw'] = '.true.'
   case_options['year_start_erw'] = 1850
-  case_options['nyear_erw_calibrate'] = 6
+  case_options['nyear_erw_calibrate'] = 10
   if sites == 'UIEF':
     case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_UIEF_params_c240718.nc'
   else:
@@ -132,10 +132,12 @@ if (use_erw):
   else:
     if sites == 'HBR':
       case_options['builtin_site'] = 1
+      case_options['mixing_layer'] = 1 # 1.75cm; we donno real depth but this seems to work best
     elif sites == 'UC_Davis':
       case_options['builtin_site'] = 2
     elif sites == 'UIEF':
       case_options['builtin_site'] = 3
+      case_options['mixing_layer'] = 4 # 16.55cm; real depth is 18cm
     else:
       case_options['builtin_site'] = '0'
   case_options['check_dynpft_consistency'] = '.false.'
