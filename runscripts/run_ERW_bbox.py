@@ -21,24 +21,16 @@ modelroot = os.environ['HOME']+'/models/E3SM_ERW'  #Existing E3SM code directory
 
 #We are going to use a pre-built executable. Set exeroot='' to build 
 #exeroot = '/gpfs/wolf2/cades/cli185/scratch/zdr/e3sm_run/20240813_region_ICB1850CNRDCTCBC_ad_spinup/bld/'
-#exeroot = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250427_UIEF_ICB20TRCNPRDCTCBC_1yearerw/bld'
 exeroot = ''
 
 #----------------------Required inputs---------------------------------------------
 
-runtype = 'site'               #site,latlon_list,latlon_bbox 
-mettype = 'site'               #Site or reanalysis product to use (site, gswp3, crujra)
-#case_suffix = '3year_rmethod1_appCtrl' #Identifier for cases (leave blank if none)
-#case_suffix = '3year_rmethod1_addT' #test 
-#case_suffix = '10year_5cm_multInit_FMAX' # _VertOMappCtrl'
-#case_suffix = '3year_rmethod1_10cm' # _VertOMappCtrl'
-case_suffix = '10year_appCtrl' # _VertOMappCtrl'
-#case_suffix = '6year_rmethod1_appCtrl'
-#case_suffix = '6year_rmethod1_2xCO2_appCtrl' # used "co2_atm = 2 * top_as%pco2bot(t) / 101325"
-
+runtype = 'latlon_bbox'        #site,latlon_list,latlon_bbox 
+mettype = 'crujra'             #Site or reanalysis product to use (site, gswp3, crujra)
+case_suffix = '3year'          #Identifier for cases (leave blank if none)
 
 if (runtype == 'site'):
-  sites = 'UIEF'      #Site name, list of site names, or 'all' for all sites in site group
+  sites = 'all'           #Site name, list of site names, or 'all' for all sites in site group
   sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
   numproc = 1
   lat_bounds = [-90,90]
@@ -63,17 +55,17 @@ else:
 res = 'hcru_hcru'          #Resolution of global files to extract from
 
 use_cpl_bypass = True      #Use Coupler bypass for meteorology
-use_erw        = True     #Use enhanced rock weathering code
+use_erw        = True      #Use enhanced rock weathering code
 if (use_erw):
   case_suffix += 'erw'
 use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with FATES-SP)
 use_fates      = False     #Use FATES compsets
 fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
 
-nyears_ad      =  0     #number of years for ad spinup
-nyears_final   =  0     #number of years for final spinup OR for SP run
-nyears_trans   =  173     #number of years for transient run 
-                          #  If -1, the final year will be the last year of forcing data.
+nyears_ad      =  0      #number of years for ad spinup
+nyears_final   =  0      #number of years for final spinup OR for SP run
+nyears_trans   =  173      #number of years for transient run 
+                           #  If -1, the final year will be the last year of forcing data.
 run_startyear  = 1850      #Starting year for transient run OR for SP run
 
 #---------------------Optional: change the MPI lib-----------------------------------
@@ -89,75 +81,27 @@ mpilib='openmpi' #'openmpi-amanzitpls'
 #      set 'metdir' for custom met data directory and to set the appropriate corresponding namelist/xml options.
 
 case_options={}
-
-if sites in ['HBR','UC_Davis','UIEF']:
-  #Use Custom CONUS files
-  if sites == 'HBR':
-    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP_FMAX_UP.nc'
-  else:
-    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw.nc'
-
-  case_options['domainfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/domain.nc'
-
-  # Ctrl will automatically be overwritten using builtin site
-  case_options['pftdynfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata.pftdyn_erw_ctrl.nc'
-
-  if sites == 'HBR':
-    case_options['metdir'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/atm/datm7/CLM1PT_data/1x1pt_HBR'
-    case_options['use_var_soil_thick'] = '.true.'
-    case_options['use_top_solar_rad'] = '.true.'
-    #case_options['use_extrasnowlayers'] = '.true.'
-
-    # optimized parameter for hydrology
-    case_options['paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/UQ/20250422_HBR_ICB20TRCNPRDCTCBC_6year_rmethod1erw/g02927/clm_params_02927.nc'
-  else:
-    mettype = 'crujra'
-    case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
-
-  # transient-only, need finidat
-  if nyears_final == 0 and nyears_ad == 0:
-    if sites == 'UIEF':
-      case_options['finidat'] = f'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250424_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw/run/20250424_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw.elm.r.0401-01-01-00000.nc'
-    elif sites == 'HBR':
-      case_options['finidat'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250426_HBR_ICB1850CNPRDCTCBC_1year_rmethod1erw/run/20250426_HBR_ICB1850CNPRDCTCBC_1year_rmethod1erw.elm.r.0408-01-01-00000.nc'
-
-else:
-  #Use Custom CONUS files
-  case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
-  case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
-  case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble_JRA55/landuse.conus_erw_on_combined_simyr1850-2100_c240508_ensemble_1.nc'
-  case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
-
+#Use Custom CONUS files
+case_options['surfdata_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/surfdata_conus_erw_on_simyr1850_c211019.nc'
+case_options['domain_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/share/domains/domain.clm/domain.lnd.conus_erw_jra.240712.nc'
+# a random case
+case_options['pftdyn_global'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/surfdata_map/erw_ensemble_JRA55/landuse.conus_erw_on_combined_simyr1850-2100_c240508_ensemble_1.nc'
+case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
 if (use_erw):
   case_options['use_erw'] = '.true.'
   case_options['year_start_erw'] = 1850
-  case_options['nyear_erw_calibrate'] = 10
-  if sites == 'UIEF':
-    case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_UIEF_params_c240718.nc'
-  else:
-    case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'
-  case_options['use_erw_verbose'] = 2
-  if 'appCtrl' in case_suffix:
-    case_options['builtin_site'] = 0
-  else:
-    if sites == 'HBR':
-      case_options['builtin_site'] = 1
-      case_options['mixing_layer'] = 2 # 4.5cm; we donno real depth but this seems to work
-    elif sites == 'UC_Davis':
-      case_options['builtin_site'] = 2
-      case_options['mixing_layer'] = 4 # 16.55cm; real depth is 18cm
-    elif sites == 'UIEF':
-      case_options['builtin_site'] = 3
-    else:
-      case_options['builtin_site'] = 0
+  case_options['nyear_erw_calibrate'] = 3
+  case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'
+  case_options['use_erw_verbose'] = 0
+  case_options['builtin_site'] = 0
   case_options['check_dynpft_consistency'] = '.false.'
+  case_options['finidat'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250425_conus_ICB1850CNPRDCTCBC_3yearerw/run/20250425_conus_ICB1850CNPRDCTCBC_3yearerw.elm.r.0401-01-01-00000.nc'
 
 #---------------------Optional: custom input variables---------------------------------
 # will be added to daily column and PFT level outputs
 # add _pft for PFT-specific variables
 # custom_vars = [] # if we do not need extra variables
 # Or write your own: 
-
 # F_N2O_DENIT: gN/m2/s, denitrification N2O flux
 # F_N2O_NIT: gN/m2/s, nitrification N2O flux
 custom_vars_col = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILLIQ','QOVER','QDRAI',
@@ -484,10 +428,10 @@ for site in sites:
     elif (ensemble):
       #Set up ensemble file using the file generated in the first site and case
       cases[c].setup_ensemble(parm_list=parm_list,np_ensemble=np_ensemble,ensemble_file=ensemble_file)
-    ##if (c == 2 and not use_fates and not mettype == 'site'):
-    ##  #Get the dynamic PFT data
-    ##  cases[c].mask_grid = cases[0].mask_grid          #Get the mask from the first case
-    ##  cases[c].setup_domain_surfdata(makepftdyn=True)
+    if (c == 2 and not use_fates):
+      #Get the dynamic PFT data
+      cases[c].mask_grid = cases[0].mask_grid          #Get the mask from the first case
+      cases[c].setup_domain_surfdata(makepftdyn=True)
 
     #Build the case
     print('Building case')
@@ -520,3 +464,5 @@ os.system('mkdir -p archive')
 if (ensemble):
     archive_fname = archive_fname+'_ensemble'
 os.system('cp '+__file__+' '+archive_fname+'.py')
+
+
