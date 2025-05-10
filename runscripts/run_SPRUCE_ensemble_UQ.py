@@ -6,23 +6,27 @@ import pickle
 import model_ELM
 from optparse import OptionParser
 import pandas as pd
+import glob
+from netCDF4 import Dataset
+import matplotlib.pyplot as plt
+
 
 #Python code used to manage the ensemble simulations 
 #  and perform post-processing of model output.
 
 parser = OptionParser()
 
-caseid='20250429'
+caseid='UQ_20231118'
 #caseid='FACE_r241231_CalibrationMCMC_RD'
 #caseid2='FACE_r240107_CalibrationMCMCe_RD'
 compset='ICB20TRCNPRDCTCBC'
-suffix='erw'
-site='HBR'
-sitegroup='ERW'
+suffix=''
+site='US-SPR'
+sitegroup='AmeriFlux'
 runroot=os.path.join(os.environ['E3SM_ROOT'], 'output')
 caseroot=os.path.join(os.environ['E3SM_ROOT'],'case_dirs')
-UQ_only = True # True - re-generate the "output" dict and overwrite pklfile; 
-               # False - directly read from pklfile
+UQ_only = True # False - re-generate the "output" dict and overwrite pklfile; 
+                # True - directly read from pklfile
 if len(suffix) > 0:
   casename=caseid+'_'+site+'_'+compset +'_'+suffix
 else:
@@ -39,21 +43,22 @@ if (not UQ_only):
 
  print(mycase.casename)
 
- mycase.startyear=2012   #Starting year of run; doesn't have to be same as actual run
- mycase.run_n=11         #Number of years for the run (to post process)
- mycase.postproc_pfts=[7]  #PFTs to postprocess
- mycase.postproc_vars=['TLAI','QRUNOFF']
- mycase.postproc_startyear=2012    #Starting year to postprocess/calibrate
- mycase.postproc_endyear= 2022
+ mycase.startyear=2015   #Starting year of run; doesn't have to be same as actual run
+ mycase.run_n=7         #Number of years for the run (to post process)
+ mycase.postproc_pfts=[2,3,11,12]  #PFTs to postprocess
+ mycase.postproc_vars=['GPP','GPP_pft','NPP','NPP_pft','QVEGT','QVEGT_pft','NEE','TOTVEGC']
+ mycase.postproc_startyear=2015    #Starting year to postprocess/calibrate
+ mycase.postproc_endyear= 2021
  mycase.postproc_freq = 'annual'
- mycase.read_parm_list('parm_list_HBR')
+ mycase.read_parm_list(os.path.join(os.environ['HOME'], 'Git', 'phenology_elm', 
+                                    'calibration_files', 'parm_file_20231118_forXiaoying'))
  # is in OLMT/parm_files
- samples_file=os.path.join(os.environ['HOME'],'models','OLMT','parm_samples',
-                           'mcsamples_20250404_1000.txt')
+ samples_file=os.path.join(os.environ['HOME'],'models','OLMT_SPRUCE',
+                           'mcsamples_UQ_20231118_4000.txt')
  mycase.samples = (np.loadtxt(samples_file,)).transpose()
  mycase.nsamples=4000
  mycase.np_ensemble=mycase.samples.shape[0]
- mycase.npernode=128
+ mycase.npernode=40 #128
  mycase.obs={}
  mycase.obs_err={}
  mycase.OLMTdir=os.path.join(os.environ['HOME'],'models','OLMT')
@@ -69,27 +74,7 @@ else:
 # -------------------------------------------------------------------------------------
 # Observed values
 # -------------------------------------------------------------------------------------
-# HBR met data starts in 2012, therefore focuses on post-2012 data
-temp = pd.read_csv(os.path.join(os.environ['PROJDIR'], 'ERW_LDRD', 'data', 
-                                'Hubbard_Brook', 'knb-lter-hbr.293.2',
-                                'HBEF_WS1_LAI_1998-2019.csv'),
-                    index_col = [1, 0, 2])
-temp[temp < -900] = np.nan
-temp_mean = temp.groupby('Year').mean().iloc[:,0].loc[2012:2019]
-temp_std = temp.groupby('Year').std().iloc[:,0].loc[2012:2019]
-mycase.obs['TLAI_ann'] = temp_mean.values
-mycase.obs_err['TLAI_ann'] = temp_mean.values * 0.1
-
-
-temp = pd.read_csv(os.path.join(os.environ['PROJDIR'], 'ERW_LDRD', 'data', 
-                                'Hubbard_Brook', 'knb-lter-hbr.2.14', 
-                                'HBEF_DailyStreamflow_1956-2023.csv'),
-                   index_col = 0, parse_dates = True)
-temp = temp.loc[temp['WS'] == 1, 'Streamflow']
-temp_mean = temp.groupby(temp.index.year).mean().loc[2012:2022]
-temp_std = temp.groupby(temp.index.year).std().loc[2012:2022]
-mycase.obs['QRUNOFF_ann'] = temp_mean.values
-mycase.obs_err['QRUNOFF_ann'] = temp_mean.values * 0.1
+# Put into the dictionary as numpy arrays
 
 # -------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------
@@ -171,26 +156,87 @@ def active_processes(processes,process_jobnum,process_hang):
         n=n+1
     return pactive
 
+
+def postprocess_treatment(var, ens_num, startyear, endyear, index, hnum):
+  gst = str(100000+ens_num)[1:]
+  rundir = mycase.rundir_UQ+'/g'+gst
+  os.chdir(rundir)
+  lnd_in = open('./lnd_in')
+  #Get history file info from lnd_in
+  for s in lnd_in:
+      if (s.split('=')[0].strip() == 'hist_mfilt'):
+          hist_mfilt = int((s.split('=')[1].strip()).split(',')[hnum].strip())
+      if (s.split('=')[0].strip() == 'hist_nhtfrq'):
+          hist_nhtfrq = int((s.split('=')[1].strip()).split(',')[hnum].strip())
+  lnd_in.close()
+  if (hist_nhtfrq == 0):
+    nperyear=12
+  else:
+    nperyear = abs(8760/hist_nhtfrq)
+
+  plot_list = ['TAMB','T0.00','T0.00','T0.00CO2','T2.25','T2.25CO2','T4.50','T4.50CO2',
+               'T6.75','T6.75CO2','T9.00','T9.00CO2']
+
+  var_out = var
+  if ('_pft' in var):
+      var_out = var_out+str(index)
+  if (not var_out in mycase.output):
+      mycase.output[var_out] = np.zeros([len(plot_list), mycase.nsamples], float)
+
+  for pind, plot in enumerate(plot_list):
+    file_list = []
+    file_list_all = np.sort(glob.glob(plot+'/'+mycase.casename+'.elm.h'+str(hnum)+'.*.nc'))
+    #Filter the requested years
+    for f in file_list_all:
+        if (hist_nhtfrq == 0):
+            yr = int(f.split('-')[-2][-4:])
+        else:
+            yr = int(f.split('-')[-4][-4:])
+        if (startyear < 0):
+            startyear = yr
+        if (endyear >= 9999):
+            lastyr = yr
+        if (yr >= startyear and yr <= endyear):
+            file_list.append(f)
+    if (endyear >= 9999):
+        endyear=lastyr
+        if (nperyear != 12):
+          #If not monthly files, ignore the last file (it only represents a single timestep)
+          file_list = file_list[:-1]
+
+    os.system('ncrcat -O -v '+var.split('_pft')[0]+' '+' '.join(file_list)+' '+var+'_'+plot+'.nc')
+    myoutput = Dataset(var+'_'+plot+'.nc','r')
+    if (myoutput[var.split('_pft')[0]][:].ndim == 4):
+      #2D output with vertical structure
+      values = myoutput[var.split('_pft')[0]][:,index,0,0]
+    elif (myoutput[var.split('_pft')[0]][:].ndim == 3):
+      #2D output or 1D output with vertical structure (currently assumes 1D)
+      values = myoutput[var.split('_pft')[0]][:,index,0]
+    else:
+      #1D output (unstructured grid)
+      if ('_pft' in var):  #PFT-level output
+          values = myoutput[var.split('_pft')[0]][:,index]
+      else:
+          values = myoutput[var.split('_pft')[0]][:,0]
+
+    # all time average
+    values_out = np.array([np.mean(values[:])])
+    mycase.output[var_out][pind,ens_num-1] = values_out
+
+
 def postprocess_ensemble(n):
   #Postprocess
   if (mycase.postproc_vars != []):
       for v in mycase.postproc_vars:
-        hnum=0
+        hnum=1 # column leve data ".h1."
         mypfts=[0]
         if ('_pft' in v):
-            #PFT level outputs requested
-            hnum=1
-            mypfts=mycase.postproc_pfts
+          #PFT level outputs requested
+          hnum=2 # PFT level ".h2."
+          mypfts=mycase.postproc_pfts
         for p in mypfts:
-          if (mycase.postproc_freq == 'daily'):  #default
-            mycase.postprocess(v, ens_num=n,startyear=mycase.postproc_startyear, \
-                  endyear=mycase.postproc_endyear,index=p,hnum=hnum)
-          elif (mycase.postproc_freq == 'monthly'):  #monthly
-            mycase.postprocess(v, ens_num=n,startyear=mycase.postproc_startyear, \
-                  endyear=mycase.postproc_endyear,index=p,hnum=hnum, dailytomonthly=True)
-          elif (mycase.postproc_freq == 'annual'):  #annual
-            mycase.postprocess(v, ens_num=n,startyear=mycase.postproc_startyear, \
-                  endyear=mycase.postproc_endyear,index=p,hnum=hnum, annualmean=True)
+          postprocess_treatment(v, ens_num=n, startyear=mycase.postproc_startyear, \
+                                endyear=mycase.postproc_endyear,index=p,hnum=hnum)
   return 0
 
 if (not UQ_only):
@@ -248,13 +294,6 @@ if (not UQ_only):
 ## mycase.output['NUP'] = (mycase.output['FATES_NH4UPTAKE']+mycase.output['FATES_NO3UPTAKE'])*24*3600*365*1000
 ## mycase.postproc_vars.append('NPP_correct')
 ## mycase.postproc_vars.append('NUP')
- 
-# annual maximum LAI
-# the postproc data is 1990-2022, subset to 2012-2019 for TLAI, and 2012-2022 for QRUNOFF
-mycase.output['TLAI_ann'] = np.max(mycase.output['TLAI'].reshape(-1, 365, mycase.nsamples),
-                                   axis=1,keepdims=False)[:8,:]
-mycase.output['QRUNOFF_ann'] = np.mean(mycase.output['QRUNOFF'].reshape(-1, 365, mycase.nsamples),
-                                       axis=1,keepdims=False)[:,:] * 86400
 
 
 #------UQ -----------------------------
@@ -293,19 +332,58 @@ mycase.output['QRUNOFF_ann'] = np.mean(mycase.output['QRUNOFF'].reshape(-1, 365,
 ##196.5207146]
 
 # break out the individual PFTs here by appending _{pft} to varname
-mycase.train_surrogate(['TLAI_ann','QRUNOFF_ann'])
+variable_list = ['GPP','GPP_pft2','GPP_pft3','GPP_pft11','GPP_pft12',
+                 'NPP','NPP_pft2','NPP_pft3','NPP_pft11','NPP_pft12',
+                 'QVEGT','QVEGT_pft2','QVEGT_pft3','QVEGT_pft11','QVEGT_pft12',
+                 'NEE','TOTVEGC']
+mycase.train_surrogate(variable_list)
 
 #run GSA
-mycase.GSA(['TLAI_ann','QRUNOFF_ann'])
+mycase.GSA(variable_list)
+
+
+def plot_GSA_treatment(myvars):
+    plot_list = ['TAMB','T0.00','T0.00','T0.00CO2','T2.25','T2.25CO2','T4.50','T4.50CO2',
+                'T6.75','T6.75CO2','T9.00','T9.00CO2']
+
+    for v in myvars:
+      #Plot main sensitivity indices
+      fig,ax = plt.subplots()
+      nvar = mycase.sens_main[v].shape[1]
+      x_pos = np.cumsum(np.ones(nvar))
+      ax.bar(x_pos, mycase.sens_main[v][0,:], align='center', alpha=0.5)
+      ax.set_xticks(x_pos)
+      ax.set_xticklabels(plot_list, rotation=45)
+
+      bottom=mycase.sens_main[v][0,:]
+      for p in range(1,mycase.nparms_ensemble):
+       ax.bar(x_pos, mycase.sens_main[v][p,:], bottom=bottom)
+       bottom=bottom+mycase.sens_main[v][p,:]
+      plt.legend(mycase.ensemble_parms)
+      plt.savefig('sens_main_'+v+'.png')
+
+      #Total sensitivity indices
+      fig,ax = plt.subplots()
+      ax.bar(x_pos, mycase.sens_tot[v][0,:], align='center', alpha=0.5)
+      ax.set_xticks(x_pos)
+      ax.set_xticklabels(plot_list, rotation=45)
+      bottom=mycase.sens_tot[v][0,:]
+      for p in range(1,mycase.nparms_ensemble):
+       ax.bar(x_pos, mycase.sens_tot[v][p,:], bottom=bottom)
+       bottom=bottom+mycase.sens_tot[v][p,:]
+      plt.legend(mycase.ensemble_parms)
+      plt.savefig('sens_tot_'+v+'.png')
+
+
 #plot GSA
-mycase.plot_GSA(['TLAI_ann','QRUNOFF_ann'])
+mycase.plot_GSA(variable_list)
 
 #Save postprocessed output
 mycase.create_pkl(outdir=mycase.OLMTdir+'/pklfiles/')
 
-#Set intial values for parameters
-parms=((np.array(mycase.ensemble_pmax)+np.array(mycase.ensemble_pmin))/2)
+##Set intial values for parameters
+##parms=((np.array(mycase.ensemble_pmax)+np.array(mycase.ensemble_pmin))/2)
 
-#Run MCMC for the 2 varibles of interest
-mycase.MCMC(parms, ['TLAI_ann','QRUNOFF_ann'], 100000)
+##Run MCMC for the 2 varibles of interest
+##mycase.MCMC(parms, ['TLAI_ann','QRUNOFF_ann'], 100000)
 

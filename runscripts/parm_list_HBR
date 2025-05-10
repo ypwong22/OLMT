@@ -4,3 +4,5 @@ flnr         7   0.0231    0.264
 froot_leaf   7   0.3       2.5
 mbbopt       7   4.5       13.5
 bbbopt       7   5000      15000
+vcmaxha      7   36000     108000
+vcmaxhd      7   198000    202000

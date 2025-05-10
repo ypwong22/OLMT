@@ -21,7 +21,7 @@ modelroot = os.environ['HOME']+'/models/E3SM_ERW'  #Existing E3SM code directory
 
 #We are going to use a pre-built executable. Set exeroot='' to build 
 #exeroot = '/gpfs/wolf2/cades/cli185/scratch/zdr/e3sm_run/20240813_region_ICB1850CNRDCTCBC_ad_spinup/bld/'
-#exeroot = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250427_UIEF_ICB20TRCNPRDCTCBC_1yearerw/bld'
+#exeroot = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250429_HBR_ICB20TRCNPRDCTCBC_z0mr_lowSolRaderw/bld'
 exeroot = ''
 
 #----------------------Required inputs---------------------------------------------
@@ -32,13 +32,13 @@ mettype = 'site'               #Site or reanalysis product to use (site, gswp3, 
 #case_suffix = '3year_rmethod1_addT' #test 
 #case_suffix = '10year_5cm_multInit_FMAX' # _VertOMappCtrl'
 #case_suffix = '3year_rmethod1_10cm' # _VertOMappCtrl'
-case_suffix = '10year_appCtrl' # _VertOMappCtrl'
+case_suffix = 'z0mr_lowSolRadFMAX' # _VertOMappCtrl'
 #case_suffix = '6year_rmethod1_appCtrl'
 #case_suffix = '6year_rmethod1_2xCO2_appCtrl' # used "co2_atm = 2 * top_as%pco2bot(t) / 101325"
 
 
 if (runtype == 'site'):
-  sites = 'UIEF'      #Site name, list of site names, or 'all' for all sites in site group
+  sites = 'HBR'      #Site name, list of site names, or 'all' for all sites in site group
   sitegroup = 'ERW'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
   numproc = 1
   lat_bounds = [-90,90]
@@ -93,7 +93,7 @@ case_options={}
 if sites in ['HBR','UC_Davis','UIEF']:
   #Use Custom CONUS files
   if sites == 'HBR':
-    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP_FMAX_UP.nc'
+    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP_FMAX_LOW.nc'
   else:
     case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw.nc'
 
@@ -109,7 +109,7 @@ if sites in ['HBR','UC_Davis','UIEF']:
     #case_options['use_extrasnowlayers'] = '.true.'
 
     # optimized parameter for hydrology
-    case_options['paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/UQ/20250422_HBR_ICB20TRCNPRDCTCBC_6year_rmethod1erw/g02927/clm_params_02927.nc'
+    case_options['paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/HBR/clm_params_20250427_HBR_ICB20TRCNPRDCTCBC_erw_03772_doubleZ0.nc'
   else:
     mettype = 'crujra'
     case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
@@ -119,7 +119,7 @@ if sites in ['HBR','UC_Davis','UIEF']:
     if sites == 'UIEF':
       case_options['finidat'] = f'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250424_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw/run/20250424_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw.elm.r.0401-01-01-00000.nc'
     elif sites == 'HBR':
-      case_options['finidat'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250426_HBR_ICB1850CNPRDCTCBC_1year_rmethod1erw/run/20250426_HBR_ICB1850CNPRDCTCBC_1year_rmethod1erw.elm.r.0408-01-01-00000.nc'
+      case_options['finidat'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/UQ/20250427_HBR_ICB1850CNPRDCTCBC_erw/g03772/20250427_HBR_ICB1850CNPRDCTCBC_erw.elm.r.0408-01-01-00000.nc'
 
 else:
   #Use Custom CONUS files

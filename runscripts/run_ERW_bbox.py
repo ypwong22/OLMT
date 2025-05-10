@@ -27,7 +27,7 @@ exeroot = ''
 
 runtype = 'latlon_bbox'        #site,latlon_list,latlon_bbox 
 mettype = 'crujra'             #Site or reanalysis product to use (site, gswp3, crujra)
-case_suffix = '3year'          #Identifier for cases (leave blank if none)
+case_suffix = '10year'         #Identifier for cases (leave blank if none)
 
 if (runtype == 'site'):
   sites = 'all'           #Site name, list of site names, or 'all' for all sites in site group
@@ -90,7 +90,7 @@ case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/a
 if (use_erw):
   case_options['use_erw'] = '.true.'
   case_options['year_start_erw'] = 1850
-  case_options['nyear_erw_calibrate'] = 3
+  case_options['nyear_erw_calibrate'] = 10
   case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c240718.nc'
   case_options['use_erw_verbose'] = 0
   case_options['builtin_site'] = 0

@@ -21,6 +21,7 @@ modelroot = os.environ['HOME']+'/models/E3SM_ERW'  #Existing E3SM code directory
 
 #We are going to use a pre-built executable. Set exeroot='' to build 
 #exeroot = '/gpfs/wolf2/cades/cli185/scratch/zdr/e3sm_run/20240813_region_ICB1850CNRDCTCBC_ad_spinup/bld/'
+#exeroot = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250427_HBR_ICB1850CNRDCTCBC_ad_spinup_erw/bld'
 exeroot = ''
 
 #----------------------Required inputs---------------------------------------------
@@ -92,6 +93,7 @@ if sites in ['HBR','UC_Davis','UIEF']:
   #Use Custom CONUS files
   if sites == 'HBR':
     case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP_FMAX_UP.nc'
+    #case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP.nc'
   else:
     case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw.nc'
 
@@ -104,6 +106,9 @@ if sites in ['HBR','UC_Davis','UIEF']:
     case_options['metdir'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/atm/datm7/CLM1PT_data/1x1pt_HBR'
     case_options['use_var_soil_thick'] = '.true.'
     case_options['use_top_solar_rad'] = '.true.'
+
+    # make sure to use double z0
+    case_options['paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/HBR/clm_params_20250427_HBR_ICB20TRCNPRDCTCBC_erw_03772_doubleZ0.nc'
   else:
     mettype = 'crujra'
     case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
@@ -139,7 +144,7 @@ if (use_erw):
       case_options['builtin_site'] = 3
       case_options['mixing_layer'] = 4 # 16.55cm; real depth is 18cm
     else:
-      case_options['builtin_site'] = '0'
+      case_options['builtin_site'] = 0
   case_options['check_dynpft_consistency'] = '.false.'
 
 
