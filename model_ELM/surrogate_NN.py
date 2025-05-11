@@ -24,7 +24,7 @@ def train_surrogate(self,myvars):
     p = self.samples.transpose()
 
     # Filter out invalid data
-    valid_indices = np.where(y[:, 1].squeeze() > -9999)[0]
+    valid_indices = np.where(y[:, 0].squeeze() > -9999)[0]
     y = y[valid_indices, :].copy()
     p = p[valid_indices, :].copy()
 
@@ -63,8 +63,10 @@ def train_surrogate(self,myvars):
     self.pscaler[vname]=pscaler
     self.yscaler[vname]=yscaler
 
-    ypredict_train = yscaler.inverse_transform(grid.predict(ptrain_norm)) 
-    ypredict_val   = yscaler.inverse_transform(grid.predict(pval_norm))
+    output_shape = (-1, self.output[vname].shape[0])
+
+    ypredict_train = yscaler.inverse_transform(grid.predict(ptrain_norm).reshape(output_shape))
+    ypredict_val   = yscaler.inverse_transform(grid.predict(pval_norm).reshape(output_shape))
     print('Correlations for training data: '+vname)
     for qoi in range(0,nqoi):
       print(qoi, np.corrcoef(ytrain.astype(float)[:,qoi], ypredict_train.astype(float)[:,qoi])[0,1]**2)
@@ -76,8 +78,10 @@ def train_surrogate(self,myvars):
 def run_surrogate(self,parms,myvars):
   surrogate_output={}
   for var in myvars:
+    output_shape = (-1, self.output[var].shape[0])
+
     parms_norm = self.pscaler[var].transform(parms)
-    surrogate_output[var] = self.yscaler[var].inverse_transform(self.surrogate[var].predict(parms_norm))
+    surrogate_output[var] = self.yscaler[var].inverse_transform(self.surrogate[var].predict(parms_norm).reshape(output_shape))
     surrogate_output[var][:,self.qoi_bad[var]] = self.qoi_bad_meanval[var]
   return surrogate_output
 

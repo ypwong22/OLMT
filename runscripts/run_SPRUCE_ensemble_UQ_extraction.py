@@ -24,7 +24,12 @@ N = 4000
 #N = 3125
 #N = 1850
 
+###debug
+##N = 6
+
 PREFIX = 'UQ_20231118'
+#PREFIX = 'UQ_20240107'
+#PREFIX = 'UQ_20240112'
 
 path_out = os.path.join(os.environ['PROJDIR'], 'ELM_Phenology', 'output', 'extract', PREFIX)
 os.makedirs(path_out, exist_ok=True)
@@ -35,6 +40,10 @@ BLOCK = 200
 #BLOCK = 125
 #BLOCK = 99
 #BLOCK = 50
+
+## debug
+##BLOCK = 3
+
 if np.mod(N, BLOCK) != 0:
     raise Exception("N must be a multiply of BLOCK")
 
@@ -42,11 +51,15 @@ RUNROOT = os.path.join(os.environ["E3SM_ROOT"], "output")
 niter = int(N / BLOCK)
 
 
-PLOT_LIST = ['TAMB','T0.00','T0.00','T0.00CO2','T2.25','T2.25CO2','T4.50','T4.50CO2',
+PLOT_LIST = ['TAMB','T0.00','T0.00CO2','T2.25','T2.25CO2','T4.50','T4.50CO2',
              'T6.75','T6.75CO2','T9.00','T9.00CO2']
 
-VAR_COL = ['GPP', 'NPP', 'QVEGT', 'NEE', 'TOTVEGC']
-VAR_PFT = ['GPP', 'NPP', 'QVEGT']
+VAR_COL = ['GPP', 'NEE', 'HR', 'TOTVEGC', 'TOTSOMC']
+VAR_PFT = ['GPP', 'AR', 'MR', 'GR', 'XR']
+# variables for Xiaoying Shi
+##VAR_COL = ['GPP', 'NPP', 'QVEGT', 'NEE', 'TOTVEGC']
+##VAR_PFT = ['GPP', 'NPP', 'QVEGT']
+
 pft_list = [2, 3, 11, 12]
 
 nvars = len(VAR_COL) + len(pft_list) * len(VAR_PFT)
@@ -58,6 +71,10 @@ def postproc(thisjob, collection):
     baserundir = os.path.join(RUNROOT, "UQ", casename, f"g{thisjob:05g}")
 
     for pind, plot in enumerate(PLOT_LIST):
+
+        ##DEBUG
+        ##print(casename, thisjob, plot)
+
         # extract column variables
         flist_col = [
              os.path.join(baserundir, plot, f'{casename}.elm.h1.{year}-01-01-00000.nc')
@@ -93,8 +110,7 @@ def postproc(thisjob, collection):
 #postproc(thisjob, collection)
 
 
-
-for b in range(niter):
+for b in range(10, niter):
     print("rank = ", rank, "b = ", b, flush = True)
 
     if rank == 0:
@@ -133,10 +149,11 @@ for b in range(niter):
             comm.send(-1, dest=process, tag=2)
             comm.send(-1, dest=process, tag=3)
 
+        #collection_all.dump(
+        #    os.path.join(path_out, f"xys_uncertainty_extraction_part{b:03g}.bin")
+        #)
         collection_all.dump(
-            os.path.join(
-                path_out, "extract", PREFIX, f"uncertainty_extraction_part{b:03g}.bin"
-            )
+            os.path.join(path_out, f"uncertainty_extraction_part{b:03g}.bin")
         )
 
     # --------------------- Slave process (get data and calculate) --------------
