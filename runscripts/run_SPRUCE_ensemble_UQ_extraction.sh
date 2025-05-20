@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --time=24:0:00
-#SBATCH -J MCMC
+#SBATCH -J UQ_extract
 #SBATCH --nodes=1
 #SBATCH -A CLI185
 #SBATCH -p batch_ccsi

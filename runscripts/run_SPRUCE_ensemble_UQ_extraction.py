@@ -27,7 +27,8 @@ N = 4000
 ###debug
 ##N = 6
 
-PREFIX = 'UQ_20231118'
+PREFIX = 'UQ_20231116'
+#PREFIX = 'UQ_20231118'
 #PREFIX = 'UQ_20240107'
 #PREFIX = 'UQ_20240112'
 
@@ -110,7 +111,7 @@ def postproc(thisjob, collection):
 #postproc(thisjob, collection)
 
 
-for b in range(10, niter):
+for b in range(niter): # range(niter):
     print("rank = ", rank, "b = ", b, flush = True)
 
     if rank == 0:
