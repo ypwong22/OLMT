@@ -12,7 +12,7 @@ import pandas as pd
 
 parser = OptionParser()
 
-caseid='20250429'
+caseid='20250714'
 #caseid='FACE_r241231_CalibrationMCMC_RD'
 #caseid2='FACE_r240107_CalibrationMCMCe_RD'
 compset='ICB20TRCNPRDCTCBC'

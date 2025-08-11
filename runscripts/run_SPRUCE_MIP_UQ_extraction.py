@@ -19,48 +19,30 @@ size = comm.Get_size()
 workdir = os.getcwd()
 
 # number of simulations
-N = 4000
-#N = 2000
-#N = 3125
-#N = 1850
+N = 1920
 
-###debug
-##N = 6
-
-#PREFIX = 'UQ_20231116'
-#PREFIX = 'UQ_20231118'
-#PREFIX = 'UQ_20240107'
-#PREFIX = 'UQ_20240112'
-PREFIX = 'UQ_20250629'
+PREFIX = '20240723'
 
 path_out = os.path.join(os.environ['PROJDIR'], 'ELM_Phenology', 'output', 'extract', PREFIX)
 os.makedirs(path_out, exist_ok=True)
 
 # number of ensembles to save in each bin file
 # this avoids having difficulty in dumping file
-BLOCK = 200
-#BLOCK = 125
-#BLOCK = 99
-#BLOCK = 50
-
-## debug
-##BLOCK = 3
+BLOCK = 160
 
 if np.mod(N, BLOCK) != 0:
     raise Exception("N must be a multiply of BLOCK")
 
-RUNROOT = os.path.join(os.environ["E3SM_ROOT"], "output")
+RUNROOT = "/gpfs/wolf2/cades/cli185/proj-shared/zdr/SPRUCE/e3sm_run/UQ"
 niter = int(N / BLOCK)
 
 
-PLOT_LIST = ['TAMB','T0.00','T0.00CO2','T2.25','T2.25CO2','T4.50','T4.50CO2',
-             'T6.75','T6.75CO2','T9.00','T9.00CO2']
+PLOT_LIST = ['TAMB','T0.00','T0.00eCO2','T2.25','T2.25eCO2','T4.50','T4.50eCO2',
+             'T6.75','T6.75eCO2','T9.00','T9.00eCO2']
 
-VAR_COL = ['GPP', 'NEE', 'HR', 'TOTVEGC', 'TOTSOMC']
-VAR_PFT = ['GPP', 'AR', 'MR', 'GR', 'XR']
 # variables for Xiaoying Shi
-##VAR_COL = ['GPP', 'NPP', 'QVEGT', 'NEE', 'TOTVEGC']
-##VAR_PFT = ['GPP', 'NPP', 'QVEGT']
+VAR_COL = ['NEE','NPP','CH4PROD','FCH4','HR']
+VAR_PFT = ['NPP', 'TLAI', 'TOTVEGC']
 
 pft_list = [2, 3, 11, 12]
 
@@ -69,63 +51,45 @@ nvars = len(VAR_COL) + len(pft_list) * len(VAR_PFT)
 # Function to perform post-processing for one ensemble member
 def postproc(thisjob, collection):
 
-    casename = f"{PREFIX}_US-SPR_ICB20TRCNPRDCTCBC"
-    baserundir = os.path.join(RUNROOT, "UQ", casename, f"g{thisjob:05g}")
-
     for pind, plot in enumerate(PLOT_LIST):
 
+        casename = f"{PREFIX}_US-SPR_ICB20TRCNPRDCTCBC_{plot}"
+        baserundir = os.path.join(RUNROOT, casename, f"g{thisjob:05g}")
+
         ##DEBUG
-        ##print(casename, thisjob, plot)       
+        ##print(casename, thisjob, plot)
 
         # extract column variables
         flist_col = [
-             os.path.join(baserundir, plot, f'{casename}.elm.h1.{year}-01-01-00000.nc')
+             os.path.join(baserundir, f'{casename}.elm.h1.{year}-01-01-00000.nc')
              for year in range(2015, 2022)
         ]
-        valid = True
+        temp = np.full([len(VAR_COL), len(flist_col)], np.nan)
         for f,file in enumerate(flist_col):
-            if not os.path.exists(file):
-                valid = False
-                break
-
-        if valid:
-            temp = np.full([len(VAR_COL), len(flist_col)], np.nan)
-            for f,file in enumerate(flist_col):
-                nc = Dataset(file, 'r')
-                for v, var in enumerate(VAR_COL):
-                    temp[v,f] = np.mean(nc[var][:, 0]) * 0.64 + np.mean(nc[var][:, 1]) * 0.36
-                nc.close()
-            collection[:len(VAR_COL), pind] = np.nanmean(temp, axis = 1)
-        else:
-            collection[:len(VAR_COL), pind] == np.nan
+            nc = Dataset(file, 'r')
+            for v, var in enumerate(VAR_COL):
+                temp[v,f] = np.mean(nc[var][:, 0]) * 0.64 + np.mean(nc[var][:, 1]) * 0.36
+            nc.close()
+        collection[:len(VAR_COL), pind] = np.nanmean(temp, axis = 1)
 
         # extract pft variables
         flist_pft = [
-             os.path.join(baserundir, plot, f'{casename}.elm.h2.{year}-01-01-00000.nc')
+             os.path.join(baserundir, f'{casename}.elm.h2.{year}-01-01-00000.nc')
              for year in range(2015, 2022)
         ]
-        valid = True
+        temp = np.full([len(VAR_PFT)*len(pft_list), len(flist_pft)], np.nan)
         for f,file in enumerate(flist_pft):
-            if not os.path.exists(file):
-                valid = False
-                break
-
-        if valid:
-            temp = np.full([len(VAR_PFT)*len(pft_list), len(flist_pft)], np.nan)
-            for f,file in enumerate(flist_pft):
-                nc = Dataset(file, 'r')
-                for v, var in enumerate(VAR_PFT):
-                    for t, pft in enumerate(pft_list):
-                        temp[v*len(pft_list) + t,f] = np.mean(nc[var][:, pft]) * 0.64 + \
-                                                    np.mean(nc[var][:, pft+17]) * 0.36
-                nc.close()
-            collection[len(VAR_COL):, pind] = np.nanmean(temp, axis = 1)
-        else:
-            collection[len(VAR_COL):, pind] = np.nan
+            nc = Dataset(file, 'r')
+            for v, var in enumerate(VAR_PFT):
+                for t, pft in enumerate(pft_list):
+                    temp[v*len(pft_list) + t,f] = np.mean(nc[var][:, pft]) * 0.64 + \
+                                                  np.mean(nc[var][:, pft+32]) * 0.36
+            nc.close()
+        collection[len(VAR_COL):, pind] = np.nanmean(temp, axis = 1)
 
 
 ## Debug
-#thisjob = 2891
+#thisjob = 3852
 #collection = np.empty([nvars, len(PLOT_LIST)])
 #postproc(thisjob, collection)
 

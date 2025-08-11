@@ -14,7 +14,8 @@ from string import ascii_lowercase
 parser = OptionParser()
 
 #caseid='UQ_20231118'
-caseid='UQ_20240107'
+#caseid='UQ_20240107'
+caseid = 'UQ_20250629'
 #caseid='FACE_r241231_CalibrationMCMC_RD'
 #caseid2='FACE_r240107_CalibrationMCMCe_RD'
 compset='ICB20TRCNPRDCTCBC'
@@ -31,7 +32,8 @@ else:
   casename=caseid+'_'+site+'_'+compset
 
 temp = caseid.replace('UQ_', '')
-parmfile = f'parm_file_{temp}_compact'
+parmfile = 'parm_file_stoichiometry_compact'
+#parmfile = f'parm_file_{temp}_compact'
 
 VAR_COL = ['GPP', 'NEE', 'HR', 'TOTVEGC', 'TOTSOMC']
 VAR_PFT = ['GPP', 'AR', 'MR', 'GR', 'XR']
@@ -171,6 +173,10 @@ else:
 
 
 def plot_GSA_treatment():
+    x_pos = np.cumsum(np.ones(len(variable_list)))
+
+    #Plot main sensitivity indices
+    pft_list = [2,3,11,12,0]
     pft_names = ['Spruce','Tamarack','Shrub','Moss']
     ticklabels = []
     for var in VAR_COL:
@@ -180,18 +186,19 @@ def plot_GSA_treatment():
     for var in VAR_PFT:
         if not var in VAR_COL:
             ticklabels.extend([var+' '+pname for pname in pft_names])
-
-    x_pos = np.cumsum(np.ones(len(variable_list)))
-
-    #Plot main sensitivity indices
-    fig, axes = plt.subplots(2, 2, figsize = (14, 11), sharex = True, sharey = True)
-    for i, (pft,pftname) in enumerate(zip([2, 3, 11, 0], pft_names[:-1] + ['Column'])):
+    nrow = 2
+    ncol = int(np.ceil(len(pft_list)/nrow))
+    fig, axes = plt.subplots(nrow, ncol, figsize = (ncol*5, nrow*4), sharex = True, sharey = True)
+    if len(pft_list) < nrow * ncol:
+        for i in range(len(pft_list), nrow * ncol):
+            axes.flat[i].set_visible(False)
+    for i, (pft,pftname) in enumerate(zip(pft_list, pft_names + ['Column'])):
       subset = np.where(np.array(mycase.ensemble_pfts) == pft)[0]
 
       ax = axes.flat[i]
 
       bottom = np.zeros(len(x_pos))
-      for s in subset:
+      for j,s in enumerate(subset):
         temp = np.array([mycase.sens_main[v][s,0] for v in variable_list])
         ax.bar(x_pos, temp, align='center', # alpha=0.5,
                bottom = bottom, label = mycase.ensemble_parms[s])
@@ -204,15 +211,18 @@ def plot_GSA_treatment():
       ax.set_xticks(x_pos)
       ax.set_xticklabels(ticklabels, rotation=90)
       ax.set_title(f'{pftname} parameters')
-      ax.legend(loc = [1.05, 0.5])
+      ax.legend(bbox_to_anchor=(1.0, 0.5), loc='center left')
     for ax, lab in zip(np.ravel(axes), ascii_lowercase):
         ax.text(-0.15, 1.05, lab, transform=ax.transAxes, fontweight = 'bold')
     plt.tight_layout()
     plt.savefig(f'sens_main_{caseid}.png')
 
     #Total sensitivity indices
-    fig, axes = plt.subplots(2, 2, figsize = (14, 11), sharex = True, sharey = True)
-    for i, (pft,pftname) in enumerate(zip([2, 3, 11, 0], pft_names[:-1] + ['Column'])):
+    fig, axes = plt.subplots(nrow, ncol, figsize = (ncol*5, nrow*4), sharex = True, sharey = True)
+    if len(pft_list) < nrow * ncol:
+        for i in range(len(pft_list), nrow * ncol):
+            axes.flat[i].set_visible(False)
+    for i, (pft,pftname) in enumerate(zip(pft_list, pft_names + ['Column'])):
       subset = np.where(np.array(mycase.ensemble_pfts) == pft)[0]
 
       ax = axes.flat[i]
@@ -231,8 +241,8 @@ def plot_GSA_treatment():
       ax.set_xticks(x_pos)
       ax.set_xticklabels(ticklabels, rotation=90)
       ax.set_title(f'{pftname} parameters')
-      ax.legend(loc = [1.05, 0.5])
-    for ax, lab in zip(np.ravel(axes), ascii_lowercase):
+      ax.legend(bbox_to_anchor=(1.0, 0.5), loc='center left')
+    for ax, lab in zip(np.ravel(axes)[:len(pft_list)], ascii_lowercase):
         ax.text(-0.15, 1.05, lab, transform=ax.transAxes, fontweight = 'bold')
     plt.tight_layout()
     plt.savefig(f'sens_tot_{caseid}.png')

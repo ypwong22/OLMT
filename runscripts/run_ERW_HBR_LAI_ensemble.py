@@ -94,6 +94,8 @@ if sites in ['HBR','UC_Davis','UIEF']:
   if sites == 'HBR':
     case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP_FMAX_UP.nc'
     #case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP.nc'
+  elif sites == 'UIEF':
+    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw.nc_obs'
   else:
     case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw.nc'
 

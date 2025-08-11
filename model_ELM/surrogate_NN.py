@@ -25,8 +25,6 @@ def train_surrogate(self,myvars):
 
     # Filter out invalid data
     valid_indices = np.where(y[:, 0].squeeze() > -9999)[0]
-    y = y[valid_indices, :].copy()
-    p = p[valid_indices, :].copy()
 
     self.qoi_bad[vname] = []
     self.qoi_bad_meanval[vname] = []
@@ -34,6 +32,9 @@ def train_surrogate(self,myvars):
         if (max(y[valid_indices,q]) == min(y[valid_indices,q])):
             self.qoi_bad[vname].append(q)
             self.qoi_bad_meanval[vname].append(min(y[valid_indices,q]))
+
+    y = y[valid_indices, :].copy()
+    p = p[valid_indices, :].copy()
 
     # Split data into training and validation sets
     ptrain, pval, ytrain, yval = train_test_split(p, y, test_size=0.2, random_state=42)
