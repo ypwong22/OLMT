@@ -170,6 +170,7 @@ if (use_erw):
 # custom_vars = [] # if we do not need extra variables
 # Or write your own: 
 
+"""
 # F_N2O_DENIT: gN/m2/s, denitrification N2O flux
 # F_N2O_NIT: gN/m2/s, nitrification N2O flux
 custom_vars_col = ['FPSN','FSH','EFLX_LH_TOT','Rnet','FCTR','FGEV','FCEV','SOILLIQ','QOVER','QDRAI',
@@ -258,6 +259,10 @@ custom_vars_pft = ['FPSN','TLAI','QVEGE','QVEGT','GPP', 'NPP', 'LEAF_MR', 'LEAFC
 custom_vars = custom_vars_col + [f'{var}_pft' for var in custom_vars_pft]
 if (use_erw):
   custom_vars = custom_vars + custom_vars_erw_col + custom_vars_erw_col_sanitycheck
+"""
+custom_vars = ['soil_pH','r_sequestration','cec_cation_vr_1','cec_cation_vr_2','cec_cation_vr_3',
+               'cec_cation_vr_4','cec_cation_vr_5','cec_proton_vr','primary_mineral',
+               'primary_added']
 
 #-------------------------Optional: ensemble options-----------------------------------
 
@@ -265,9 +270,7 @@ parm_list      = os.path.join(os.environ['HOME'], 'models', 'OLMT', 'runscripts'
 nsamples       =  1000    #number of samples to run
 np_ensemble    =  384    #number of ensemble numbers to run in parallel (MUST be <= nsamples)
 ensemble_file  = ''     #File containing samples (if blank, OLMT will generate one)
-postproc_vars  = ['soil_pH','r_sequestration','cec_cation_vr_1','cec_cation_vr_2','cec_cation_vr_3',
-                  'cec_cation_vr_4','cec_cation_vr_5','cec_proton_vr','primary_mineral',
-                  'primary_added']  #Variables to automatically post-process, applied to last case or treatments
+postproc_vars  = []  #Variables to automatically post-process, applied to last case or treatments
 postproc_startyear = 2015
 postproc_endyear   = 2022
 postproc_freq      = 'daily'   #Can be daily, monthly, annual
