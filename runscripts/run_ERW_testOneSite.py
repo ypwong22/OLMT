@@ -33,7 +33,7 @@ mettype = 'site'               #Site or reanalysis product to use (site, gswp3, 
 #case_suffix = '10year_5cm_multInit_FMAX' # _VertOMappCtrl'
 #case_suffix = '3year_rmethod1_10cm' # _VertOMappCtrl'
 #case_suffix = 'z0mr_lowSolRadFMAX' # _VertOMappCtrl'
-case_suffix =  '' # 'phi0.2_div10000' # 'phi0.002', 'DSiO2', 
+case_suffix =  'obsForc' # '_noMassCharge' # '_noLowRate_10yearCalib_noMassCharge' # 'phi0.2_div10000' # 'phi0.002', 'DSiO2', 
 #case_suffix = 'z0mr_appCtrl'
 #case_suffix = '6year_rmethod1_appCtrl'
 #case_suffix = '6year_rmethod1_2xCO2_appCtrl' # used "co2_atm = 2 * top_as%pco2bot(t) / 101325"
@@ -74,9 +74,9 @@ fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
 
 nyears_ad      =  200     #number of years for ad spinup
 nyears_final   =  400     #number of years for final spinup OR for SP run
-nyears_trans   =  148     #number of years for transient run 
+nyears_trans   =  173 # 166 #173     #number of years for transient run 
                           #  If -1, the final year will be the last year of forcing data.
-run_startyear  =  1850 # 1998 # 1850      #Starting year for transient run OR for SP run
+run_startyear  =  1850    # 1998 # 1850      #Starting year for transient run OR for SP run
 
 #---------------------Optional: change the MPI lib-----------------------------------
 mpilib='openmpi' #'openmpi-amanzitpls'
@@ -112,6 +112,8 @@ if sites in ['HBR','UC_Davis','UIEF']:
 
     # optimized parameter for hydrology
     case_options['paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/HBR/clm_params_20250714_HBR_ICB20TRCNPRDCTCBC_erw_00001.nc'
+  elif sites == 'UIEF':
+    case_options['metdir'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/atm/datm7/CLM1PT_data/1x1pt_UIEF'
   else:
     mettype = 'crujra'
     case_options['metdir'] = '/gpfs/wolf2/cades/cli185/world-shared/e3sm/inputdata/atm/datm7/atm_forcing.CRUJRA_trendy_2023/cpl_bypass_full'
@@ -134,20 +136,25 @@ else:
 if (use_erw):
   case_options['use_erw'] = '.true.'
   case_options['year_start_erw'] = 1850
-  case_options['nyear_erw_calibrate'] = 10
   if sites == 'HBR':
-    case_options['nyear_erw_calibrate'] = 12
+    case_options['nyear_erw_calibrate'] = 10
+  elif sites == 'UIEF':
+    case_options['nyear_erw_calibrate'] = 13
+  else:
+    case_options['nyear_erw_calibrate'] = 43
   if sites == 'UIEF':
     case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_UIEF_params_c250730.nc'
   else:
     case_options['elm_erw_paramfile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/paramdata/clm_erw_params_c250730.nc'
-  case_options['use_erw_verbose'] = 2
+  case_options['use_erw_verbose'] = 0
   if 'appCtrl' in case_suffix:
+    # However, need to edit the rain-snow threshold when building for HBR
+    # because it was under an if condition of builtin_site == 1
     case_options['builtin_site'] = 0
   else:
     if sites == 'HBR':
       case_options['builtin_site'] = 1
-      case_options['mixing_layer'] = 1 # 1.75cm; we donno real depth but this seems to work best
+      case_options['mixing_layer'] = 2
     elif sites == 'UC_Davis':
       case_options['builtin_site'] = 2
     elif sites == 'UIEF':
@@ -250,7 +257,7 @@ custom_vars_pft = ['FPSN','TLAI','QVEGE','QVEGT','GPP', 'NPP', 'LEAF_MR', 'LEAFC
                    'CPOOL_TO_LIVESTEMC']
 custom_vars = custom_vars_col + [f'{var}_pft' for var in custom_vars_pft]
 if (use_erw):
-  custom_vars = custom_vars + custom_vars_erw_col + custom_vars_erw_col_sanitycheck
+  custom_vars = custom_vars + custom_vars_erw_col # + custom_vars_erw_col_sanitycheck
 
 #-------------------------Optional: ensemble options-----------------------------------
 
@@ -470,7 +477,10 @@ for site in sites:
 
     #Set postprocessing variables for ensemble
     if ((c == ncases-1 or istreatment[c]) and ensemble):
-      cases[c].postproc_vars = postproc_vars
+      if custom_vars:
+        cases[c].postproc_vars = custom_vars
+      else:
+        cases[c].postproc_vars = postproc_vars
       cases[c].postproc_startyear = postproc_startyear
       cases[c].postproc_endyear = postproc_endyear
       cases[c].postproc_freq = postproc_freq

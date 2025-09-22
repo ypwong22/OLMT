@@ -265,6 +265,11 @@ def ensemble_copy(self, ens_num):
       param = self.getncvar(myfile, 'MONTHLY_LAI')
       param[:,:,:,:] = parm_values[pnum]
       ierr = self.putncvar(myfile, 'MONTHLY_LAI', param)
+    elif ('LOG_KM' in p):
+      myfile = surffile
+      param = self.getncvar(myfile, p)
+      param[:,:,:] = parm_values[pnum]
+      ierr = self.putncvar(myfile, p, param)
     elif (p != 'co2'):
       if (p in CNP_parms):
          myfile= CNPfile
