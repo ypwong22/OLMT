@@ -33,7 +33,7 @@ mettype = 'site'               #Site or reanalysis product to use (site, gswp3, 
 #case_suffix = '10year_5cm_multInit_FMAX' # _VertOMappCtrl'
 #case_suffix = '3year_rmethod1_10cm' # _VertOMappCtrl'
 #case_suffix = 'z0mr_lowSolRadFMAX' # _VertOMappCtrl'
-case_suffix =  'obsForc' # '_noMassCharge' # '_noLowRate_10yearCalib_noMassCharge' # 'phi0.2_div10000' # 'phi0.002', 'DSiO2', 
+case_suffix =  '' # '_noMassCharge' # '_noLowRate_10yearCalib_noMassCharge' # 'phi0.2_div10000' # 'phi0.002', 'DSiO2', 
 #case_suffix = 'z0mr_appCtrl'
 #case_suffix = '6year_rmethod1_appCtrl'
 #case_suffix = '6year_rmethod1_2xCO2_appCtrl' # used "co2_atm = 2 * top_as%pco2bot(t) / 101325"
@@ -96,6 +96,8 @@ if sites in ['HBR','UC_Davis','UIEF']:
   #Use Custom CONUS files
   if sites == 'HBR':
     case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata_erw_TOP_FMAX_UP.nc'
+  elif sites == 'UIEF':
+    case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata.nc_erw_obs_20250924_g00101.nc'
   else:
     case_options['surffile'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata/lnd/clm2/PTCLM/' + sites + '/surfdata.nc_erw_obs'
 
@@ -121,7 +123,7 @@ if sites in ['HBR','UC_Davis','UIEF']:
   # transient-only, need finidat
   if nyears_final == 0 and nyears_ad == 0:
     if sites == 'UIEF':
-      case_options['finidat'] = f'/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250424_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw/run/20250424_{sites}_ICB1850CNPRDCTCBC_3year_rmethod1erw.elm.r.0401-01-01-00000.nc'
+      case_options['finidat'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250925_UIEF_ICB1850CNPRDCTCBC_obsForcerw/run/20250925_UIEF_ICB1850CNPRDCTCBC_obsForcerw.elm.r.0404-01-01-00000.nc'
     elif sites == 'HBR':
       #case_options['finidat'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250623_HBR_ICB1850CNPRDCTCBC_z0mr_lowRateerw/run/20250623_HBR_ICB1850CNPRDCTCBC_z0mr_lowRateerw.elm.r.0408-01-01-00000.nc'
       case_options['finidat'] = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20250730_HBR_ICB20TRCNPRDCTCBC_phi0.2_div10000erw/run/20250730_HBR_ICB20TRCNPRDCTCBC_phi0.2_div10000erw.elm.r.1998-01-01-00000.nc'
@@ -159,7 +161,7 @@ if (use_erw):
       case_options['builtin_site'] = 2
     elif sites == 'UIEF':
       case_options['builtin_site'] = 3
-      case_options['mixing_layer'] = 4 # 16.55cm; real depth is 18cm
+      case_options['mixing_layer'] = 5 # layer 4: 16.55cm; real depth is 18cm; try deeper depth
     else:
       case_options['builtin_site'] = 0
   case_options['check_dynpft_consistency'] = '.false.'
@@ -257,7 +259,7 @@ custom_vars_pft = ['FPSN','TLAI','QVEGE','QVEGT','GPP', 'NPP', 'LEAF_MR', 'LEAFC
                    'CPOOL_TO_LIVESTEMC']
 custom_vars = custom_vars_col + [f'{var}_pft' for var in custom_vars_pft]
 if (use_erw):
-  custom_vars = custom_vars + custom_vars_erw_col # + custom_vars_erw_col_sanitycheck
+  custom_vars = custom_vars + custom_vars_erw_col + custom_vars_erw_col_sanitycheck
 
 #-------------------------Optional: ensemble options-----------------------------------
 
