@@ -17,8 +17,9 @@ inputdata = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata'
 caseroot= rootdir+'/case_dirs'
 runroot = rootdir+'/output'
 #TODO:  add option to clone repository
-#modelroot = os.environ['HOME']+'/models/ELM_Alloc_Root'  #Existing E3SM code directory
-modelroot = os.environ['HOME']+'/models/ELM_Peatlands2'  #Existing E3SM code directory
+modelroot = os.environ['HOME']+'/models/ELM_Alloc_Root'  #Up-to-date directory
+#modelroot = os.environ['HOME']+'/models/ELM_SPRUCE'  #Config not added
+#modelroot = os.environ['HOME']+'/models/ELM_Peatlands2'  #Default model directory
 
 #We are going to use a pre-built executable. Set exeroot='' to build 
 #exeroot = '/gpfs/wolf2/cades/cli185/scratch/zdr/e3sm_run/20240812_US-SPR_ICB1850CNRDCTCBC_ad_spinup/bld'
@@ -27,7 +28,7 @@ exeroot = ''
 sites = 'US-SPR'           #Site or list of sites (6-character FLUXNET ID) or 'all for all sites in group
 sitegroup = 'AmeriFlux'    #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
 mettype = 'site'           #Site or reanalysis product
-case_suffix = 'default' # '_preNamelist'           #Identifier for cases (leave blank if none)
+case_suffix = '_fixedBug' # 'default' # '_preNamelist'           #Identifier for cases (leave blank if none)
 
 use_cpl_bypass = True     #Coupler bypass for meteorology
 use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with FATES-SP)
@@ -51,16 +52,20 @@ case_options['humhol'] = True
 case_options['metdir'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/'
 case_options['pftdynfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/pftdyn/surfdata.pftdyn_plot07.nc'
 case_options['use_nofire'] = '.true.'
-case_options['nu_com'] = 'RD' #'MYCI'
 if (modelroot.split('/')[-1] == 'ELM_Peatlands2'):
+  case_options['nu_com'] = 'RD'
   case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
 else:
-  if case_suffix == '_preNamelist':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20240112_g01944.nc_npcompet'
-  elif case_options['nu_com'] == 'MYCI':
+  if (modelroot.split('/')[-1] == 'ELM_SPRUCE'):
+    case_options['nu_com'] = 'RD'
     case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20240112_g01944.nc_npcompet'
   else:
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
+    # Edit this: new model allows both branch
+    case_options['nu_com'] = 'MYCI' # 'MYCI', 'RD'
+    if case_options['nu_com'] == 'MYCI':
+      case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20240112_g01944.nc_npcompet'
+    else:
+      case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
 
 
 #--------------------ensemble options------------------------------------------------
