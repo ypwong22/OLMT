@@ -17,7 +17,7 @@ inputdata = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata'
 caseroot= rootdir+'/case_dirs'
 runroot = rootdir+'/output'
 #TODO:  add option to clone repository
-mode = 'MYCI'
+mode = 'default'
 if mode == 'default':
   modelroot = os.environ['HOME']+'/models/ELM_Peatlands2'  #Default model directory
 elif mode == 'modified':
@@ -28,8 +28,7 @@ elif mode == 'MYCI':
   os.system(f'cd {modelroot}; git checkout e142a540b4e973308312138ae77c717f95f0df92')
 else:
   raise Exception(f'Unrecognized mode {mode}')
-param = 'optim'
-
+ensemble_mode = 'full' # 'full' or 'OAT'
 
 #We are going to use a pre-built executable. Set exeroot='' to build 
 #exeroot = '/gpfs/wolf2/cades/cli185/scratch/zdr/e3sm_run/20240812_US-SPR_ICB1850CNRDCTCBC_ad_spinup/bld'
@@ -38,18 +37,18 @@ exeroot = ''
 sites = 'US-SPR'           #Site or list of sites (6-character FLUXNET ID) or 'all for all sites in group
 sitegroup = 'AmeriFlux'    #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
 mettype = 'site'           #Site or reanalysis product
-case_suffix = f'{mode}_{param}' # 'default' # '_preNamelist'           #Identifier for cases (leave blank if none)
+case_suffix = f'{mode}_{ensemble_mode}'         #Identifier for cases (leave blank if none)
 
 use_cpl_bypass = True     #Coupler bypass for meteorology
 use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with FATES-SP)
 use_fates      = False     #Use FATES compsets
 fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
 
-nyears_ad      =  200      #number of years for ad spinup
-nyears_final   =  400      #number of years for final spinup OR for SP run
-nyears_trans   =  165      #number of years for transient run 
+nyears_ad      =  200 #60 #200      #number of years for ad spinup
+nyears_final   =  400 # 60 # 400      #number of years for final spinup OR for SP run
+nyears_trans   =  165 # 15 # 165      #number of years for transient run 
                            #  If -1, the final year will be the last year of forcing data.
-run_startyear  = 1850      #Starting year for transient run OR for SP run
+run_startyear  = 1850 #2000 # 1850      #Starting year for transient run OR for SP run
 
 
 #---------------------Optional inputs via namelist variables------------------------
@@ -59,42 +58,51 @@ run_startyear  = 1850      #Starting year for transient run OR for SP run
 #case_options['option'] = value or [value1, value2, value3] if applying different options to different compsets
 case_options={} 
 case_options['humhol'] = True
-case_options['metdir'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/'
+case_options['metdir'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/version_2021'
 case_options['surffile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/surfdata_spruce.nc'
 case_options['pftdynfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/pftdyn/surfdata.pftdyn_plot07.nc'
 case_options['stream_fldfilename_ndep'] = inputdata+'/lnd/clm2/ndepdata/fndep_clm_rcp4.5_simyr1849-2106_1.9x2.5_c100428.nc'
 case_options['use_nofire'] = '.true.'
 if mode == 'default':
   case_options['nu_com'] = 'RD'
-  if param == 'default':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_CNP'
-  elif param == 'optim':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_CNP'
+  case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_CNP_P'
+elif mode == 'modified':
+  case_options['nu_com'] = 'RD'
+  if ensemble_mode == 'full':
+    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
+  elif ensemble_mode == 'OAT':
+    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_npcompet'
   else:
-    raise Exception (f'Unrecognized param option {param}')
+    raise Exception(f'Unrecognized ensemble mode = {ensemble_mode}')
 
-elif mode == 'modified' or mode == 'MYCI':
-  if mode == 'modified':
-    case_options['nu_com'] = 'RD'
+elif mode == 'MYCI':
+  case_options['nu_com'] = 'MYCI'
+  if ensemble_mode == 'full':
+    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
+  elif ensemble_mode == 'OAT':
+    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_npcompet'
   else:
-    case_options['nu_com'] = 'MYCI'
-
-  if param == 'default':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20240107_g01485.nc_npcompet_cost0'
-  elif param == 'optim':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20240112_g01944.nc_npcompet_cost0'
-  else:
-    raise Exception (f'Unrecognized param option {param}')
-
+    raise Exception(f'Unrecognized ensemble mode = {ensemble_mode}')
 else:
-  raise Exception(f'Unrecognized mode = {mode}')
+  raise Exception(f'Unrecognized mode {mode}')
 
 
 #--------------------ensemble options------------------------------------------------
-parm_list    = '' #Set parameter list (leave blank for no ensemble)
-ensemble_file  = ''     #File containing samples (if blank, OLMT will generate one)
+if mode == 'default':
+  parm_list    = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/parm_file_20231118_compact' #Set parameter list (leave blank for no ensemble)
+  ensemble_file  = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/mcsamples_UQ_20231118_4000.txt'     #File containing samples (if blank, OLMT will generate one)
+elif mode == 'modified' or mode == 'MYCI':
+  if ensemble_mode == 'full':
+    parm_list    = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/parm_file_20240112_compact'
+    ensemble_file  = '/ccsopen/home/ywo/models/OLMT_SPRUCE/mcsamples_UQ_20240112_4000.txt'     #File containing samples (if blank, OLMT will generate one)
+  elif ensemble_mode == 'OAT':
+    parm_list    = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/parm_file_20260224_OAT'
+    ensemble_file  = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/mcsamples_20260224_OAT.txt'     #File containing samples (if blank, OLMT will generate one)
+
+
 nsamples       =  4000    #number of samples to run
 np_ensemble    =  384    #number of ensemble numbers to run in parallel (MUST be <= nsamples)
+
 
 postproc_col  = ['GPP', 'NEE', 'NEP', 'NPP', 'MR', 'AR', 'HR', 'TOTLITC', 'TOTSOMC', 'FPG', 'FPI', 'FPG_P', 'FPI_P']
 postproc_pft = ['AGNPP','TLAI','FROOTC_ALLOC','GPP','NPP','MR','AR','GR','XR','TOTVEGC','TOTVEGC_ABG','XSMRPOOL','AVAILC',
@@ -116,12 +124,11 @@ postproc_startyear = 2015
 postproc_endyear   = 2023
 postproc_freq      = 'annual'   #Can be daily, monthly, annual
 
-
 #----------------------Define treatment cases ----------------------------------------
 #
 #Treatment cases will use the same compset as the last case, and will inherit case_options unless overwritten
 #Specify additional options for treatments as a list (one for each desired treatment)
-nyears_treatment   = 9                               #number of years to run treatment simulation (assumed all same)
+nyears_treatment   = 7                               #number of years to run treatment simulation (assumed all same)
 startyear_treatment = run_startyear + nyears_trans   #Starting year (assuming to start from end of transient
 treatment_options={}
 #Treatment cases
@@ -306,7 +313,7 @@ for site in sites:
       cases[c].dependcase = cases[depends[c]].casename
 
     #Set postprocessing variables for ensemble
-    if ((c == ncases-1 or istreatment[c])): # and ensemble
+    if ((c == ncases-1 or istreatment[c]) and ensemble):
       cases[c].postproc_vars = postproc_vars
       cases[c].postproc_startyear = postproc_startyear
       cases[c].postproc_endyear = postproc_endyear
@@ -321,7 +328,7 @@ for site in sites:
       #Get the surface and domain data 
       cases[c].setup_domain_surfdata(makesurfdat=True,makedomain=True)
       if (ensemble and site == sites[0]):
-        cases[c].setup_ensemble(parm_list=parm_list,np_ensemble=np_ensemble,nsamples=nsamples)
+        cases[c].setup_ensemble(parm_list=parm_list,np_ensemble=np_ensemble,nsamples=nsamples,ensemble_file=ensemble_file)
         ensemble_file = cases[c].ensemble_file
     elif (ensemble):
       #Set up ensemble file using the file generated in the first site and case

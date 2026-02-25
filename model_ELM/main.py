@@ -128,7 +128,7 @@ class ELMcase():
     self.queue='batch'
     if ('baseline' in self.machine):
         self.project='CLI185'
-        self.queue='batch_ccsi'
+        self.queue='batch'# 'batch_ccsi'
     elif ('chrysalis' in self.machine):
         self.project='e3sm'
         self.queue='debug'
@@ -263,6 +263,7 @@ class ELMcase():
     else:
         self.casename = casename
     self.casedir = os.path.abspath(self.caseroot+'/'+self.casename)
+    print(self.casedir)
     #TODO - replace with a prompt that automacially deletes after 10 seconds
     if (os.path.exists(self.casedir)):
       print('Warning:  Case directory exists')
