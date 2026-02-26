@@ -28,28 +28,28 @@ elif mode == 'MYCI':
   os.system(f'cd {modelroot}; git checkout e142a540b4e973308312138ae77c717f95f0df92')
 else:
   raise Exception(f'Unrecognized mode {mode}')
-param = 'optim'
+param = 'optim' # default or optim
 
 
-#We are going to use a pre-built executable. Set exeroot='' to build 
-#exeroot = '/gpfs/wolf2/cades/cli185/scratch/zdr/e3sm_run/20240812_US-SPR_ICB1850CNRDCTCBC_ad_spinup/bld'
+#We are going to use a pre-built executable. Set exeroot='' to build
+#exeroot = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20260226_US-SPR_ICB1850CNRDCTCBC_ad_spinup_default_optim/bld'
 exeroot = ''
 #----------------------Required inputs---------------------------------------------
 sites = 'US-SPR'           #Site or list of sites (6-character FLUXNET ID) or 'all for all sites in group
 sitegroup = 'AmeriFlux'    #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
 mettype = 'site'           #Site or reanalysis product
-case_suffix = f'{mode}_{param}' # 'default' # '_preNamelist'           #Identifier for cases (leave blank if none)
+case_suffix = f'{mode}_{param}' # '_met2021'         #Identifier for cases (leave blank if none)
 
 use_cpl_bypass = True     #Coupler bypass for meteorology
 use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with FATES-SP)
 use_fates      = False     #Use FATES compsets
 fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
 
-nyears_ad      =  200      #number of years for ad spinup
-nyears_final   =  400      #number of years for final spinup OR for SP run
-nyears_trans   =  165      #number of years for transient run 
+nyears_ad      =  0 # 200      #number of years for ad spinup
+nyears_final   =  0 # 400      #number of years for final spinup OR for SP run
+nyears_trans   =  0 # 165      #number of years for transient run 
                            #  If -1, the final year will be the last year of forcing data.
-run_startyear  = 1850      #Starting year for transient run OR for SP run
+run_startyear  = 2015 # 1850      #Starting year for transient run OR for SP run
 
 
 #---------------------Optional inputs via namelist variables------------------------
@@ -57,9 +57,9 @@ run_startyear  = 1850      #Starting year for transient run OR for SP run
 #note:  set  'surffile', 'domainfile', 'pftdynfile', 'metdir' instead of the standard namelist variables for those files.
 #note:  Also set options here that use CPPDEFS (e.g. marsh, humhol)
 #case_options['option'] = value or [value1, value2, value3] if applying different options to different compsets
-case_options={} 
+case_options={}
 case_options['humhol'] = True
-case_options['metdir'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/'
+case_options['metdir'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/' # version_2021'
 case_options['surffile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/surfdata_spruce.nc'
 case_options['pftdynfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/pftdyn/surfdata.pftdyn_plot07.nc'
 case_options['stream_fldfilename_ndep'] = inputdata+'/lnd/clm2/ndepdata/fndep_clm_rcp4.5_simyr1849-2106_1.9x2.5_c100428.nc'
@@ -69,7 +69,7 @@ if mode == 'default':
   if param == 'default':
     case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_CNP'
   elif param == 'optim':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_CNP'
+    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
   else:
     raise Exception (f'Unrecognized param option {param}')
 
@@ -96,8 +96,13 @@ ensemble_file  = ''     #File containing samples (if blank, OLMT will generate o
 nsamples       =  4000    #number of samples to run
 np_ensemble    =  384    #number of ensemble numbers to run in parallel (MUST be <= nsamples)
 
-postproc_col  = ['GPP', 'NEE', 'NEP', 'NPP', 'MR', 'AR', 'HR', 'TOTLITC', 'TOTSOMC', 'FPG', 'FPI', 'FPG_P', 'FPI_P']
-postproc_pft = ['AGNPP','TLAI','FROOTC_ALLOC','GPP','NPP','MR','AR','GR','XR','TOTVEGC','TOTVEGC_ABG','XSMRPOOL','AVAILC',
+postproc_col  = ['TBOT', 'TSOI', 'H2OSFC', 'H2OSOI', 'GPP', 'NEE', 'NEP', 'NPP', 'MR', 'AR', 'HR', 'AGNPP', 'FROOTC_ALLOC',
+                 'TOTLITC', 'TOTSOMC', 'FPG', 'SMINN_vr','SOLUTIONP_vr', 'SMIN_NH4_vr', 'SMIN_NO3_vr',
+                 'LITR1C_vr','LITR2C_vr','LITR3C_vr', 'LITR1N_vr','LITR2N_vr','LITR3N_vr',
+                 'LITR1P_vr','LITR2P_vr','LITR3P_vr', 'ZWT', 'FPI', 'FPG_P', 'FPI_P',
+                 'ACTUAL_IMMOB','ACTUAL_IMMOB_P']
+postproc_pft = ['AGNPP','TLAI','FROOTC_ALLOC','GPP','NPP','MR','AR','GR','XR','TOTVEGC','TOTVEGC_ABG',
+                'AVAILC','CPOOL','NPOOL','PPOOL','XSMRPOOL','RETRANSN_TO_NPOOL','RETRANSP_TO_PPOOL',
                 'PLANT_NDEMAND','PLANT_PDEMAND','SMINN_TO_NPOOL','SMINP_TO_PPOOL']
 if mode == 'modified' or mode == 'MYCI':
    postproc_pft += ['FPG_PATCH', 'FPG_P_PATCH',
@@ -132,11 +137,30 @@ plots=[7,6,20,13,8,17,19,11,4,16,10]  #Plot numbers corresponding to each treatm
 treatment_options['suffix'] = treatments
 treatment_options['metdir'] = []
 treatment_options['pftdynfile']=[]
+treatment_options['startdate_add_co2'] = []
+treatment_options['add_co2'] = []
 for p in range(0,len(plots)):
     plotstr = str(100+plots[p])[1:]
     treatment_options['metdir'].append(case_options['metdir']+'/plot'+plotstr)  #Each case has its own met data directory
     #Each case has its own dynamic PFT file
     treatment_options['pftdynfile'].append(inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/pftdyn/surfdata.pftdyn_plot'+plotstr+'.nc')
+    treatment_options['startdate_add_co2'].append('20160301')
+    if ('eCO2' in treatments[p]):
+       treatment_options['add_co2'].append(500)
+    else:
+       treatment_options['add_co2'].append(0)
+
+treatment_finidat = []
+if (nyears_ad + nyears_final + nyears_trans) == 0:
+  # Only use if no transient case
+  for p in range(0,len(plots)):
+    finidat_case = "20260226_US-SPR_ICB20TRCNP" + case_options["nu_com"] + "CTCBC_" + case_suffix
+    treatment_finidat.append(runroot + f'{finidat_case}/run/{finidat_case}.elm.r.2015-01-01-00000.nc')
+
+#Ensure treatment points to restart file
+if (nyears_ad + nyears_final + nyears_trans) == 0 and len(treatment_finidat) == 0:
+   raise Exception('Need to provide a treatment case restart file if running alone.')
+
 
 #---------------End of user input -----------------------------------------------------
 
@@ -219,7 +243,10 @@ if ('suffix' in treatment_options.keys()):
     nyears.append(nyears_treatment)
     istreatment = np.append(istreatment, 1)
     depends = np.append(depends, ncases_pretreatment-1)
-    compsets.append(compsets[-1])
+    if len(compsets) == 0:
+      compsets.append(compset_type+'20TR'+compset_base)
+    else:
+      compsets.append(compsets[-1])
     suffix.append(treatment_options['suffix'][t])
     startyear.append(startyear_treatment)
 
@@ -250,7 +277,7 @@ jobnum = np.zeros(len(compsets),int)  #list of submitted job ids
 
 for site in sites:
   cases={}
-  ncases = len(compsets)  #how many cases we are running
+  ncases=len(compsets)  #how many cases we are running
   scriptdir=os.getcwd()
 
   for c in range(0,ncases):
@@ -258,7 +285,7 @@ for site in sites:
 
     cases[c] = model_ELM.ELMcase(caseid='',compset=compsets[c], site=site, \
         caseroot=caseroot,runroot=runroot,inputdata=inputdata,modelroot=modelroot, \
-        machine=machine, exeroot=exeroot, suffix=mysuffix,  \
+        machine=machine, exeroot=exeroot, suffix=mysuffix, \
         res='hcru_hcru', nyears=nyears[c],startyear=startyear[c])
 
     #Create the case
@@ -274,7 +301,10 @@ for site in sites:
     #Add the treatment options (must be list format)
     if (istreatment[c]):
         for key in treatment_options.keys():
-            cases[c].case_options[key] = treatment_options[key][c-ncases_pretreatment]
+            if isinstance(treatment_options[key], list):
+              cases[c].case_options[key] = treatment_options[key][c-ncases_pretreatment]
+            else:
+              cases[c].case_options[key] = treatment_options[key]
     #Other options
     cases[c].fates_nutrient=fates_nutrient
     #Set the custom parameter files
@@ -304,6 +334,9 @@ for site in sites:
       cases[c].set_finidat_file(finidat_case=cases[depends[c]].casename, \
               finidat_year=finidat_year)
       cases[c].dependcase = cases[depends[c]].casename
+    elif (istreatment[c] and len(treatment_finidat) > 0):
+      cases[c].set_finidat_file(finidat=treatment_finidat[c-ncases_pretreatment])
+
 
     #Set postprocessing variables for ensemble
     if ((c == ncases-1 or istreatment[c])): # and ensemble
