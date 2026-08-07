@@ -5,6 +5,9 @@ import subprocess
 import pickle
 import model_ELM
 from optparse import OptionParser
+import copy
+from concurrent.futures import ProcessPoolExecutor, as_completed
+
 
 #Python code used to manage the ensemble simulations 
 #  and perform post-processing of model output.
@@ -36,12 +39,16 @@ def get_nodelist():
             for nn in range(int(firstnode),int(lastnode)+1):
               if ('baseline' in mycase.machine):
                 nstr = str(nn)
+              elif ('pathfinder' in mycase.machine):
+                nstr = str(1000+nn)[1:]
               else:
                 nstr = str(10000+nn)[1:]
               mynodes.append(node_prefix+nstr)
           else:
               if ('baseline' in mycase.machine):
                 nstr=str(n2)
+              elif ('pathfinder' in mycase.machine):
+                nstr = str(1000+int(n2))[1:]
               else:
                 nstr=str(10000+n2)[1:]
               mynodes.append(node_prefix+nstr)
@@ -84,15 +91,17 @@ def active_processes(processes,process_jobnum,process_hang):
                 process.kill()  # Force kill the process
         else:
             pactive.append(0)
-            #Post-process ensemble member if it hasn't yet been done
-            if (mycase.postprocessed[n] == 0):
-                print(n, check_run_success(process_jobnum[n]))
-                if (check_run_success(process_jobnum[n])):
-                    ierr = postprocess_ensemble(process_jobnum[n])
-                else:
-                    print('Ensemble member '+str(process_jobnum[n])+ \
-                            'Failed to complete')
-                mycase.postprocessed[n] = 1
+
+            # severe serial blockage bug; do this separately
+            ##Post-process ensemble member if it hasn't yet been done
+            #if (mycase.postprocessed[n] == 0):
+            #    print(n, check_run_success(process_jobnum[n]))
+            #    if (check_run_success(process_jobnum[n])):
+            #        ierr = postprocess_ensemble(process_jobnum[n])
+            #    else:
+            #        print('Ensemble member '+str(process_jobnum[n])+ \
+            #                'Failed to complete')
+            #    mycase.postprocessed[n] = 1
         n=n+1
     return pactive
 
@@ -147,6 +156,7 @@ while (n_job <= mycase.nsamples):
          process_nodes.append(node_submit)
        else:
          command = [mycase.exeroot+'/e3sm.exe']
+       print(command, flush=True)
        process = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT, cwd=rundir, stdout=log_file)
        processes.append(process)
        process_jobnum.append(n_job)
@@ -159,16 +169,64 @@ while (sum(pactive) > 0):
     pactive = active_processes(processes,process_jobnum,process_hang)
     time.sleep(1)
 
-mycase.create_pkl()
+mycase.create_pkl()   # snapshot current state so workers can load a consistent copy
 
-#Train surrogate models
-mycase.train_surrogate(mycase.postproc_vars)
+print('Successfully finished the simulation phase.', flush=True)
 
-#run GSA
-mycase.GSA(mycase.postproc_vars)
+#Moved from above to here to avoid blocking ensemble member submission
+#Postprocess all completed ensemble members now that the run phase is done
+workdir = os.getcwd()   # already captured early in the script, before any chdir happens
+
+def _postprocess_worker(casename, member):
+    myfile = open(workdir+'/pklfiles/'+casename+'.pkl','rb')
+    mycase = pickle.load(myfile)
+    myfile.close()
+    result = {}
+    if (mycase.postproc_vars != []):
+        for v in mycase.postproc_vars:
+            hnum=1
+            mypfts=[0]
+            if ('_pft' in v):
+                hnum=2
+                mypfts=mycase.postproc_pfts
+            for p in mypfts:
+                if (mycase.postproc_freq == 'daily'):
+                    mycase.postprocess(v, ens_num=member, startyear=mycase.postproc_startyear,
+                          endyear=mycase.postproc_endyear, index=p, hnum=hnum)
+                elif (mycase.postproc_freq == 'monthly'):
+                    mycase.postprocess(v, ens_num=member, startyear=mycase.postproc_startyear,
+                          endyear=mycase.postproc_endyear, index=p, hnum=hnum, dailytomonthly=True)
+                elif (mycase.postproc_freq == 'annual'):
+                    mycase.postprocess(v, ens_num=member, startyear=mycase.postproc_startyear,
+                          endyear=mycase.postproc_endyear, index=p, hnum=hnum, annualmean=True)
+                var_out = v+str(p) if '_pft' in v else v
+                result[var_out] = mycase.output[var_out][:, member-1].copy()
+    return member, result
+
+successful_members = [n for n in range(1, mycase.nsamples+1) if check_run_success(n)]
+for n in range(1, mycase.nsamples+1):
+    if n not in successful_members:
+        print('Ensemble member '+str(n)+' failed to complete')
+
+with ProcessPoolExecutor(max_workers=min(16, os.cpu_count())) as executor:
+    futures = {executor.submit(_postprocess_worker, mycase.casename, n): n for n in successful_members}  
+    for future in as_completed(futures):
+        member, result = future.result()
+        for var_out, values in result.items():
+            if var_out not in mycase.output:
+                mycase.output[var_out] = np.zeros([len(values), mycase.nsamples], float)
+            mycase.output[var_out][:, member-1] = values
+
+mycase.create_pkl()   # snapshot current state
+
+print('Successfully finished the postproc phase.', flush=True)
+
+
+##Train surrogate models
+##mycase.train_surrogate(mycase.postproc_vars)
+
+###run GSA
+##mycase.GSA(mycase.postproc_vars)
 
 #Save postprocessed output
-mycase.create_pkl()
-
-
-
+#mycase.create_pkl()

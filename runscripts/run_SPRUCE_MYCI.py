@@ -8,27 +8,23 @@ import numpy as np
 
 #Get default directories, automatically detect machine if machine_name=''
 #machine, rootdir, inputdata = get_machine_info(machine_name='')
-machine = 'cades-baseline'
-rootdir = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM'
-inputdata = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata'
+machine = 'pathfinder'
+rootdir = '/scratch/hpcl-cli185/ywo/ELM_SPRUCE'
+inputdata = '/projects/hpcl-cli185/proj-shared/ywo/E3SM/inputdata'
 
 
 #set rootdir and inputdata below if you want to override defaults
-caseroot= rootdir+'/case_dirs'
-runroot = rootdir+'/output'
+caseroot= rootdir+'/e3sm_cases'
+runroot = rootdir+'/e3sm_run'
 #TODO:  add option to clone repository
-mode = 'MYCI'
+mode = 'default'
 if mode == 'default':
-  modelroot = os.environ['HOME']+'/models/ELM_Peatlands2'  #Default model directory
-elif mode == 'modified':
-  modelroot = os.environ['HOME']+'/models/ELM_Alloc_Root'  #Modified model directory
-  os.system(f'cd {modelroot}; git checkout 156cb735b46108ec9ee96ff399c2444e365818d1')
+  modelroot = os.environ['HOME']+'/models/ELM_Peatlands_rb2024'  #Default model directory
 elif mode == 'MYCI':
-  modelroot = os.environ['HOME']+'/models/ELM_Alloc_Root'  #Modified model directory
-  os.system(f'cd {modelroot}; git checkout e142a540b4e973308312138ae77c717f95f0df92')
+  modelroot = os.environ['HOME']+'/models/ELM_SPRUCE'  #Modified model directory
 else:
   raise Exception(f'Unrecognized mode {mode}')
-param = 'optim' # default or optim
+param = 'default' # default or optim
 
 
 #We are going to use a pre-built executable. Set exeroot='' to build
@@ -45,11 +41,11 @@ use_SP         = False     #Use Satellite phenolgy mode (doesn't yet work with F
 use_fates      = False     #Use FATES compsets
 fates_nutrient = True      #Use FATES nutrient (parteh_mode = 2)
 
-nyears_ad      =  0 # 200      #number of years for ad spinup
-nyears_final   =  0 # 400      #number of years for final spinup OR for SP run
-nyears_trans   =  0 # 165      #number of years for transient run 
+nyears_ad      =  200 #0 # 200      #number of years for ad spinup
+nyears_final   =  400 #0 # 400      #number of years for final spinup OR for SP run
+nyears_trans   =  165 #0 # 165      #number of years for transient run 
                            #  If -1, the final year will be the last year of forcing data.
-run_startyear  = 2015 # 1850      #Starting year for transient run OR for SP run
+run_startyear  = 1850 # 2015 # 1850      #Starting year for transient run OR for SP run
 
 
 #---------------------Optional inputs via namelist variables------------------------
@@ -67,7 +63,7 @@ case_options['use_nofire'] = '.true.'
 if mode == 'default':
   case_options['nu_com'] = 'RD'
   if param == 'default':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_CNP'
+    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_CNP_P'
   elif param == 'optim':
     case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
   else:
@@ -101,7 +97,7 @@ postproc_col  = ['TBOT', 'TSOI', 'H2OSFC', 'H2OSOI', 'GPP', 'NEE', 'NEP', 'NPP',
                  'LITR1C_vr','LITR2C_vr','LITR3C_vr', 'LITR1N_vr','LITR2N_vr','LITR3N_vr',
                  'LITR1P_vr','LITR2P_vr','LITR3P_vr', 'ZWT', 'FPI', 'FPG_P', 'FPI_P',
                  'ACTUAL_IMMOB','ACTUAL_IMMOB_P']
-postproc_pft = ['AGNPP','TLAI','FROOTC_ALLOC','GPP','NPP','MR','AR','GR','XR','TOTVEGC','TOTVEGC_ABG',
+postproc_pft = ['AGNPP','TLAI','FROOTC_ALLOC','GPP','NPP','MR','AR','GR','XR','TOTVEGC','TOTVEGC_ABG','DEADSTEMC',
                 'AVAILC','CPOOL','NPOOL','PPOOL','XSMRPOOL','RETRANSN_TO_NPOOL','RETRANSP_TO_PPOOL',
                 'PLANT_NDEMAND','PLANT_PDEMAND','SMINN_TO_NPOOL','SMINP_TO_PPOOL']
 if mode == 'modified' or mode == 'MYCI':

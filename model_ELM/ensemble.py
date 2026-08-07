@@ -57,19 +57,35 @@ def create_ensemble_script(self, walltime=24):
     self.npernode=int(self.xmlquery('MAX_TASKS_PER_NODE'))
     nnodes = int(np.ceil((self.np_ensemble*self.np)/self.npernode))
     myfile = open('case.submit_ensemble','w')
-    myfile.write('#!/bin/bash -e\n\n')
-    if (self.queue == 'debug'):
-        walltime=2
-    if ('pm-cpu' in self.machine):
-        myfile.write('#SBATCH -t '+str(walltime)+'\n')
-        myfile.write('#SBATCH --constraint=cpu\n')
+    if ('pathfinder' in self.machine):
+        myfile.write('#!/bin/bash\n')
+        if (nnodes > 1):
+            myfile.write('#SBATCH -p parallel\n')
+        else:
+            myfile.write('#SBATCH -p serial\n')
+        myfile.write('#SBATCH -q normal\n')
+        myfile.write('#SBATCH --mem=0\n') # all the memory available
+        myfile.write('#SBATCH --time='+str(walltime)+':00:00\n')
+        myfile.write('#SBATCH -N '+str(nnodes)+'\n')
+        myfile.write('#SBATCH --ntasks-per-node='+str(self.npernode)+'\n')
+        myfile.write('#SBATCH -c '+str(self.np)+'\n')
+        myfile.write('#SBATCH -J '+self.casename+'\n')
+        myfile.write('#SBATCH -o %x-%J.out\n')
+        myfile.write('#SBATCH -e %x-%J.err\n')
     else:
-        myfile.write('#SBATCH -t '+str(walltime)+':00:00\n')
-    myfile.write('#SBATCH -J '+self.casename+'\n')
-    myfile.write('#SBATCH --nodes='+str(nnodes)+'\n')  
-    if (self.project != ''):
-        myfile.write('#SBATCH -A '+self.project+'\n')
-    myfile.write('#SBATCH -p '+self.queue+'\n')
+        myfile.write('#!/bin/bash -e\n\n')
+        if (self.queue == 'debug'):
+            walltime=2
+        if ('pm-cpu' in self.machine):
+            myfile.write('#SBATCH -t '+str(walltime)+'\n')
+            myfile.write('#SBATCH --constraint=cpu\n')
+        else:
+            myfile.write('#SBATCH -t '+str(walltime)+':00:00\n')
+        myfile.write('#SBATCH -J '+self.casename+'\n')
+        myfile.write('#SBATCH --nodes='+str(nnodes)+'\n')
+        if (self.project != ''):
+            myfile.write('#SBATCH -A '+self.project+'\n')
+        myfile.write('#SBATCH -p '+self.queue+'\n')
     myfile.write('cd '+self.caseroot+'/'+self.casename+'\n')
     myfile.write('export LD_LIBRARY_PATH='+ldpath+'\n\n')
     myfile.write('./preview_namelists\n\n')
@@ -96,19 +112,36 @@ def create_multisite_script(self,sites,scriptdir, walltime=24):
         nnodes = int(np.ceil(self.np/self.npernode))
     fname = self.casename.replace('_'+self.site,'')+'.sh'
     myfile = open(fname,'w')
-    myfile.write('#!/bin/bash -e\n\n')
-    if (self.queue == 'debug'):
-        walltime=2
-    if ('pm-cpu' in self.machine):
-        myfile.write('#SBATCH -t '+str(walltime)+'\n')
-        myfile.write('#SBATCH --constraint=cpu\n')
+    if ('pathfinder' in self.machine):
+        myfile.write('#!/bin/bash\n')
+        if (nnodes > 1):
+            myfile.write('#SBATCH -p parallel\n')
+        else:
+            myfile.write('#SBATCH -p serial\n')
+        myfile.write('#SBATCH --exclusive\n')
+        myfile.write('#SBATCH -q normal\n')
+        myfile.write('#SBATCH --mem=0\n') # all the memory available
+        myfile.write('#SBATCH --time='+str(walltime)+':00:00\n')
+        myfile.write('#SBATCH -N '+str(nnodes)+'\n')
+        myfile.write('#SBATCH --ntasks-per-node='+str(self.npernode)+'\n')
+        myfile.write('#SBATCH -c '+str(self.np)+'\n')
+        myfile.write('#SBATCH -J '+self.casename.replace('_'+self.site,'')+'\n')
+        myfile.write('#SBATCH -o %x-%J.out\n')
+        myfile.write('#SBATCH -e %x-%J.err\n')
     else:
-        myfile.write('#SBATCH -t '+str(walltime)+':00:00\n')
-    myfile.write('#SBATCH -J '+self.casename.replace('_'+self.site,'')+'\n')
-    myfile.write('#SBATCH --nodes='+str(nnodes)+'\n')
-    if (self.project != ''):
-        myfile.write('#SBATCH -A '+self.project+'\n')
-    myfile.write('#SBATCH -p '+self.queue+'\n')
+        myfile.write('#!/bin/bash -e\n\n')
+        if (self.queue == 'debug'):
+            walltime=2
+        if ('pm-cpu' in self.machine):
+            myfile.write('#SBATCH -t '+str(walltime)+'\n')
+            myfile.write('#SBATCH --constraint=cpu\n')
+        else:
+            myfile.write('#SBATCH -t '+str(walltime)+':00:00\n')
+        myfile.write('#SBATCH -J '+self.casename.replace('_'+self.site,'')+'\n')
+        myfile.write('#SBATCH --nodes='+str(nnodes)+'\n')
+        if (self.project != ''):
+            myfile.write('#SBATCH -A '+self.project+'\n')
+        myfile.write('#SBATCH -p '+self.queue+'\n')
     myfile.write('cd '+self.caseroot+'/'+self.casename+'\n')
     myfile.write('export LD_LIBRARY_PATH='+ldpath+'\n\n')
     for s in sites:

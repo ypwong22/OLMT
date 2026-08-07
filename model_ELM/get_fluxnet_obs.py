@@ -3,6 +3,7 @@ import os
 from netCDF4 import Dataset
 
 def get_fluxnet_obs(self, site='US-UMB',tstep='monthly',ystart=-1,yend=9999,fluxnet_var='GPP', myobsdir=''):
+
   myvars = ['TBOT','FSDS','WS','RAIN','VPD','NEE','GPP','ER','EFLX_LH_TOT','FSH']
   myvars   = ['FPSN','FSH','EFLX_LH_TOT']
 
@@ -18,59 +19,61 @@ def get_fluxnet_obs(self, site='US-UMB',tstep='monthly',ystart=-1,yend=9999,flux
     nstep = 12
   elif (tstep == 'daily'):
     nstep = 366
+  elif (tstep == 'annual'):
+    nstep = 1
 
   for v in range(0,len(vars_elm)):
       if fluxnet_var == vars_elm[v]:
           vnum = v
 
   for f in myobsfiles:
-   if site in f and '.csv' in f and 'FULLSET' in f:
-    myobsfile = myobsdir+'/'+tstep+'/'+f
-    if (os.path.exists(myobsfile)):
-        print('Observation file: '+myobsfile)
-        thisrow=0
-        myobs_input = open(myobsfile)
-        if (ystart <= 0 and yend >= 9000):
-          print ('Getting start and end year information from observation file')
-          for j in myobs_input:
-            if thisrow == 1:
-                ystart = int(j[0:4])+1
-            elif (thisrow > 1):
-                yend = int(j[0:4])
-            thisrow=thisrow+1
-          myobs_input.close
-          nrows = thisrow-1
+    if site in f and '.csv' in f and 'FULLSET' in f:
+      myobsfile = myobsdir+'/'+tstep+'/'+f
+      if (os.path.exists(myobsfile)):
+          print('Observation file: '+myobsfile)
+          thisrow=0
+          myobs_input = open(myobsfile)
+          if (ystart <= 0 and yend >= 9000):
+            print ('Getting start and end year information from observation file')
+            for j in myobs_input:
+              if thisrow == 1:
+                  ystart = int(j[0:4])+1
+              elif (thisrow > 1):
+                  yend = int(j[0:4])
+              thisrow=thisrow+1
+            myobs_input.close
+            nrows = thisrow-1
 
-        nrows = (yend-ystart+1)*nstep
-        myobs = np.zeros([nrows],float)
-        myobs_err = np.zeros([nrows],float)
-        myobs_in = open(myobsfile)
-        thisrow=0
-        thisob=0
-        for j in myobs_in:
-            if (thisrow == 0):
-                header = j.split(',')
-            else:
-                myvals = j.split(',')
-                thiscol=0
-                if int(myvals[0][0:4]) >= ystart and int(myvals[0][0:4]) <= yend:
-                  isgood=False
-                  for h in header:
-                    if (h.strip() == vars_fluxnet[vnum]):
-                      tempob = float(myvals[thiscol])
-                    if (h.strip() == vars_unc[vnum]):
-                      tempob_err = float(myvals[thiscol])
-                    if (h.strip() == vars_qc[vnum]):
-                      if float(myvals[thiscol]) > 0.8:
-                        isgood=True  #only advance if quality flag > 80%
-                    thiscol=thiscol+1
-                  if (isgood):
-                    myobs[thisob]     = tempob
-                    myobs_err[thisob] = tempob_err
-                  else:
-                    myobs[thisob] = -9999
-                    myobs_err[thisob] = -9999
-                  thisob=thisob+1
-            thisrow=thisrow+1
-        self.obs[vars_elm[vnum]]=myobs
-        self.obs_err[vars_elm[vnum]]=myobs_err
+          nrows = (yend-ystart+1)*nstep
+          myobs = np.zeros([nrows],float)
+          myobs_err = np.zeros([nrows],float)
+          myobs_in = open(myobsfile)
+          thisrow=0
+          thisob=0
+          for j in myobs_in:
+              if (thisrow == 0):
+                  header = j.split(',')
+              else:
+                  myvals = j.split(',')
+                  thiscol=0
+                  if int(myvals[0][0:4]) >= ystart and int(myvals[0][0:4]) <= yend:
+                    isgood=False
+                    for h in header:
+                      if (h.strip() == vars_fluxnet[vnum]):
+                        tempob = float(myvals[thiscol])
+                      if (h.strip() == vars_unc[vnum]):
+                        tempob_err = float(myvals[thiscol])
+                      if (h.strip() == vars_qc[vnum]):
+                        if float(myvals[thiscol]) > 0.8:
+                          isgood=True  #only advance if quality flag > 80%
+                      thiscol=thiscol+1
+                    if (isgood):
+                      myobs[thisob]     = tempob
+                      myobs_err[thisob] = tempob_err
+                    else:
+                      myobs[thisob] = -9999
+                      myobs_err[thisob] = -9999
+                    thisob=thisob+1
+              thisrow=thisrow+1
+          self.obs[vars_elm[vnum]]=myobs
+          self.obs_err[vars_elm[vnum]]=myobs_err

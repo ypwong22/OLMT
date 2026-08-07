@@ -32,6 +32,23 @@ def do_timeaverage(values, nav):
    return values_out
 
 
+def do_monthlytoannual_max(values):
+    npoints = len(values)
+    nyears = int(npoints/12)
+    values_out = np.zeros([nyears],float)
+    for y in range(0,nyears):
+        values_out[y] = np.max(values[y*12:(y+1)*12])
+    return values_out
+
+def do_timeaverage_max(values, nav):
+   npoints = len(values)
+   values_out = np.zeros([int(npoints/nav)],float)
+   for t in range(0,int(npoints/nav)):
+       values_out[t] = np.max(values[t*nav:(t+1)*nav])
+   return values_out
+
+
+
 def postprocess(self, var, index=0, gindex=0, startyear=-1, endyear=9999, hnum=0, \
         dailytomonthly=False, annualmean=False,  meanseasonalcycle=False, \
         xindex=0,yindex=0, ens_num=0, plot=False):
@@ -90,11 +107,20 @@ def postprocess(self, var, index=0, gindex=0, startyear=-1, endyear=9999, hnum=0
       values_out = do_dailytomonthly(values)
       nperyear_out = 12
     elif (annualmean):
-      if (hist_nhtfrq == 0):
-          values_out = do_monthlytoannual(values)
+      if self.site == 'US-SPR' and var == 'TLAI':
+          # do annual maximum composite
+        if (hist_nhtfrq == 0):
+            values_out = do_monthlytoannual_max(values)
+        else:
+            if (nperyear >= 1):
+                values_out = do_timeaverage_max(values, int(nperyear))
+                print('correctly reached expected code')
       else:
-          if (nperyear >= 1):
-            values_out = do_timeaverage(values, int(nperyear))
+        if (hist_nhtfrq == 0):
+            values_out = do_monthlytoannual(values)
+        else:
+            if (nperyear >= 1):
+                values_out = do_timeaverage(values, int(nperyear))
       nperyear_out = 1
     else:
         values_out = values[:]

@@ -8,24 +8,20 @@ import numpy as np
 
 #Get default directories, automatically detect machine if machine_name=''
 #machine, rootdir, inputdata = get_machine_info(machine_name='')
-machine = 'cades-baseline'
-rootdir = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM'
-inputdata = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/inputdata'
+machine = 'pathfinder'
+rootdir = '/scratch/hpcl-cli185/ywo/ELM_SPRUCE'
+inputdata = '/projects/hpcl-cli185/proj-shared/ywo/E3SM/inputdata'
 
 
 #set rootdir and inputdata below if you want to override defaults
-caseroot= rootdir+'/case_dirs'
-runroot = rootdir+'/output'
+caseroot= rootdir+'/e3sm_cases'
+runroot = rootdir+'/e3sm_run'
 #TODO:  add option to clone repository
 mode = 'default'
 if mode == 'default':
-  modelroot = os.environ['HOME']+'/models/ELM_Peatlands2'  #Default model directory
-elif mode == 'modified':
-  modelroot = os.environ['HOME']+'/models/ELM_Alloc_Root'  #Modified model directory
-  os.system(f'cd {modelroot}; git checkout 156cb735b46108ec9ee96ff399c2444e365818d1')
+  modelroot = os.environ['HOME']+'/models/ELM_Peatlands_rb2024'  #Default model directory
 elif mode == 'MYCI':
-  modelroot = os.environ['HOME']+'/models/ELM_Alloc_Root'  #Modified model directory
-  os.system(f'cd {modelroot}; git checkout e142a540b4e973308312138ae77c717f95f0df92')
+  modelroot = os.environ['HOME']+'/models/ELM_SPRUCE'  #Modified model directory
 else:
   raise Exception(f'Unrecognized mode {mode}')
 ensemble_mode = 'full' # 'full' or 'OAT'
@@ -58,7 +54,7 @@ run_startyear  = 1850 #2000 # 1850      #Starting year for transient run OR for 
 #case_options['option'] = value or [value1, value2, value3] if applying different options to different compsets
 case_options={} 
 case_options['humhol'] = True
-case_options['metdir'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/version_2021'
+case_options['metdir'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/' # version_2021
 case_options['surffile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/surfdata_spruce.nc'
 case_options['pftdynfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/pftdyn/surfdata.pftdyn_plot07.nc'
 case_options['stream_fldfilename_ndep'] = inputdata+'/lnd/clm2/ndepdata/fndep_clm_rcp4.5_simyr1849-2106_1.9x2.5_c100428.nc'
@@ -89,19 +85,19 @@ else:
 
 #--------------------ensemble options------------------------------------------------
 if mode == 'default':
-  parm_list    = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/parm_file_20231118_compact' #Set parameter list (leave blank for no ensemble)
-  ensemble_file  = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/mcsamples_UQ_20231118_4000.txt'     #File containing samples (if blank, OLMT will generate one)
+  parm_list    = 'parm_file_SPRUCE_20231118' #Set parameter list (leave blank for no ensemble)
+  ensemble_file  = '' # '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/mcsamples_UQ_20231118_4000.txt'     #File containing samples (if blank, OLMT will generate one)
 elif mode == 'modified' or mode == 'MYCI':
   if ensemble_mode == 'full':
     parm_list    = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/parm_file_20240112_compact'
-    ensemble_file  = '/ccsopen/home/ywo/models/OLMT_SPRUCE/mcsamples_UQ_20240112_4000.txt'     #File containing samples (if blank, OLMT will generate one)
+    ensemble_file  = '' # '/ccsopen/home/ywo/models/OLMT_SPRUCE/mcsamples_UQ_20240112_4000.txt'     #File containing samples (if blank, OLMT will generate one)
   elif ensemble_mode == 'OAT':
     parm_list    = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/parm_file_20260224_OAT'
     ensemble_file  = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/mcsamples_20260224_OAT.txt'     #File containing samples (if blank, OLMT will generate one)
 
 
 nsamples       =  4000    #number of samples to run
-np_ensemble    =  384    #number of ensemble numbers to run in parallel (MUST be <= nsamples)
+np_ensemble    =  480     #number of ensemble numbers to run in parallel (MUST be <= nsamples)
 
 
 postproc_col  = ['GPP', 'NEE', 'NEP', 'NPP', 'MR', 'AR', 'HR', 'TOTLITC', 'TOTSOMC', 'FPG', 'FPI', 'FPG_P', 'FPI_P']
@@ -123,6 +119,7 @@ postproc_vars = postproc_col + [var+'_pft' for var in postproc_pft]
 postproc_startyear = 2015
 postproc_endyear   = 2023
 postproc_freq      = 'annual'   #Can be daily, monthly, annual
+postproc_pfts      = [2,3,11,12]
 
 #----------------------Define treatment cases ----------------------------------------
 #
@@ -318,6 +315,7 @@ for site in sites:
       cases[c].postproc_startyear = postproc_startyear
       cases[c].postproc_endyear = postproc_endyear
       cases[c].postproc_freq = postproc_freq
+      cases[c].postproc_pfts = postproc_pfts
     else:
       cases[c].postproc_vars=[]
 

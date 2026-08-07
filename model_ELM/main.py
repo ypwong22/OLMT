@@ -167,11 +167,11 @@ class ELMcase():
         elif (mettype == 'gswp3-daymet4'):
           print('Setting met type to gswp3-daymet4')
           self.forcing='gswp3-daymet4'
-          self.metdir='/gpfs/wolf2/cades/cli185/proj-shared/zdr/Daymet_GSWP3_4KM_TESSFA'
+          self.metdir='/projects/hpcl-cli185/proj-shared/zdr/Daymet_GSWP3_4KM_TESSFA'
         elif (mettype == 'era5-daymet4'):
           print('Setting met type to era5-daymet4')
           self.forcing = 'era5-daymet4'
-          self.metdir = '/gpfs/wolf2/cades/cli185/proj-shared/zdr/Daymet_ERA5_TESSFA2'
+          self.metdir = '/projects/hpcl-cli185/proj-shared/zdr/Daymet_ERA5_TESSFA2'
         elif (mettype != ''):
           #Met type specified but not metdir.  Get location from metinfo.txt
           self.forcing=mettype
