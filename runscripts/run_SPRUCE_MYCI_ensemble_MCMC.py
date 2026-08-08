@@ -59,38 +59,61 @@ myobs = pd.concat([cobs, tlai], axis=1).rename(lambda x: chamber_list_complete_d
 ## no extra pre-treatment uncertainty propagation is needed. 
 ## 
 ## inherent observation uncertainty based on pre-treatment levels (sd / mean)
-##rel_sd = {
-##   'Tair': 0.5/6.25, 'AGNPP_Spruce': 53.5/90.5, 'AGNPP_Tamarack': 32/73, 'AGNPP_Shrub': 35/92.1, 
-##   'NPP_moss': 67/208, 'BGNPP_TreeShrub': 4.8/3.4, 'HR': 53/283, 
-##   'AGBiomass_Spruce': 439.694598 / 748.5575, 'AGBiomass_Tamarack': 143.243042 / 215.0901, 
-##   'AGBiomass_Shrub': 99.036822 / 243.5690, 
-##   'LAImax_Spruce': 0.671678 / 1.472463, 'LAImax_Tamarack': 0.268715 / 0.469105, 'LAImax_Shrub': 0.408444 / 1.825093
-##}
-
 # calibrate on mean & slope ##, with uncertainty propagated
-def regress_uncert(df, xvar='Tair'): # rel_sd, n=5000, seed=0, 
-    ## rng = np.random.default_rng(seed)
+def regress_uncert(df, xvar='Tair'):  # n=5000, seed=0
+    ##rel_sd = {'Tair': 0.5/6.25, 'AGNPP_Spruce': 53.5/90.5, 'AGNPP_Tamarack': 32/73,
+    ##    'AGNPP_Shrub': 35/92.1, 'NPP_moss': 67/208, 'BGNPP_TreeShrub': 4.8/3.4,
+    ##    'HR': 53/283, 'AGBiomass_Spruce': 439.694598/748.5575,
+    ##    'AGBiomass_Tamarack': 143.243042/215.0901, 'AGBiomass_Shrub': 99.036822/243.5690,
+    ##    'LAImax_Spruce': 0.671678/1.472463, 'LAImax_Tamarack': 0.268715/0.469105,
+    ##    'LAImax_Shrub': 0.408444/1.825093}
+    ##rng = np.random.default_rng(seed)
+
     rows = {}
+
     for v in df.columns.drop(xvar):
         d = df[[xvar, v]].dropna()
-        if len(d) < 3: continue
-        x, y = d[xvar].to_numpy(), d[v].to_numpy()
-        ## sx, sy = rel_sd[xvar]*abs(x.mean()), rel_sd[v]*abs(y.mean())
+        if len(d) < 3:
+            continue
 
-        ## xs = x + rng.normal(0, sx, (n, x.size))          # Monte Carlo ensembles
-        ## ys = y + rng.normal(0, sy, (n, y.size))
-        ## xc, yc = xs - xs.mean(1, keepdims=True), ys - ys.mean(1, keepdims=True)
-        ## b_mc = (xc*yc).sum(1) / (xc**2).sum(1)
-        ## m_mc = ys.mean(1)
+        x = d[xvar].to_numpy()
+        y = d[v].to_numpy()
 
-        xc0, yc0 = x - x.mean(), y - y.mean()
-        b = (xc0*yc0).sum() / (xc0**2).sum()
-        resid = yc0 - b*xc0
-        rows[v] = dict(n=len(d),
-                       slope=b, ## slope_sd_meas=b_mc.std(ddof=1),
-                       slope_se_fit=np.sqrt((resid**2).sum()/(len(d)-2)/(xc0**2).sum()),
-                       mean=y.mean(), ## mean_sd_meas=m_mc.std(ddof=1),
-                       mean_se_fit=y.std(ddof=1)/np.sqrt(len(d)))
+        ##sx = rel_sd[xvar] * abs(x.mean())
+        ##sy = rel_sd[v] * abs(y.mean())
+
+        ##xs = x + rng.normal(0, sx, (n, x.size))
+        ##ys = y + rng.normal(0, sy, (n, y.size))
+        ##
+        ##xc = xs - xs.mean(axis=1, keepdims=True)
+        ##yc = ys - ys.mean(axis=1, keepdims=True)
+        ##b_mc = (xc * yc).sum(axis=1) / (xc**2).sum(axis=1)
+        ##a_mc = ys.mean(axis=1) - b_mc * xs.mean(axis=1)
+
+        x_mean = x.mean(); y_mean = y.mean()
+        xc0 = x - x_mean; yc0 = y - y_mean
+        sxx = (xc0**2).sum()
+
+        # Skip regressions for which the predictor is constant.
+        if sxx == 0:
+            continue
+
+        b = (xc0 * yc0).sum() / sxx
+        a = y_mean - b * x_mean
+        resid = y - (a + b * x)
+
+        residual_variance = (resid**2).sum() / (len(d) - 2)
+
+        rows[v] = dict(
+            n=len(d),
+            slope=b, ##slope_sd_meas=b_mc.std(ddof=1),
+            slope_se_fit=np.sqrt(residual_variance / sxx),
+            intercept=a, ##intercept_sd_meas=a_mc.std(ddof=1),
+            intercept_se_fit=np.sqrt(
+                residual_variance * (1 / len(d) + x_mean**2 / sxx)
+            ),
+        )
+
     return pd.DataFrame(rows).T
 
 
@@ -100,10 +123,10 @@ res = regress_uncert(myobs)
 # populate the obs object
 # this round of optimization does not focus on biomass
 for vv in ['AGNPP_Spruce','AGNPP_Tamarack','AGNPP_Shrub','NPP_moss','BGNPP_TreeShrub','HR']:
-   mycase.obs[f'{vv}_slope'] = [float(res.loc[vv, 'slope'])]
-   mycase.obs[f'{vv}_mean'] = [float(res.loc[vv, 'mean'])]
-   mycase.obs_err[f'{vv}_slope'] = [float(res.loc[vv, 'slope_se_fit'])]
-   mycase.obs_err[f'{vv}_mean'] = [float(res.loc[vv, 'mean_se_fit'])]
+   mycase.obs[f'{vv}_slope'] = np.array([float(res.loc[vv, 'slope'])])
+   mycase.obs[f'{vv}_intercept'] = np.array([float(res.loc[vv, 'intercept'])])
+   mycase.obs_err[f'{vv}_slope'] = np.array([float(res.loc[vv, 'slope_se_fit'])])
+   mycase.obs_err[f'{vv}_intercept'] = np.array([float(res.loc[vv, 'intercept_se_fit'])])
 
 
 # -------------------------------------------------------------------------------------
@@ -146,9 +169,9 @@ def regress_vectorized(x, y):
 
     # OLS equation: slope = Σ((x - x̄)(y - ȳ)) / Σ((x - x̄)²)
     slope = (x_centered @ y) / denominator # centering y is unecessary because (x - x̄) sums to zero
-    # intercept = y.mean(axis=0) - slope * x.mean()
+    intercept = y.mean(axis=0) - slope * x.mean()
 
-    return slope.reshape(1,-1), y.mean(axis=0, keepdims=True)
+    return slope.reshape(1,-1), intercept
 
 
 sphagnum_fraction = pd.read_excel(os.path.join(os.environ['SHARDIR'], 'ELM_Allocation', 
@@ -187,27 +210,23 @@ for vv in output.keys():
 
 
 # populate the output object
+mycase.output = {}
 for vv in output.keys():
-   mycase.output[f'{vv}_slope'], mycase.output[f'{vv}_mean'] = regress_vectorized(tair, output[vv])
-
-
-mycase.create_pkl(outdir=mycase.OLMTdir+'/pklfiles/')
-
+   mycase.output[f'{vv}_slope'], mycase.output[f'{vv}_intercept'] = regress_vectorized(tair, output[vv])
 
 #------UQ -----------------------------
 
 #Train surrogate models
-
 myvars = list(mycase.output.keys())
 mycase.train_surrogate(myvars)
+
+#Save surrogate models because this takes a long time
+mycase.create_pkl(outdir=mycase.OLMTdir+'/pklfiles/')
 
 #run GSA
 mycase.GSA(myvars)
 #plot GSA
 mycase.plot_GSA(myvars)
-
-#Save postprocessed output
-mycase.create_pkl(outdir=mycase.OLMTdir+'/pklfiles/')
 
 #Set intial values for parameters
 parms=((np.array(mycase.ensemble_pmax)+np.array(mycase.ensemble_pmin))/2)

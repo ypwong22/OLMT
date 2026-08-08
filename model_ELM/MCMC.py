@@ -34,7 +34,7 @@ def calc_posterior(self,parms,myvars):
                 post = post + li
                 #print(v,n,myoutput[n],myobs[n],post)
     else:
-        post = -9999999
+        post = -1e20
         output={}
     #print(post)
     return(post, output)
@@ -42,10 +42,12 @@ def calc_posterior(self,parms,myvars):
 #-------------------------------- MCMC ------------------------------------------------------
 
 def MCMC(self, parms, myvars, nevals, type='uniform', nburn=1000, burnsteps=10, default_output=[]):
-    UQ_output='./UQ_output'
+    UQ_output=self.OLMTdir+'/UQ_output/'+self.casename
+    os.makedirs(UQ_output, exist_ok=True)
+    
     #Metropolis-Hastings Markov Chain Monte Carlo with adaptive sampling
-    post_best = -99999
-    post_last = -99999
+    post_best = -1e20
+    post_last = -1e20
     accepted_step = 0
     accepted_tot  = 0
     nparms     = self.nparms_ensemble
@@ -125,18 +127,22 @@ def MCMC(self, parms, myvars, nevals, type='uniform', nburn=1000, burnsteps=10, 
                 xchain = np.cumsum(np.ones(int(nburn*burnsteps)))
                 plt.plot(xchain, chain[p,0:int(nburn*burnsteps)])
                 plt.xlabel('Evaluations')
-                plt.ylabel(self.ensemble_parms[p])
+                plt.ylabel(self.ensemble_parms[p] + ' ' + str(self.ensemble_pfts[p]))
                 if not os.path.exists(UQ_output+'/MCMC_output/plots/chains'):
                     os.makedirs(UQ_output+'/MCMC_output/plots/chains')
-                plt.savefig(UQ_output+'/MCMC_output/plots/chains/burnin_chain_'+self.ensemble_parms[p]+'.pdf')
+                plt.savefig(UQ_output+'/MCMC_output/plots/chains/burnin_chain_'+self.ensemble_parms[p]+'_'+str(self.ensemble_pfts[p])+'.pdf')
                 plt.close(fig) 
-    
-        #get proposal step
-        parms = np.random.multivariate_normal(parm_last, mycov)
+
+        # I mustn't generate bad params on the first step because thisoutputlast 
+        # won't be created
+        if i > 0:
+            #get proposal step
+            parms = np.random.multivariate_normal(parm_last, mycov)
    
         #------- run the model and calculate log likelihood -------------------
         thisoutput={}
         post, thisoutput = calc_posterior(self,parms,myvars)
+
         #determine whether proposal step is accepted
         if ( (post - post_last < np.log(random.uniform(0,1)))):
             #if not accepted, go back to previous step
@@ -214,7 +220,7 @@ def MCMC(self, parms, myvars, nevals, type='uniform', nburn=1000, burnsteps=10, 
         xchain = np.cumsum(np.ones(nevals-int(nburn*burnsteps)))
         plt.plot(xchain, chain_afterburn[p,:])
         plt.xlabel('Evaluations')
-        plt.ylabel(self.ensemble_parms[p])
+        plt.ylabel(self.ensemble_parms[p] + ' ' + str(self.ensemble_pfts[p]))
         if not os.path.exists(UQ_output+'/MCMC_output/plots/chains'):
             os.makedirs(UQ_output+'/MCMC_output/plots/chains')
         plt.savefig(UQ_output+'/MCMC_output/plots/chains/chain_'+self.ensemble_parms[p]+'.pdf')
@@ -239,11 +245,11 @@ def MCMC(self, parms, myvars, nevals, type='uniform', nburn=1000, burnsteps=10, 
     for p in range(0,nparms):
         fig = plt.figure()
         n, bins, patches = plt.hist(chain_afterburn[p,:],25)
-        plt.xlabel(self.ensemble_parms[p])
+        plt.xlabel(self.ensemble_parms[p] + ' ' + str(self.ensemble_pfts[p]))
         plt.ylabel('Probability Density')
         if not os.path.exists(UQ_output+'/MCMC_output/plots/pdfs'):
             os.makedirs(UQ_output+'/MCMC_output/plots/pdfs')
-        plt.savefig(UQ_output+'/MCMC_output/plots/pdfs/'+self.ensemble_parms[p]+'.pdf')
+        plt.savefig(UQ_output+'/MCMC_output/plots/pdfs/'+self.ensemble_parms[p]+'_'+str(self.ensemble_pfts[p])+'.pdf')
         plt.close(fig)
 
     #make prediction plots
@@ -252,14 +258,14 @@ def MCMC(self, parms, myvars, nevals, type='uniform', nburn=1000, burnsteps=10, 
       ax=fig.add_subplot(111)
       x = np.cumsum(np.ones([self.nobs[v]],float))
       obs_plot = self.obs[v].copy()
-      obs_plot[obs_plot < -9000] = np.NaN
+      obs_plot[obs_plot < -9000] = np.nan
       obs_err_plot = self.obs_err[v].copy()
-      obs_err_plot[obs_err_plot < -9000] = np.NaN
+      obs_err_plot[obs_err_plot < -9000] = np.nan
       ax.errorbar(x,obs_plot, yerr=obs_err_plot, label='Observations')
-      ax.plot(x,output_best[v].flatten(),'r', label = 'Model best')
+      ax.plot(x,output_best[v].flatten(),'-or', label = 'Model best')
       ax.plot(x,output_sorted[v][:,int(0.025*(nevals-nburn*burnsteps))].flatten(), \
-                 'k--', label='Model 95% CI')
-      ax.plot(x,output_sorted[v][:,int(0.975*(nevals-nburn*burnsteps))].flatten(),'k--')
+                 '--ok', label='Model 95% CI')
+      ax.plot(x,output_sorted[v][:,int(0.975*(nevals-nburn*burnsteps))].flatten(),'--ok')
       #if (options.parm_default != ''):
       #  ax.plot(x,default_output[thisob], 'g', label='Default')
       #  #plt.xlabel(model.xlabel)

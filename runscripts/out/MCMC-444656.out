@@ -1,0 +1,100 @@
+Correlations for training data: AGNPP_Spruce_slope
+0 0.935889496260581
+
+Correlations for testing data: AGNPP_Spruce_slope
+0 0.8739996709010427
+Correlations for training data: AGNPP_Spruce_mean
+0 0.9901520781634721
+
+Correlations for testing data: AGNPP_Spruce_mean
+0 0.9740437614799439
+Correlations for training data: AGNPP_Tamarack_slope
+0 0.9999122517225164
+
+Correlations for testing data: AGNPP_Tamarack_slope
+0 0.7658598653209392
+Correlations for training data: AGNPP_Tamarack_mean
+0 0.9999139307312451
+
+Correlations for testing data: AGNPP_Tamarack_mean
+0 0.9675901528598522
+Correlations for training data: AGNPP_Shrub_slope
+0 0.999949116580449
+
+Correlations for testing data: AGNPP_Shrub_slope
+0 0.7938056698069546
+Correlations for training data: AGNPP_Shrub_mean
+0 0.999937185056444
+
+Correlations for testing data: AGNPP_Shrub_mean
+0 0.9671563050718256
+Correlations for training data: NPP_moss_slope
+0 0.9996326486017019
+
+Correlations for testing data: NPP_moss_slope
+0 0.9515936085822468
+Correlations for training data: NPP_moss_mean
+0 0.9999418601527749
+
+Correlations for testing data: NPP_moss_mean
+0 0.9630045248165265
+Correlations for training data: BGNPP_TreeShrub_slope
+0 0.9389359817742038
+
+Correlations for testing data: BGNPP_TreeShrub_slope
+0 0.8740565745777714
+Correlations for training data: BGNPP_TreeShrub_mean
+0 0.9882049351911787
+
+Correlations for testing data: BGNPP_TreeShrub_mean
+0 0.94910850727309
+Correlations for training data: HR_slope
+0 0.9631373511967334
+
+Correlations for testing data: HR_slope
+0 0.9183583594831825
+Correlations for training data: HR_mean
+0 0.9608296679308258
+
+Correlations for testing data: HR_mean
+0 0.9290776002853368
+0 26 4.5
+1 26 191000.0
+2 26 0.05
+3 26 0.0051
+4 26 1e-06
+5 26 1.2
+6 26 0.3
+7 26 -0.5
+8 26 4.5
+9 26 191000.0
+10 26 0.05
+11 26 0.01708
+12 26 1e-06
+13 26 1.2
+14 26 0.3
+15 26 -0.5
+16 26 4.5
+17 26 191000.0
+18 26 0.05
+19 26 0.01666
+20 26 1e-06
+21 26 1.2
+22 26 0.3
+23 26 0.3
+24 26 1.4
+25 26 0.0001
+AGNPP_Spruce_slope
+AGNPP_Spruce_mean
+AGNPP_Tamarack_slope
+AGNPP_Tamarack_mean
+AGNPP_Shrub_slope
+AGNPP_Shrub_mean
+NPP_moss_slope
+NPP_moss_mean
+BGNPP_TreeShrub_slope
+BGNPP_TreeShrub_mean
+HR_slope
+HR_mean
+Ratio of accepted steps to total steps:
+0.85751
