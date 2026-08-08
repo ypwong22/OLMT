@@ -60,14 +60,15 @@ myobs = pd.concat([cobs, tlai], axis=1).rename(lambda x: chamber_list_complete_d
 ## 
 ## inherent observation uncertainty based on pre-treatment levels (sd / mean)
 # calibrate on mean & slope ##, with uncertainty propagated
-def regress_uncert(df, xvar='Tair'):  # n=5000, seed=0
-    ##rel_sd = {'Tair': 0.5/6.25, 'AGNPP_Spruce': 53.5/90.5, 'AGNPP_Tamarack': 32/73,
-    ##    'AGNPP_Shrub': 35/92.1, 'NPP_moss': 67/208, 'BGNPP_TreeShrub': 4.8/3.4,
-    ##    'HR': 53/283, 'AGBiomass_Spruce': 439.694598/748.5575,
-    ##    'AGBiomass_Tamarack': 143.243042/215.0901, 'AGBiomass_Shrub': 99.036822/243.5690,
-    ##    'LAImax_Spruce': 0.671678/1.472463, 'LAImax_Tamarack': 0.268715/0.469105,
-    ##    'LAImax_Shrub': 0.408444/1.825093}
-    ##rng = np.random.default_rng(seed)
+rel_sd = {'Tair': 0.5/6.25, 'AGNPP_Spruce': 32/73, 'AGNPP_Tamarack': 32/73,
+            'AGNPP_Shrub': 34/104, 'NPP_moss': 67/208, 'BGNPP_TreeShrub': 4.8/3.4,
+            'HR': 53/283, 'AGBiomass_Spruce': 439.694598/748.5575,
+            'AGBiomass_Tamarack': 143.243042/215.0901, 'AGBiomass_Shrub': 99.036822/243.5690,
+            'LAImax_Spruce': 0.671678/1.472463, 'LAImax_Tamarack': 0.268715/0.469105,
+            'LAImax_Shrub': 0.408444/1.825093}
+
+def regress_uncert(df, xvar='Tair', rel_sd=rel_sd, n=5000, seed=0):
+    rng = np.random.default_rng(seed)
 
     rows = {}
 
@@ -79,16 +80,15 @@ def regress_uncert(df, xvar='Tair'):  # n=5000, seed=0
         x = d[xvar].to_numpy()
         y = d[v].to_numpy()
 
-        ##sx = rel_sd[xvar] * abs(x.mean())
-        ##sy = rel_sd[v] * abs(y.mean())
-
-        ##xs = x + rng.normal(0, sx, (n, x.size))
-        ##ys = y + rng.normal(0, sy, (n, y.size))
-        ##
-        ##xc = xs - xs.mean(axis=1, keepdims=True)
-        ##yc = ys - ys.mean(axis=1, keepdims=True)
-        ##b_mc = (xc * yc).sum(axis=1) / (xc**2).sum(axis=1)
-        ##a_mc = ys.mean(axis=1) - b_mc * xs.mean(axis=1)
+        sx = rel_sd[xvar] * abs(x.mean())
+        sy = rel_sd[v] * abs(y.mean())
+        xs = x + rng.normal(0, sx, (n, x.size))
+        ys = y + rng.normal(0, sy, (n, y.size))
+        
+        xc = xs - xs.mean(axis=1, keepdims=True)
+        yc = ys - ys.mean(axis=1, keepdims=True)
+        b_mc = (xc * yc).sum(axis=1) / (xc**2).sum(axis=1)
+        a_mc = ys.mean(axis=1) - b_mc * xs.mean(axis=1)
 
         x_mean = x.mean(); y_mean = y.mean()
         xc0 = x - x_mean; yc0 = y - y_mean
@@ -106,9 +106,9 @@ def regress_uncert(df, xvar='Tair'):  # n=5000, seed=0
 
         rows[v] = dict(
             n=len(d),
-            slope=b, ##slope_sd_meas=b_mc.std(ddof=1),
+            slope=b, slope_sd_meas=b_mc.std(ddof=1),
             slope_se_fit=np.sqrt(residual_variance / sxx),
-            intercept=a, ##intercept_sd_meas=a_mc.std(ddof=1),
+            intercept=a, intercept_sd_meas=a_mc.std(ddof=1),
             intercept_se_fit=np.sqrt(
                 residual_variance * (1 / len(d) + x_mean**2 / sxx)
             ),
@@ -119,15 +119,16 @@ def regress_uncert(df, xvar='Tair'):  # n=5000, seed=0
 
 res = regress_uncert(myobs)
 
-
 # populate the obs object
 # this round of optimization does not focus on biomass
 for vv in ['AGNPP_Spruce','AGNPP_Tamarack','AGNPP_Shrub','NPP_moss','BGNPP_TreeShrub','HR']:
    mycase.obs[f'{vv}_slope'] = np.array([float(res.loc[vv, 'slope'])])
-   mycase.obs[f'{vv}_intercept'] = np.array([float(res.loc[vv, 'intercept'])])
    mycase.obs_err[f'{vv}_slope'] = np.array([float(res.loc[vv, 'slope_se_fit'])])
-   mycase.obs_err[f'{vv}_intercept'] = np.array([float(res.loc[vv, 'intercept_se_fit'])])
 
+   mycase.obs[f'{vv}_intercept'] = np.array([float(res.loc[vv, 'intercept'])])
+   mycase.obs_err[f'{vv}_intercept'] = np.array([float(res.loc[vv, 'intercept_se_fit'])])
+   ##mycase.obs[f'{vv}_T0.00'] = myobs.loc['T0.00', vv].mean() # not enough measurement in TAMB
+   ##mycase.obs_err[f'{vv}_T0.00'] = rel_sd[vv] * myobs.loc['T0.00', vv].mean() # not enough measurement in TAMB
 
 # -------------------------------------------------------------------------------------
 # Loop through the treatment pklfiles to obtain the custom output
@@ -171,7 +172,7 @@ def regress_vectorized(x, y):
     slope = (x_centered @ y) / denominator # centering y is unecessary because (x - x̄) sums to zero
     intercept = y.mean(axis=0) - slope * x.mean()
 
-    return slope.reshape(1,-1), intercept
+    return slope.reshape(1,-1), intercept.reshape(1,-1)
 
 
 sphagnum_fraction = pd.read_excel(os.path.join(os.environ['SHARDIR'], 'ELM_Allocation', 
@@ -196,9 +197,9 @@ for case, plot in zip(case_treatments, plot_treatments):
 
     output['AGNPP_Spruce'].append(temp.output['AGNPP_pft2'] * 0.36 * 86400 * 365)
     output['AGNPP_Tamarack'].append(temp.output['AGNPP_pft3'] * 0.14 * 86400 * 365)
-    output['AGNPP_Shrub'].append(temp.output['AGNPP_pft3'] * 0.25 * 86400 * 365)
+    output['AGNPP_Shrub'].append(temp.output['AGNPP_pft11'] * 0.25 * 86400 * 365)
 
-    output['NPP_moss'].append(temp.output['AGNPP_pft3'] * sphagnum_fraction.loc[:, [plot]].values * 86400 * 365)
+    output['NPP_moss'].append(temp.output['AGNPP_pft12'] * sphagnum_fraction.loc[:, [plot]].values / 100 * 86400 * 365)
 
     output['BGNPP_TreeShrub'].append(temp.output['FROOTC_ALLOC_pft2'] * 0.36 * 86400 * 365 + \
                                      temp.output['FROOTC_ALLOC_pft3'] * 0.14 * 86400 * 365 + \
