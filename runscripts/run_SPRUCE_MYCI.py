@@ -17,15 +17,16 @@ inputdata = '/projects/hpcl-cli185/proj-shared/ywo/E3SM/inputdata'
 caseroot= rootdir+'/e3sm_cases'
 runroot = rootdir+'/e3sm_run'
 #TODO:  add option to clone repository
-mode = 'default'
+mode = 'MYCI'
 if mode == 'default':
   modelroot = os.environ['HOME']+'/models/ELM_Peatlands_rb2024'  #Default model directory
 elif mode == 'MYCI':
   modelroot = os.environ['HOME']+'/models/ELM_SPRUCE'  #Modified model directory
+  # os.system('cd ~/models/ELM_SPRUCE; git checkout yw/elm_nutrients; cd ~/models/OLMT/runscripts')
 else:
   raise Exception(f'Unrecognized mode {mode}')
-param = 'default' # default or optim
-
+#param = 'default' # default or optim
+param = 'optim'
 
 #We are going to use a pre-built executable. Set exeroot='' to build
 #exeroot = '/gpfs/wolf2/cades/cli185/proj-shared/ywo/E3SM/output/20260226_US-SPR_ICB1850CNRDCTCBC_ad_spinup_default_optim/bld'
@@ -65,20 +66,18 @@ if mode == 'default':
   if param == 'default':
     case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_CNP_P'
   elif param == 'optim':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
+    ##case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
+    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20260723_US-SPR_ICB20TRCNPRDCTCBC_default_full.nc'
   else:
     raise Exception (f'Unrecognized param option {param}')
 
-elif mode == 'modified' or mode == 'MYCI':
-  if mode == 'modified':
-    case_options['nu_com'] = 'RD'
-  else:
-    case_options['nu_com'] = 'MYCI'
+elif mode == 'MYCI':
+  case_options['nu_com'] = 'MYCI'
 
   if param == 'default':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20240107_g01485.nc_npcompet_cost0'
+    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20260723_US-SPR_ICB20TRCNPRDCTCBC_default_full.nc_npcompet'
   elif param == 'optim':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20240112_g01944.nc_npcompet_cost0'
+    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20260809_US-SPR_ICB20TRCNPMYCICTCBC_MYCI_full.nc'
   else:
     raise Exception (f'Unrecognized param option {param}')
 

@@ -1,63 +1,87 @@
 Correlations for training data: AGNPP_Spruce_slope
-0 0.935889496260581
+0 0.9371034896922161
+1 0.9356099417319912
 
 Correlations for testing data: AGNPP_Spruce_slope
-0 0.8739996709010427
+0 0.8773983129084921
+1 0.8716995804702755
 Correlations for training data: AGNPP_Spruce_intercept
-0 0.9536656496982173
+0 0.9516051853906065
+1 0.950338127789124
 
 Correlations for testing data: AGNPP_Spruce_intercept
-0 0.8838889591145014
+0 0.9053532720695342
+1 0.8993561701074431
 Correlations for training data: AGNPP_Tamarack_slope
-0 0.9999122517225164
+0 0.999266410337072
+1 0.9992864466466381
 
 Correlations for testing data: AGNPP_Tamarack_slope
-0 0.7658598653209392
+0 0.752990935058486
+1 0.7353009104832748
 Correlations for training data: AGNPP_Tamarack_intercept
-0 0.9999440731570602
+0 0.9997170197748292
+1 0.9997227336560399
 
 Correlations for testing data: AGNPP_Tamarack_intercept
-0 0.9186013694426249
+0 0.9155299278557779
+1 0.9110032018905908
 Correlations for training data: AGNPP_Shrub_slope
-0 0.9053482507919627
+0 0.8792097627321761
+1 0.8609303143720541
 
 Correlations for testing data: AGNPP_Shrub_slope
-0 0.7665709925613581
+0 0.7549841491190231
+1 0.7202384374143594
 Correlations for training data: AGNPP_Shrub_intercept
-0 0.8859159820813756
+0 0.8867069926366659
+1 0.8725636587101983
 
 Correlations for testing data: AGNPP_Shrub_intercept
-0 0.8455756909147594
+0 0.8516266387630876
+1 0.8313172721041295
 Correlations for training data: NPP_moss_slope
-0 0.8716181269503606
+0 0.9186639018557381
+1 0.9111710877245653
 
 Correlations for testing data: NPP_moss_slope
-0 0.8270514403495369
+0 0.8453720912375206
+1 0.8253507001377781
 Correlations for training data: NPP_moss_intercept
-0 0.8992288981753612
+0 0.9011349080135014
+1 0.8830938295791745
 
 Correlations for testing data: NPP_moss_intercept
-0 0.8451758392787193
+0 0.8680732384696509
+1 0.8443065361908583
 Correlations for training data: BGNPP_TreeShrub_slope
-0 0.9389359817742038
+0 0.931666750659563
+1 0.9273060893028764
 
 Correlations for testing data: BGNPP_TreeShrub_slope
-0 0.8740565745777714
+0 0.8808905195858844
+1 0.8671522429456169
 Correlations for training data: BGNPP_TreeShrub_intercept
-0 0.9999596239352988
+0 0.9990506700742029
+1 0.9991596763897432
 
 Correlations for testing data: BGNPP_TreeShrub_intercept
-0 0.8543126454301072
+0 0.8757311328626235
+1 0.8589666404156648
 Correlations for training data: HR_slope
-0 0.9631373511967334
+0 0.9542766406904639
+1 0.9506011431116774
 
 Correlations for testing data: HR_slope
-0 0.9183583594831825
+0 0.9231404558007751
+1 0.9224412620921248
 Correlations for training data: HR_intercept
-0 0.9654724780974518
+0 0.9668306956080385
+1 0.9676971850449879
 
 Correlations for testing data: HR_intercept
-0 0.9443512705701976
+0 0.9452356749842452
+1 0.9474466478705106
 0 26 4.5
 1 26 191000.0
 2 26 0.05
@@ -97,4 +121,4 @@ BGNPP_TreeShrub_intercept
 HR_slope
 HR_intercept
 Ratio of accepted steps to total steps:
-0.01433
+0.18455

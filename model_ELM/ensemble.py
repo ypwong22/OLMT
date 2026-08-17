@@ -60,10 +60,13 @@ def create_ensemble_script(self, walltime=24):
     if ('pathfinder' in self.machine):
         myfile.write('#!/bin/bash\n')
         if (nnodes > 1):
-            myfile.write('#SBATCH -p parallel\n')
+            # running on non-cli185 nodes have mixed infiniband issue 
+            myfile.write('#SBATCH -p hpcl-cli185\n')
+            myfile.write('#SBATCH -q hpcl-cli185\n')
+            myfile.write('#SBATCH -A hpcl-cli185\n')
         else:
             myfile.write('#SBATCH -p serial\n')
-        myfile.write('#SBATCH -q normal\n')
+            myfile.write('#SBATCH -q normal\n')
         myfile.write('#SBATCH --mem=0\n') # all the memory available
         myfile.write('#SBATCH --time='+str(walltime)+':00:00\n')
         myfile.write('#SBATCH -N '+str(nnodes)+'\n')
@@ -115,7 +118,10 @@ def create_multisite_script(self,sites,scriptdir, walltime=24):
     if ('pathfinder' in self.machine):
         myfile.write('#!/bin/bash\n')
         if (nnodes > 1):
-            myfile.write('#SBATCH -p parallel\n')
+            # running on non-cli185 nodes have mixed infiniband issue 
+            myfile.write('#SBATCH -p hpcl-cli185\n')
+            myfile.write('#SBATCH -q hpcl-cli185\n')
+            myfile.write('#SBATCH -A hpcl-cli185\n')
         else:
             myfile.write('#SBATCH -p serial\n')
         myfile.write('#SBATCH --exclusive\n')

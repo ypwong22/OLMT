@@ -17,7 +17,7 @@ inputdata = '/projects/hpcl-cli185/proj-shared/ywo/E3SM/inputdata'
 caseroot= rootdir+'/e3sm_cases'
 runroot = rootdir+'/e3sm_run'
 #TODO:  add option to clone repository
-mode = 'default'
+mode = 'MYCI'
 if mode == 'default':
   modelroot = os.environ['HOME']+'/models/ELM_Peatlands_rb2024'  #Default model directory
 elif mode == 'MYCI':
@@ -59,26 +59,24 @@ case_options['surffile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/surfdat
 case_options['pftdynfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/pftdyn/surfdata.pftdyn_plot07.nc'
 case_options['stream_fldfilename_ndep'] = inputdata+'/lnd/clm2/ndepdata/fndep_clm_rcp4.5_simyr1849-2106_1.9x2.5_c100428.nc'
 case_options['use_nofire'] = '.true.'
+
 if mode == 'default':
+
   case_options['nu_com'] = 'RD'
   case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_CNP_P'
-elif mode == 'modified':
-  case_options['nu_com'] = 'RD'
+
+elif mode == 'MYCI':
+
+  case_options['nu_com'] = 'MYCI'
+
   if ensemble_mode == 'full':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
+    ##case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
+    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20260723_US-SPR_ICB20TRCNPRDCTCBC_default_full.nc_npcompet'
   elif ensemble_mode == 'OAT':
     case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_npcompet'
   else:
     raise Exception(f'Unrecognized ensemble mode = {ensemble_mode}')
 
-elif mode == 'MYCI':
-  case_options['nu_com'] = 'MYCI'
-  if ensemble_mode == 'full':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_UQ_20231118_g03067.nc_npcompet'
-  elif ensemble_mode == 'OAT':
-    case_options['paramfile'] = inputdata+'/atm/datm7/CLM1PT_data/SPRUCE_data/clm_params_SPRUCE_20231120_spruceroot.nc_npcompet'
-  else:
-    raise Exception(f'Unrecognized ensemble mode = {ensemble_mode}')
 else:
   raise Exception(f'Unrecognized mode {mode}')
 
@@ -87,9 +85,9 @@ else:
 if mode == 'default':
   parm_list    = 'parm_file_SPRUCE_20231118' #Set parameter list (leave blank for no ensemble)
   ensemble_file  = '' # '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/mcsamples_UQ_20231118_4000.txt'     #File containing samples (if blank, OLMT will generate one)
-elif mode == 'modified' or mode == 'MYCI':
+elif mode == 'MYCI':
   if ensemble_mode == 'full':
-    parm_list    = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/parm_file_20240112_compact'
+    parm_list    = 'parm_file_SPRUCE_20240112'
     ensemble_file  = '' # '/ccsopen/home/ywo/models/OLMT_SPRUCE/mcsamples_UQ_20240112_4000.txt'     #File containing samples (if blank, OLMT will generate one)
   elif ensemble_mode == 'OAT':
     parm_list    = '/ccsopen/home/ywo/Git/elm_nutrients/calibration_files/parm_file_20260224_OAT'
@@ -103,7 +101,7 @@ np_ensemble    =  480     #number of ensemble numbers to run in parallel (MUST b
 postproc_col  = ['GPP', 'NEE', 'NEP', 'NPP', 'MR', 'AR', 'HR', 'TOTLITC', 'TOTSOMC', 'FPG', 'FPI', 'FPG_P', 'FPI_P']
 postproc_pft = ['AGNPP','TLAI','FROOTC_ALLOC','GPP','NPP','MR','AR','GR','XR','TOTVEGC','TOTVEGC_ABG','XSMRPOOL','AVAILC',
                 'PLANT_NDEMAND','PLANT_PDEMAND','SMINN_TO_NPOOL','SMINP_TO_PPOOL']
-if mode == 'modified' or mode == 'MYCI':
+if mode == 'MYCI':
    postproc_pft += ['FPG_PATCH', 'FPG_P_PATCH',
                     'PLANT_NDEMAND_POT','PLANT_PDEMAND_POT','FROOT_NDEMAND_POT',
                     'FROOT_PDEMAND_POT','FUNGI_NDEMAND_POT','FUNGI_PDEMAND_POT',

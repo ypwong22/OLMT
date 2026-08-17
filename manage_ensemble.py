@@ -45,6 +45,7 @@ def get_nodelist():
                 nstr = str(10000+nn)[1:]
               mynodes.append(node_prefix+nstr)
           else:
+              n2=n2.strip(']')
               if ('baseline' in mycase.machine):
                 nstr=str(n2)
               elif ('pathfinder' in mycase.machine):

@@ -178,7 +178,15 @@ def MCMC(self, parms, myvars, nevals, type='uniform', nburn=1000, burnsteps=10, 
 
     #print("Computing statistics")
     chain_afterburn = chain[0:nparms,int(nburn*burnsteps):]
-    chain_sorted = chain_afterburn
+
+    best_idx = np.argmax(chain[nparms, int(nburn*burnsteps):])
+    best_parms = chain[:nparms, int(nburn*burnsteps) + best_idx].copy()
+    best_file = UQ_output + '/MCMC_output/parms_best.txt'
+    with open(best_file, 'w') as f:
+        for name, pft, value in zip(self.ensemble_parms, self.ensemble_pfts, best_parms):
+            f.write(f"{name} {pft} {value:.16g}\n")
+
+    chain_sorted = chain_afterburn.copy()
     output_sorted={}
     for v in myvars:
       output_sorted[v] = output[v][0:self.nobs[v],int(nburn*burnsteps):]

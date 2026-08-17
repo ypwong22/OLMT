@@ -12,14 +12,15 @@ import pandas as pd
 
 parser = OptionParser()
 
-case_prefix = '20260723'
-case_suffix = 'default_full'
-mode = 'RD' # 'RD' or 'MYCI'
+case_prefix = '20260809'
+case_suffix = 'MYCI_full'
+mode = 'MYCI' # 'RD' or 'MYCI'
 case_base = f'{case_prefix}_US-SPR_ICB20TRCNP{mode}CTCBC_{case_suffix}'
 case_treatments = [f'{case_prefix}_US-SPR_ICB20TRCNP{mode}CTCBC_{trt}_{case_suffix}' for trt in \
     ['TAMB','T0.00','T2.25','T4.50','T6.75','T9.00','T0.00eCO2','T2.25eCO2', \
      'T4.50eCO2','T6.75eCO2','T9.00eCO2']]
-plot_treatments = ['plot07', 'plot06', 'plot20', 'plot13', 'plot08', 'plot17', 'plot19', 'plot11', 'plot04', 'plot16', 'plot10']
+plot_treatments = ['plot07', 'plot06', 'plot20', 'plot13', 'plot08', 'plot17', 'plot19', 
+                   'plot11', 'plot04', 'plot16', 'plot10']
 case_plots = []
 
 postproc_startyear = 2015
@@ -117,16 +118,19 @@ def regress_uncert(df, xvar='Tair', rel_sd=rel_sd, n=5000, seed=0):
     return pd.DataFrame(rows).T
 
 
-res = regress_uncert(myobs)
+res = regress_uncert(myobs.loc[['TAMB','T0.00','T2.25','T4.50','T6.75','T9.00'],:])
+res_co2 = regress_uncert(myobs.loc[['T0.00eCO2','T2.25eCO2','T4.50eCO2','T6.75eCO2','T9.00eCO2'],:])
 
 # populate the obs object
 # this round of optimization does not focus on biomass
 for vv in ['AGNPP_Spruce','AGNPP_Tamarack','AGNPP_Shrub','NPP_moss','BGNPP_TreeShrub','HR']:
-   mycase.obs[f'{vv}_slope'] = np.array([float(res.loc[vv, 'slope'])])
-   mycase.obs_err[f'{vv}_slope'] = np.array([float(res.loc[vv, 'slope_se_fit'])])
+   mycase.obs[f'{vv}_slope'] = np.array([float(res.loc[vv, 'slope']), float(res_co2.loc[vv, 'slope'])])
+   mycase.obs_err[f'{vv}_slope'] = np.array([float(res.loc[vv, 'slope_se_fit']), 
+                                             float(res_co2.loc[vv, 'slope_se_fit'])])
 
-   mycase.obs[f'{vv}_intercept'] = np.array([float(res.loc[vv, 'intercept'])])
-   mycase.obs_err[f'{vv}_intercept'] = np.array([float(res.loc[vv, 'intercept_se_fit'])])
+   mycase.obs[f'{vv}_intercept'] = np.array([float(res.loc[vv, 'intercept']), float(res_co2.loc[vv, 'intercept'])])
+   mycase.obs_err[f'{vv}_intercept'] = np.array([float(res.loc[vv, 'intercept_se_fit']), 
+                                                 float(res_co2.loc[vv, 'intercept_se_fit'])])
    ##mycase.obs[f'{vv}_T0.00'] = myobs.loc['T0.00', vv].mean() # not enough measurement in TAMB
    ##mycase.obs_err[f'{vv}_T0.00'] = rel_sd[vv] * myobs.loc['T0.00', vv].mean() # not enough measurement in TAMB
 
@@ -183,37 +187,52 @@ sphagnum_fraction = sphagnum_fraction.drop(['filename','Temp','CO2'],axis=1)
 sphagnum_fraction = sphagnum_fraction.T.sort_index()
 
 tair = []
+tair_co2 = []
 output = {}
 for vv in ['AGNPP_Spruce','AGNPP_Tamarack','AGNPP_Shrub','NPP_moss','BGNPP_TreeShrub','HR']:
    output[vv] = []
+   output[f'{vv}_CO2'] = []
 for case, plot in zip(case_treatments, plot_treatments):
 
   with open(os.path.join(os.environ['HOME'],'models','OLMT','pklfiles', case+'.pkl'),'rb') as f:
     temp=pickle.load(f)
 
-    metfile = temp.inputdata_path + '/atm/datm7/CLM1PT_data/SPRUCE_data/' + plot + '/all_hourly.nc'
-    temp_tair = temp.getncvar(metfile, 'TBOT').reshape(-1, 365*48).mean(axis=1)[:7].data - 273.15 # 2015-2021
+  metfile = temp.inputdata_path + '/atm/datm7/CLM1PT_data/SPRUCE_data/' + plot + '/all_hourly.nc'
+  temp_tair = temp.getncvar(metfile, 'TBOT').reshape(-1, 365*48).mean(axis=1)[:7].data - 273.15 # 2015-2021
+  if 'CO2' in case:
+    tair_co2.append(temp_tair)
+  else:
     tair.append(temp_tair)
 
-    output['AGNPP_Spruce'].append(temp.output['AGNPP_pft2'] * 0.36 * 86400 * 365)
-    output['AGNPP_Tamarack'].append(temp.output['AGNPP_pft3'] * 0.14 * 86400 * 365)
-    output['AGNPP_Shrub'].append(temp.output['AGNPP_pft11'] * 0.25 * 86400 * 365)
+  if 'CO2' in case:
+    suffix='_CO2'
+  else:
+    suffix=''
 
-    output['NPP_moss'].append(temp.output['AGNPP_pft12'] * sphagnum_fraction.loc[:, [plot]].values / 100 * 86400 * 365)
+  output['AGNPP_Spruce'+suffix].append(temp.output['AGNPP_pft2'] * 0.36 * 86400 * 365)
+  output['AGNPP_Tamarack'+suffix].append(temp.output['AGNPP_pft3'] * 0.14 * 86400 * 365)
+  output['AGNPP_Shrub'+suffix].append(temp.output['AGNPP_pft11'] * 0.25 * 86400 * 365)
 
-    output['BGNPP_TreeShrub'].append(temp.output['FROOTC_ALLOC_pft2'] * 0.36 * 86400 * 365 + \
-                                     temp.output['FROOTC_ALLOC_pft3'] * 0.14 * 86400 * 365 + \
-                                     temp.output['FROOTC_ALLOC_pft11'] * 0.25 * 86400 * 365)
-    output['HR'].append(temp.output['HR'] * 86400 * 365)
+  output['NPP_moss'+suffix].append(temp.output['NPP_pft12'] * sphagnum_fraction.loc[:, [plot]].values / 100 * 86400 * 365)
+
+  output['BGNPP_TreeShrub'+suffix].append(temp.output['FROOTC_ALLOC_pft2'] * 0.36 * 86400 * 365 + \
+                                   temp.output['FROOTC_ALLOC_pft3'] * 0.14 * 86400 * 365 + \
+                                   temp.output['FROOTC_ALLOC_pft11'] * 0.25 * 86400 * 365)
+  output['HR'+suffix].append(temp.output['HR'] * 86400 * 365)
 tair = np.concatenate(tair)
+tair_co2 = np.concatenate(tair_co2)
 for vv in output.keys():
    output[vv] = np.concatenate(output[vv], axis=0)
 
 
 # populate the output object
 mycase.output = {}
-for vv in output.keys():
-   mycase.output[f'{vv}_slope'], mycase.output[f'{vv}_intercept'] = regress_vectorized(tair, output[vv])
+for vv in ['AGNPP_Spruce','AGNPP_Tamarack','AGNPP_Shrub','NPP_moss','BGNPP_TreeShrub','HR']:
+   slope, intercept = regress_vectorized(tair, output[vv])
+   slope_co2, intercept_co2 = regress_vectorized(tair_co2, output[vv+'_CO2'])
+
+   mycase.output[f'{vv}_slope'] = np.vstack([slope,slope_co2])
+   mycase.output[f'{vv}_intercept'] = np.vstack([intercept,intercept_co2])
 
 #------UQ -----------------------------
 
